@@ -4,7 +4,7 @@
 
 ### Open Payment & Open Banking Standard
 
-**Bank-agnostic · Interoperable · Designed for Emerging Markets**
+**Bank-agnostic · Interoperable · Built for the Libyan Banking Ecosystem**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
 [![Spec](https://img.shields.io/badge/OpenAPI-3.0.3-green.svg)](./openwave-payments-v1.yaml)
@@ -19,12 +19,14 @@
 
 ## What is OpenWave?
 
-**OpenWave** is an open standard that defines a unified API surface for payments and open banking across banking networks in emerging and developing markets.
+**OpenWave** is an open standard that defines a unified API surface for payments and open banking, built specifically for the **Libyan banking ecosystem** and designed to extend across other emerging markets.
 
-It allows any bank to expose a standardised interface so that:
+Libya's banking sector has historically lacked interoperability — customers are locked to their bank's app, merchants integrate with each bank separately, and there is no shared payment identity layer. OpenWave solves this.
 
-- **Merchants** can accept payments via IBAN or NPT alias
-- **Banks** can join the network as payment partners
+It allows any Libyan bank to expose a standardised interface so that:
+
+- **Merchants** can accept payments from any bank via IBAN or NPT alias — one integration, all banks
+- **Banks** can join the network as payment partners without custom bilateral agreements
 - **Third-Party Providers (TPPs)** can securely access account data and initiate payments on behalf of customers — with explicit, revocable customer consent
 
 OpenWave is **bank-agnostic by design**. Any institution can implement it independently, and any compliant gateway can route across multiple banks without vendor lock-in.
