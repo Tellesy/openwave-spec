@@ -16,7 +16,12 @@ info:
     - **Payment Session**: Single payment attempt lifecycle from initiation to confirmation
     - **Mandate**: Recurring payment authorization granted by a customer to a merchant
     - **Settlement**: Daily batch settlement from gateway settlement accounts to merchants
-    - **OpenWave Gateway**: Any server implementing this standard
+    - **OpenWave Gateway**: Any compliant server implementing this standard. Gateways can operate independently or interoperate — a merchant on one gateway can reach a customer whose bank is connected to another gateway, because the standard is the contract.
+
+    ## Deployment Models
+    OpenWave supports both centralised (one shared gateway for many banks) and decentralised
+    (multiple independent gateways that interoperate) topologies. Banks and merchants are not
+    locked to a single operator.
 
     ## Authentication
     - **Merchant API**: `Authorization: Bearer {merchant_api_key}`

@@ -29,7 +29,7 @@ It allows any Libyan bank to expose a standardised interface so that:
 - **Banks** can join the network as payment partners without custom bilateral agreements
 - **Third-Party Providers (TPPs)** can securely access account data and initiate payments on behalf of customers — with explicit, revocable customer consent
 
-OpenWave is **bank-agnostic by design**. Any institution can implement it independently, and any compliant gateway can route across multiple banks without vendor lock-in.
+OpenWave is **bank-agnostic and gateway-agnostic by design**. Any institution or fintech operator can run a compliant gateway independently. Multiple gateways can interoperate — a merchant on one gateway can reach a customer at a bank connected to another, because the standard is the contract, not the operator.
 
 ---
 
@@ -73,6 +73,33 @@ Any server that implements this specification is an **OpenWave Gateway**. Gatewa
 - Managing session lifecycle and authentication
 - Enforcing SCA (Strong Customer Authentication)
 - Delivering webhook events to merchants
+
+### Deployment Models
+
+OpenWave supports both **centralised** and **decentralised** deployments — and they can interoperate.
+
+**Centralised (shared gateway)**
+A single gateway connects multiple banks. Merchants integrate once and reach all participating banks. Banks register with the gateway. This is the simplest model for a national payment network.
+
+```
+Merchant ──→ [ OpenWave Gateway ] ──→ Bank A
+                                  └──→ Bank B
+                                  └──→ Bank C
+```
+
+**Decentralised (federated gateways)**
+Each bank or fintech operator runs its own gateway. Gateways interoperate by honouring the same standard — an NPT alias from one gateway can be resolved and settled across another, because the protocol is identical.
+
+```
+Merchant A ──→ [ Gateway 1 ] ──┐
+                                ├──→ [ Shared Settlement Layer ]
+Merchant B ──→ [ Gateway 2 ] ──┘
+```
+
+**What this means in practice:**
+- A customer at Bank A can pay a merchant connected to Gateway 2, even if Bank A is registered with Gateway 1
+- Any compliant gateway can verify an NPT alias, initiate a payment session, and deliver settlement
+- No single operator controls the network — the standard is the contract
 
 ### Amount Convention
 
