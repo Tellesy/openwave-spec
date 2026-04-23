@@ -43,6 +43,7 @@ OpenWave is **bank-agnostic and gateway-agnostic by design**. Any institution or
 | **Webhooks** | 1.0.0 | ✅ Stable | Real-time event notifications with HMAC signature |
 | **Open Banking — AISP** | 1.0.0 | ✅ Stable | Account info, balances, transactions |
 | **Open Banking — PISP** | 1.0.0 | ✅ Stable | TPP-initiated payment orders |
+| **Identity Registry** | 1.0.0 | ✅ Stable | Global NPT handle ownership, multi-bank accounts, alias resolution |
 
 ---
 
@@ -54,16 +55,29 @@ Both files are valid **OpenAPI 3.0.3** — load them directly into Swagger UI, P
 |:---|:---|
 | [`openwave-payments-v1.yaml`](./openwave-payments-v1.yaml) | Payments · Recurring · Alias · Webhooks |
 | [`openwave-open-banking-v1.0.yaml`](./openwave-open-banking-v1.0.yaml) | Open Banking AISP + PISP · OAuth 2.0 + PKCE |
+| [`openwave-identity-v1.0.yaml`](./openwave-identity-v1.0.yaml) | Identity Registry · NPT handle ownership · Multi-bank aliases · Governance |
 
 ---
 
 ## Core Concepts
 
-### NPT Alias
+### NPT Identity & Alias
 
-A universal payment identifier in the format `username@bank-handle` — for example, `ahmed@andalus`.
+An NPT handle is a **global payment identity** — not just an alias for one account. A person owns a username and can link accounts from multiple banks to it.
 
-Inspired by UPI (India) and PromptPay (Thailand). Customers use a single human-readable alias across all participating banks. No IBAN required at the point of payment.
+| Format | Resolves to |
+|:---|:---|
+| `mtellesy` | The user's **default** bank account |
+| `mtellesy@andalus` | Specifically the user's Andalus account |
+| `mtellesy@nub` | Specifically the user's NUB account |
+
+Inspired by the email model — `@bank-handle` is the routing suffix, the same way `@gmail.com` routes to Gmail. A sender who just knows your username can always reach you regardless of which bank you use.
+
+**Key properties:**
+- One username, many banks — add any bank account you hold to your identity
+- You control your default — change which account receives payments with no `@` suffix
+- First-come, first-served — handles are globally unique, claimed through your bank's KYC
+- The Identity Registry stores only routing data — no balances, no transaction history
 
 ### OpenWave Gateway
 

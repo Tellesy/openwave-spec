@@ -1,0 +1,1040 @@
+openapi: 3.0.3
+
+info:
+  title: OpenWave — Identity & Alias Registry API
+  description: |
+    # OpenWave Identity API v1.0
+
+    The OpenWave Identity Registry is the global, open-source identity layer for the
+    OpenWave payment network. It is currently operated by **Neptune Fintech** under a
+    published open governance charter, with the explicit intent to transfer stewardship
+    to a neutral body — such as the **Central Bank of Libya** or a bank consortium —
+    as the network matures.
+
+    The source code for the registry is open source. Any organisation can audit it,
+    fork it, or propose governance changes.
+
+    ---
+
+    ## What is an NPT Handle?
+
+    An **NPT Handle** is a global payment identity in the format `username` or
+    `username@bank-handle`.
+
+    - `mtellesy` — resolves to the user's **default** linked account
+    - `mtellesy@andalus` — resolves specifically to the user's Andalus account
+    - `mtellesy@nub` — resolves to the user's NUB account
+
+    A single person owns the username. They can link accounts from multiple banks.
+    The `@bank-handle` suffix routes to a specific account; omitting it uses the default.
+
+    ---
+
+    ## Key Principles
+
+    - **The registry stores routing only** — no KYC data, no transaction history,
+      no balances. Only: `username → { bank, iban, is_default }`.
+    - **Banks vouch for users** — a user claims a handle through their bank, which
+      has already KYC-verified them. The registry trusts the bank's assertion.
+    - **User controls their identity** — users can link/unlink accounts and change
+      their default through any of their linked banks.
+    - **Resolution is public and fast** — the `/identity/resolve` endpoint requires
+      no authentication and is designed to be cached by gateways.
+    - **First-come, first-served** — handles are unique globally. Disputes are
+      resolved through the registered bank.
+
+    ---
+
+    ## Identity Lifecycle
+
+    ```
+    1. User registers handle via their bank
+       POST /identity/claim  (bank-initiated, bank-signed)
+       ← { npt_handle: "mtellesy", status: "ACTIVE" }
+
+    2. User links a second bank account
+       POST /identity/mtellesy/accounts  (second bank-initiated)
+       ← { bank_handle: "nub", iban: "LY27...", is_default: false }
+
+    3. User sets NUB as default
+       PATCH /identity/mtellesy/default
+       ← { default_account: "nub" }
+
+    4. Sender pays "mtellesy" → resolves to NUB account
+       GET /identity/resolve?alias=mtellesy
+       ← { iban: "LY27...", bank_handle: "nub", display_name: "Mohamed T." }
+
+    5. Sender pays "mtellesy@andalus" → resolves to Andalus account regardless of default
+       GET /identity/resolve?alias=mtellesy@andalus
+       ← { iban: "LY83...", bank_handle: "andalus", display_name: "Mohamed T." }
+    ```
+
+    ---
+
+    ## Authentication
+
+    | Context | Header | Used by |
+    |---|---|---|
+    | Bank → Registry | `X-OpenWave-Bank-Key: {key}` | Banks claiming/linking/unlinking |
+    | Registry Admin | `X-OpenWave-Registry-Key: {key}` | Neptune / future CBL admin |
+    | Resolution | None (public, rate-limited) | Gateways, anyone |
+
+    ---
+
+    ## Amounts
+    This API contains no monetary amounts. All resolution responses return IBANs
+    for use by the calling gateway's payment flow.
+
+    ---
+
+    ## Governance
+
+    The registry is governed by the **OpenWave Identity Charter** (see GOVERNANCE.md
+    in the openwave-spec repository). Key commitments:
+
+    - Registry operator publishes all code as open source (Apache 2.0)
+    - No bank is denied registration without published justification
+    - Handle disputes follow a documented arbitration process
+    - Stewardship transfer to CBL or bank consortium is a stated goal
+
+  version: "1.0.0"
+  contact:
+    name: Neptune Fintech — OpenWave Registry
+    url: https://www.neptune.ly
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+externalDocs:
+  description: OpenWave Standard Repository
+  url: https://github.com/openwave-standard/openwave-spec
+
+servers:
+  - url: https://registry.openwave.ly/v1
+    description: OpenWave Identity Registry (operated by Neptune Fintech)
+  - url: https://{registry_host}/v1
+    description: Self-hosted or future CBL-operated registry
+    variables:
+      registry_host:
+        default: registry.openwave.ly
+        description: Registry host
+
+tags:
+  - name: Resolution
+    description: Alias resolution — public, used by gateways and payment apps
+  - name: Identity
+    description: Identity profile management
+  - name: Accounts
+    description: Link and manage bank accounts under an identity
+  - name: Banks
+    description: Bank handle registry — maps bank-handle to core endpoint
+  - name: Registry
+    description: Registry metadata and governance info
+
+# =============================================================================
+# PATHS
+# =============================================================================
+
+paths:
+
+  # ---------------------------------------------------------------------------
+  # RESOLUTION — Public, no auth, rate-limited
+  # ---------------------------------------------------------------------------
+
+  /identity/resolve:
+    get:
+      tags: [Resolution]
+      summary: Resolve an NPT alias to an IBAN
+      description: |
+        Resolves an NPT alias to the target bank account IBAN and bank handle.
+        This is the primary endpoint called by OpenWave gateways during payment routing.
+
+        **Alias formats accepted:**
+        - `mtellesy` — resolves to the user's default account
+        - `mtellesy@andalus` — resolves to the user's Andalus-linked account specifically
+
+        This endpoint is **public** (no authentication required) and is designed to be
+        fast and cacheable. Rate limiting applies per calling IP.
+
+        **Cache guidance:** responses may be cached for up to 60 seconds. Gateways
+        should re-resolve on cache miss or payment failure.
+      operationId: resolveAlias
+      parameters:
+        - name: alias
+          in: query
+          required: true
+          description: NPT alias to resolve (`username` or `username@bank-handle`)
+          schema:
+            type: string
+            example: mtellesy@andalus
+        - name: purpose
+          in: query
+          required: false
+          description: Optional hint for audit logging (`payment`, `verification`, `display`)
+          schema:
+            type: string
+            enum: [payment, verification, display]
+            default: payment
+      responses:
+        "200":
+          description: Alias resolved successfully
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: max-age=60
+            X-OpenWave-Registry-Version:
+              schema:
+                type: string
+                example: "1.0.0"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AliasResolution'
+              example:
+                npt_handle: mtellesy
+                bank_handle: andalus
+                iban: LY83002700100099900001
+                display_name: Mohamed T.
+                account_type: CURRENT
+                is_default: true
+                resolved_at: "2026-04-24T00:00:00Z"
+        "404":
+          description: Handle not found or account not linked to requested bank
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: IDENTITY_NOT_FOUND
+                message: No identity found for handle 'mtellesy@xyz'
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "503":
+          description: Registry temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ---------------------------------------------------------------------------
+  # IDENTITY — Claim and profile
+  # ---------------------------------------------------------------------------
+
+  /identity/claim:
+    post:
+      tags: [Identity]
+      summary: Claim an NPT handle (bank-initiated)
+      description: |
+        Called by a bank to claim an NPT handle on behalf of a KYC-verified customer.
+        The bank vouches that the customer is verified and owns the linked IBAN.
+
+        - If the handle is already claimed by a different bank-verified identity, returns 409.
+        - If the handle is already claimed by the same identity (re-claim), returns the
+          existing identity.
+        - The claimed IBAN automatically becomes the **default account**.
+
+        Only registered OpenWave banks may call this endpoint.
+      operationId: claimHandle
+      security:
+        - BankKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClaimHandleRequest'
+            example:
+              npt_handle: mtellesy
+              bank_handle: andalus
+              iban: LY83002700100099900001
+              customer_display_name: Mohamed T.
+              bank_customer_ref: CUST-00012345
+              set_as_default: true
+      responses:
+        "201":
+          description: Handle claimed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdentityProfile'
+        "200":
+          description: Handle already claimed by this identity (idempotent re-claim)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdentityProfile'
+        "409":
+          description: Handle already claimed by a different identity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: HANDLE_TAKEN
+                message: The handle 'mtellesy' is already claimed
+        "422":
+          description: Invalid handle format or IBAN
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /identity/{npt_handle}:
+    get:
+      tags: [Identity]
+      summary: Get identity profile
+      description: |
+        Returns the public profile for an NPT handle — linked bank handles and
+        whether a default is set. **IBANs are never returned in the public profile.**
+        Full IBAN is only returned via `/identity/resolve`.
+      operationId: getIdentity
+      parameters:
+        - $ref: '#/components/parameters/NptHandle'
+      responses:
+        "200":
+          description: Identity profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdentityPublicProfile'
+        "404":
+          description: Identity not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags: [Identity]
+      summary: Delete identity (bank-initiated, all accounts unlinked)
+      description: |
+        Deletes the entire identity and all linked accounts. Can only be called by
+        a bank that has at least one account linked to this identity.
+        Registry admin can also delete any identity.
+      operationId: deleteIdentity
+      security:
+        - BankKey: []
+      parameters:
+        - $ref: '#/components/parameters/NptHandle'
+      responses:
+        "204":
+          description: Identity deleted
+        "403":
+          description: Calling bank has no linked account for this identity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: Identity not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ---------------------------------------------------------------------------
+  # ACCOUNTS — Link/unlink bank accounts under an identity
+  # ---------------------------------------------------------------------------
+
+  /identity/{npt_handle}/accounts:
+    get:
+      tags: [Accounts]
+      summary: List linked accounts (bank-authenticated)
+      description: |
+        Returns all bank accounts linked to this identity. Only a bank that has
+        at least one account linked may call this. IBANs are returned masked
+        (first 6 + last 4 characters).
+      operationId: listLinkedAccounts
+      security:
+        - BankKey: []
+      parameters:
+        - $ref: '#/components/parameters/NptHandle'
+      responses:
+        "200":
+          description: List of linked accounts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  npt_handle:
+                    type: string
+                  accounts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LinkedAccount'
+        "403":
+          description: Calling bank not linked to this identity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: Identity not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags: [Accounts]
+      summary: Link a new bank account to an existing identity (bank-initiated)
+      description: |
+        Links an additional bank account to an existing NPT identity. Called by the
+        new bank on behalf of their KYC-verified customer.
+
+        The customer must already have a claimed handle. This adds a new `@bank-handle`
+        routing option to their existing identity.
+      operationId: linkAccount
+      security:
+        - BankKey: []
+      parameters:
+        - $ref: '#/components/parameters/NptHandle'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkAccountRequest'
+            example:
+              bank_handle: nub
+              iban: LY27003400200088800002
+              bank_customer_ref: NUB-CUST-9988
+              set_as_default: false
+      responses:
+        "201":
+          description: Account linked successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkedAccount'
+        "409":
+          description: This bank already has an account linked to this identity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: ACCOUNT_ALREADY_LINKED
+                message: A NUB account is already linked to this identity
+        "404":
+          description: Identity not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /identity/{npt_handle}/accounts/{bank_handle}:
+    patch:
+      tags: [Accounts]
+      summary: Update a linked account (e.g. change IBAN)
+      description: |
+        Updates the IBAN for a linked account. Only the bank that owns this
+        account link may update it (e.g. after an account number change).
+      operationId: updateLinkedAccount
+      security:
+        - BankKey: []
+      parameters:
+        - $ref: '#/components/parameters/NptHandle'
+        - $ref: '#/components/parameters/BankHandle'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                iban:
+                  type: string
+                  description: New IBAN for this linked account
+                  example: LY83002700100099900002
+      responses:
+        "200":
+          description: Account updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkedAccount'
+        "403":
+          description: Calling bank does not own this account link
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: Identity or linked account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags: [Accounts]
+      summary: Unlink a bank account from an identity
+      description: |
+        Removes a bank account from this identity. Only the bank that owns the
+        account link may remove it.
+
+        If the unlinked account was the default and other accounts remain,
+        the registry will designate the earliest-linked account as the new default.
+        If no accounts remain, the identity is suspended until a new account is linked.
+      operationId: unlinkAccount
+      security:
+        - BankKey: []
+      parameters:
+        - $ref: '#/components/parameters/NptHandle'
+        - $ref: '#/components/parameters/BankHandle'
+      responses:
+        "204":
+          description: Account unlinked
+        "403":
+          description: Calling bank does not own this account link
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: Identity or linked account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /identity/{npt_handle}/default:
+    patch:
+      tags: [Accounts]
+      summary: Set the default account for an identity
+      description: |
+        Sets which linked bank account should receive payments when the sender
+        uses just `username` with no `@bank-handle`.
+
+        Can be called by any bank that has an account linked to this identity,
+        acting on the customer's instruction.
+      operationId: setDefaultAccount
+      security:
+        - BankKey: []
+      parameters:
+        - $ref: '#/components/parameters/NptHandle'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bank_handle]
+              properties:
+                bank_handle:
+                  type: string
+                  description: The bank_handle to set as default
+                  example: nub
+      responses:
+        "200":
+          description: Default account updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  npt_handle:
+                    type: string
+                  default_bank_handle:
+                    type: string
+                  updated_at:
+                    type: string
+                    format: date-time
+        "404":
+          description: Identity or bank account link not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ---------------------------------------------------------------------------
+  # BANKS — Bank handle registry (phonebook)
+  # ---------------------------------------------------------------------------
+
+  /banks:
+    get:
+      tags: [Banks]
+      summary: List all registered banks
+      description: |
+        Returns the full list of banks registered with the OpenWave Identity Registry.
+        This is the authoritative phonebook of `bank-handle → core endpoint` mappings.
+
+        Gateways should cache this list locally (TTL: 5 minutes) to avoid registry
+        dependency during payment routing.
+
+        This endpoint is **public** — no authentication required.
+      operationId: listBanks
+      parameters:
+        - name: country
+          in: query
+          required: false
+          schema:
+            type: string
+            example: LY
+          description: Filter by ISO country code
+        - name: active_only
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+          description: Return only active banks
+      responses:
+        "200":
+          description: List of registered banks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  banks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BankRegistration'
+                  total:
+                    type: integer
+                  generated_at:
+                    type: string
+                    format: date-time
+
+    post:
+      tags: [Banks]
+      summary: Register a new bank (registry admin only)
+      description: |
+        Registers a new bank with the OpenWave Identity Registry. Once registered,
+        the bank receives an `X-OpenWave-Bank-Key` and may begin claiming handles
+        for its customers.
+
+        Only the registry operator (Neptune / future CBL) may call this endpoint.
+      operationId: registerBank
+      security:
+        - RegistryAdminKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterBankRequest'
+            example:
+              bank_handle: andalus
+              display_name: Andalus Bank
+              country: LY
+              core_url: https://api.andalus.ly
+              contact_email: openwave@andalus.ly
+      responses:
+        "201":
+          description: Bank registered, API key issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankRegistrationResult'
+        "409":
+          description: Bank handle already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /banks/{bank_handle}:
+    get:
+      tags: [Banks]
+      summary: Get a specific bank's registration
+      operationId: getBank
+      parameters:
+        - $ref: '#/components/parameters/BankHandle'
+      responses:
+        "200":
+          description: Bank registration details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankRegistration'
+        "404":
+          description: Bank not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      tags: [Banks]
+      summary: Update bank registration (admin only)
+      operationId: updateBank
+      security:
+        - RegistryAdminKey: []
+      parameters:
+        - $ref: '#/components/parameters/BankHandle'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                core_url:
+                  type: string
+                  format: uri
+                display_name:
+                  type: string
+                contact_email:
+                  type: string
+                  format: email
+                active:
+                  type: boolean
+      responses:
+        "200":
+          description: Bank updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankRegistration'
+        "404":
+          description: Bank not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ---------------------------------------------------------------------------
+  # REGISTRY — Metadata and governance
+  # ---------------------------------------------------------------------------
+
+  /registry/info:
+    get:
+      tags: [Registry]
+      summary: Registry metadata and governance info
+      description: |
+        Returns information about this registry instance — who operates it,
+        the governance charter URL, spec version, and current operator.
+        Public, no authentication required.
+      operationId: getRegistryInfo
+      responses:
+        "200":
+          description: Registry info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistryInfo'
+              example:
+                spec_version: "1.0.0"
+                operator: Neptune Fintech
+                operator_url: https://www.neptune.ly
+                governance_charter_url: https://github.com/openwave-standard/openwave-spec/blob/main/GOVERNANCE.md
+                source_code_url: https://github.com/openwave-standard/openwave-identity-registry
+                registered_banks: 4
+                active_identities: 12500
+                uptime_sla: "99.9%"
+                country_scope: LY
+                future_operator: Central Bank of Libya (planned)
+
+# =============================================================================
+# COMPONENTS
+# =============================================================================
+
+components:
+
+  securitySchemes:
+    BankKey:
+      type: apiKey
+      in: header
+      name: X-OpenWave-Bank-Key
+      description: Issued to registered OpenWave banks by the registry operator
+    RegistryAdminKey:
+      type: apiKey
+      in: header
+      name: X-OpenWave-Registry-Key
+      description: Issued to the registry operator (Neptune Fintech / future CBL)
+
+  parameters:
+    NptHandle:
+      name: npt_handle
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-z0-9_.-]{3,32}$'
+        example: mtellesy
+      description: NPT handle (username only, no @bank suffix)
+
+    BankHandle:
+      name: bank_handle
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-z0-9-]{2,20}$'
+        example: andalus
+      description: Bank handle as registered in the OpenWave registry
+
+  schemas:
+
+    AliasResolution:
+      type: object
+      required: [npt_handle, bank_handle, iban, display_name, is_default, resolved_at]
+      properties:
+        npt_handle:
+          type: string
+          description: The base username (without @bank)
+          example: mtellesy
+        bank_handle:
+          type: string
+          description: The bank this resolved to
+          example: andalus
+        iban:
+          type: string
+          description: Full IBAN for payment routing
+          example: LY83002700100099900001
+        display_name:
+          type: string
+          description: User-chosen display name (safe to show to sender for confirmation)
+          example: Mohamed T.
+        account_type:
+          type: string
+          enum: [CURRENT, SAVINGS]
+          example: CURRENT
+        is_default:
+          type: boolean
+          description: Whether this is the user's default account
+        resolved_at:
+          type: string
+          format: date-time
+
+    ClaimHandleRequest:
+      type: object
+      required: [npt_handle, bank_handle, iban, customer_display_name, bank_customer_ref]
+      properties:
+        npt_handle:
+          type: string
+          pattern: '^[a-z0-9_.-]{3,32}$'
+          description: Desired handle. Lowercase alphanumeric, dots, underscores, hyphens. 3-32 chars.
+          example: mtellesy
+        bank_handle:
+          type: string
+          description: The claiming bank's registered handle
+          example: andalus
+        iban:
+          type: string
+          description: IBAN of the customer's account at this bank
+          example: LY83002700100099900001
+        customer_display_name:
+          type: string
+          description: |
+            Display name shown to senders for payment confirmation.
+            Should be the customer's real name or preferred display name.
+            The registry does NOT store full KYC name — just this display label.
+          example: Mohamed T.
+        bank_customer_ref:
+          type: string
+          description: |
+            Bank's internal customer reference. Stored privately for dispute resolution.
+            Never returned in public API responses.
+          example: CUST-00012345
+        set_as_default:
+          type: boolean
+          default: true
+          description: Whether this account should be the default. True for first claim.
+
+    LinkAccountRequest:
+      type: object
+      required: [bank_handle, iban, bank_customer_ref]
+      properties:
+        bank_handle:
+          type: string
+          example: nub
+        iban:
+          type: string
+          example: LY27003400200088800002
+        bank_customer_ref:
+          type: string
+          example: NUB-CUST-9988
+        set_as_default:
+          type: boolean
+          default: false
+
+    LinkedAccount:
+      type: object
+      properties:
+        bank_handle:
+          type: string
+          example: andalus
+        iban_masked:
+          type: string
+          description: IBAN with middle digits masked
+          example: LY8300...0001
+        is_default:
+          type: boolean
+        linked_at:
+          type: string
+          format: date-time
+
+    IdentityProfile:
+      type: object
+      properties:
+        npt_handle:
+          type: string
+          example: mtellesy
+        display_name:
+          type: string
+          example: Mohamed T.
+        status:
+          type: string
+          enum: [ACTIVE, SUSPENDED, DELETED]
+        default_bank_handle:
+          type: string
+          example: andalus
+        linked_banks:
+          type: array
+          items:
+            type: string
+          example: [andalus, nub]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    IdentityPublicProfile:
+      type: object
+      description: Public-facing profile. Contains no IBANs or sensitive data.
+      properties:
+        npt_handle:
+          type: string
+          example: mtellesy
+        display_name:
+          type: string
+          example: Mohamed T.
+        has_default:
+          type: boolean
+          description: Whether a default account is set
+        linked_bank_count:
+          type: integer
+          description: Number of linked banks (not the bank names)
+          example: 2
+        status:
+          type: string
+          enum: [ACTIVE, SUSPENDED]
+
+    BankRegistration:
+      type: object
+      properties:
+        bank_handle:
+          type: string
+          example: andalus
+        display_name:
+          type: string
+          example: Andalus Bank
+        country:
+          type: string
+          example: LY
+        core_url:
+          type: string
+          format: uri
+          example: https://api.andalus.ly
+        active:
+          type: boolean
+        registered_at:
+          type: string
+          format: date-time
+
+    RegisterBankRequest:
+      type: object
+      required: [bank_handle, display_name, country, core_url, contact_email]
+      properties:
+        bank_handle:
+          type: string
+          pattern: '^[a-z0-9-]{2,20}$'
+          example: andalus
+        display_name:
+          type: string
+          example: Andalus Bank
+        country:
+          type: string
+          description: ISO 3166-1 alpha-2
+          example: LY
+        core_url:
+          type: string
+          format: uri
+          example: https://api.andalus.ly
+        contact_email:
+          type: string
+          format: email
+          example: openwave@andalus.ly
+
+    BankRegistrationResult:
+      type: object
+      properties:
+        bank_handle:
+          type: string
+        display_name:
+          type: string
+        bank_api_key:
+          type: string
+          description: |
+            The `X-OpenWave-Bank-Key` value issued to this bank.
+            Shown ONCE — store it securely. Cannot be retrieved again.
+          example: owbk_live_andalus_a1b2c3d4e5f6...
+        registered_at:
+          type: string
+          format: date-time
+
+    RegistryInfo:
+      type: object
+      properties:
+        spec_version:
+          type: string
+        operator:
+          type: string
+        operator_url:
+          type: string
+          format: uri
+        governance_charter_url:
+          type: string
+          format: uri
+        source_code_url:
+          type: string
+          format: uri
+        registered_banks:
+          type: integer
+        active_identities:
+          type: integer
+        uptime_sla:
+          type: string
+        country_scope:
+          type: string
+        future_operator:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code
+          enum:
+            - IDENTITY_NOT_FOUND
+            - HANDLE_TAKEN
+            - HANDLE_INVALID_FORMAT
+            - ACCOUNT_ALREADY_LINKED
+            - ACCOUNT_NOT_FOUND
+            - BANK_NOT_REGISTERED
+            - BANK_HANDLE_TAKEN
+            - UNAUTHORIZED
+            - FORBIDDEN
+            - RATE_LIMITED
+            - REGISTRY_UNAVAILABLE
+        message:
+          type: string
+          description: Human-readable error description
+        details:
+          type: object
+          additionalProperties: true
+          description: Optional additional context

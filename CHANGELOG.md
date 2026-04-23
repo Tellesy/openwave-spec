@@ -11,6 +11,31 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## Identity Registry API
+
+### [1.0.0] — 2026-04-24
+
+Initial stable release of the OpenWave Identity Registry API.
+
+**Modules included:**
+- NPT handle claiming (bank-initiated, bank-vouched)
+- Multi-bank account linking per identity
+- Default account management
+- Public alias resolution (`mtellesy` → IBAN, `mtellesy@nub` → IBAN)
+- Bank handle registry (phonebook of `bank-handle → core URL`)
+- Registry metadata and governance info endpoint
+
+**Key design decisions:**
+- **Global username, multi-bank** — one handle spans multiple banks; `@bank-handle` suffix routes to a specific account, omitting it uses the default
+- **Banks vouch, registry routes** — no KYC data stored; registry only holds `username → { bank, iban, is_default }`
+- **Resolution is public** — `GET /identity/resolve` requires no auth; designed for gateway caching (60s TTL)
+- **IBANs never in public profile** — `GET /identity/{handle}` returns masked data; full IBAN only via resolution endpoint
+- **Governance-first** — registry publishes open source code, open governance charter, and explicit stewardship transfer plan to Central Bank of Libya or bank consortium
+- **First-come, first-served** — handles are globally unique; bank-mediated dispute resolution documented in GOVERNANCE.md
+- **11 typed error codes** — covering all failure modes
+
+---
+
 ## Payments API
 
 ### [1.0.0] — 2026-04-23
@@ -68,9 +93,11 @@ Stable release of the OpenWave Open Banking API. Supersedes draft v0.9.0.
 | Feature | Target version | Notes |
 |---|---|---|
 | ~~Open Banking v1.0 stable~~ | ~~OB 1.0.0~~ | ✅ Done |
+| ~~Identity Registry v1.0 stable~~ | ~~Identity 1.0.0~~ | ✅ Done |
+| GOVERNANCE.md — dispute resolution & stewardship charter | Identity 1.0.1 | Governance document |
 | Standing Orders (PISP) | OB 1.1.0 | Scheduled recurring payments |
 | Variable Recurring Payments | OB 1.2.0 | Mandate-based PISP (`mandates:write` scope) |
-| Multi-bank cross-network NPT routing | Payments 1.1.0 | Cross-bank alias resolution |
+| Cross-gateway identity federation | Identity 1.1.0 | Gateway-to-gateway handle discovery without central registry |
 | Refund API | Payments 1.1.0 | Merchant-initiated refunds |
 | Settlement reporting API | Payments 1.1.0 | Detailed settlement breakdowns |
-| NexusHub Admin UI for OB consents | — | Frontend task (not in spec) |
+| Handle transfer / dispute API | Identity 1.1.0 | Formal bank-mediated dispute mechanism |
