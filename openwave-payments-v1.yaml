@@ -1,0 +1,1423 @@
+openapi: 3.0.3
+
+info:
+  title: OpenWave — Payments & Recurring API
+  description: |
+    # OpenWave Payments API v1.0
+
+    This file covers the **Payments**, **Recurring Mandates**, **Alias**, and **Webhooks**
+    modules of the OpenWave standard.
+
+    For the **Open Banking** module (account data, TPP payment initiation), see
+    `openwave-open-banking-v0.9.yaml`.
+
+    ## Key Concepts
+    - **NPT Alias**: Universal payment alias `username@bank-handle` (e.g. `mtellesy@andalus`)
+    - **Payment Session**: Single payment attempt lifecycle from initiation to confirmation
+    - **Mandate**: Recurring payment authorization granted by a customer to a merchant
+    - **Settlement**: Daily batch settlement from gateway settlement accounts to merchants
+    - **OpenWave Gateway**: Any server implementing this standard (e.g. Neptune Astro)
+
+    ## Authentication
+    - **Merchant API**: `Authorization: Bearer {merchant_api_key}`
+    - **Bank Partner API**: `X-OpenWave-Bank-Key: {bank_api_key}`
+    - **Session API**: `X-Session-Token: {token}` — short-lived, scoped to one payment session
+    - **Webhook Verification**: `X-OpenWave-Signature: sha256={HMAC-SHA256(body, secret)}`
+
+    ## Amounts
+    All monetary amounts are **minor unit integers** (e.g. 50000 = 500.00 LYD).
+    Always include `currency` (ISO 4217) alongside any `amount` field.
+
+    ## Idempotency
+    All write endpoints accept `Idempotency-Key` header. Same key within 24 h returns
+    the original response without re-processing.
+
+  version: "1.0.0"
+  contact:
+    name: OpenWave Standard
+    url: https://github.com/openwave-standard/openwave-spec
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+externalDocs:
+  description: OpenWave Standard GitHub Repository
+  url: https://github.com/openwave-standard/openwave-spec
+
+servers:
+  - url: https://astro.example.com/api/v1
+    description: Neptune Astro Reference Implementation
+  - url: https://{gateway_host}/api/v1
+    description: Any OpenWave-compliant gateway
+    variables:
+      gateway_host:
+        default: astro.example.com
+        description: Your OpenWave gateway host
+
+tags:
+  - name: Payments
+    description: Core payment session lifecycle
+  - name: Recurring
+    description: Mandate-based recurring payments
+  - name: Webhooks
+    description: Webhook event schemas and testing
+  - name: Alias
+    description: NPT alias enrollment and management (Bank Partner API)
+  - name: Status
+    description: Payment and session status polling
+  - name: Banks
+    description: Bank partner registration and connectivity (Bank Partner API)
+
+# =============================================================================
+# PATHS
+# =============================================================================
+
+paths:
+
+  # ---------------------------------------------------------------------------
+  # PAYMENTS — Merchant API
+  # ---------------------------------------------------------------------------
+
+  /payments/initiate:
+    post:
+      tags: [Payments]
+      summary: Initiate a payment session
+      description: |
+        Creates a new payment session. Returns a `payment_url` that the merchant
+        opens in a webview (or redirects the customer to). The customer completes
+        authentication (OTP or push notification) inside that URL.
+      operationId: initiatePayment
+      security:
+        - MerchantApiKey: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentInitiateRequest'
+            examples:
+              alias_payment:
+                summary: Pay via NPT alias
+                value:
+                  payer_alias: "mtellesy@andalus"
+                  amount: 50000
+                  currency: "LYD"
+                  description: "Order #1042"
+                  merchant_reference: "ORD-1042"
+                  redirect_url: "https://myshop.ly/checkout/return"
+                  cancel_url: "https://myshop.ly/checkout/cancel"
+              iban_payment:
+                summary: Pay via IBAN
+                value:
+                  payer_iban: "LY83002700100020200590"
+                  amount: 50000
+                  currency: "LYD"
+                  description: "Order #1042"
+                  merchant_reference: "ORD-1042"
+                  redirect_url: "https://myshop.ly/checkout/return"
+      responses:
+        '201':
+          description: Payment session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentInitiateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /payments/{session_id}:
+    get:
+      tags: [Payments]
+      summary: Get payment session status
+      description: Poll the current status of a payment session.
+      operationId: getPaymentStatus
+      security:
+        - MerchantApiKey: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Payment session details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentStatusResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /payments/{session_id}/cancel:
+    post:
+      tags: [Payments]
+      summary: Cancel a pending payment session
+      description: |
+        Cancels a payment session that has not yet been confirmed.
+        Only sessions in `PENDING`, `OTP_SENT`, or `PUSH_SENT` status can be cancelled.
+      operationId: cancelPayment
+      security:
+        - MerchantApiKey: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Session cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentStatusResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  # ---------------------------------------------------------------------------
+  # SESSION API — Customer-facing (SDK webview, session-scoped token)
+  # ---------------------------------------------------------------------------
+
+  /session/{session_id}:
+    get:
+      tags: [Payments]
+      summary: Load payment session details (SDK/webview)
+      description: Returns payment details for display to the customer inside the payment webview.
+      operationId: getSession
+      security:
+        - SessionToken: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Session details for payer display
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionDetailsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '410':
+          $ref: '#/components/responses/Gone'
+
+  /session/{session_id}/resolve-payer:
+    post:
+      tags: [Payments]
+      summary: Resolve payer identity and available auth methods
+      description: |
+        Given a payer IBAN or NPT alias, resolves the bank, masked account details,
+        and available authentication methods for this payer.
+      operationId: resolvePayer
+      security:
+        - SessionToken: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolvePayerRequest'
+      responses:
+        '200':
+          description: Payer resolved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResolvePayerResponse'
+        '404':
+          description: Alias or IBAN not found in this gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /session/{session_id}/select-auth:
+    post:
+      tags: [Payments]
+      summary: Select authentication method and trigger challenge
+      description: |
+        Customer selects OTP or push notification. Gateway sends the challenge immediately.
+      operationId: selectAuth
+      security:
+        - SessionToken: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SelectAuthRequest'
+      responses:
+        '200':
+          description: Challenge sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SelectAuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /session/{session_id}/confirm-otp:
+    post:
+      tags: [Payments]
+      summary: Submit OTP code to confirm payment
+      description: |
+        Verifies the OTP entered by the customer. On success, triggers deduction
+        and returns final payment status.
+      operationId: confirmOtp
+      security:
+        - SessionToken: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmOtpRequest'
+      responses:
+        '200':
+          description: OTP verified — payment confirmed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentStatusResponse'
+        '400':
+          description: Invalid or expired OTP
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /session/{session_id}/push-status:
+    get:
+      tags: [Payments]
+      summary: Poll push notification approval status
+      description: |
+        Used by the webview to poll whether the customer has approved or rejected
+        the push notification in their banking app.
+      operationId: getPushStatus
+      security:
+        - SessionToken: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Push status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PushStatusResponse'
+
+  # ---------------------------------------------------------------------------
+  # RECURRING MANDATES — Merchant API
+  # ---------------------------------------------------------------------------
+
+  /recurring/mandates:
+    post:
+      tags: [Recurring]
+      summary: Create a recurring mandate (request customer consent)
+      description: |
+        Creates a mandate and returns a `consent_url` the merchant directs the customer to.
+        The customer reviews and authenticates to grant consent. The mandate becomes ACTIVE
+        after successful consent.
+      operationId: createMandate
+      security:
+        - MerchantApiKey: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMandateRequest'
+      responses:
+        '201':
+          description: Mandate created, awaiting customer consent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MandateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+    get:
+      tags: [Recurring]
+      summary: List mandates for this merchant
+      operationId: listMandates
+      security:
+        - MerchantApiKey: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/MandateStatus'
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: List of mandates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MandateListResponse'
+
+  /recurring/mandates/{mandate_id}:
+    get:
+      tags: [Recurring]
+      summary: Get mandate details
+      operationId: getMandate
+      security:
+        - MerchantApiKey: []
+      parameters:
+        - $ref: '#/components/parameters/MandateId'
+      responses:
+        '200':
+          description: Mandate details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MandateResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Recurring]
+      summary: Cancel a mandate (merchant-initiated)
+      description: Cancels an ACTIVE mandate. Customer is notified via webhook.
+      operationId: cancelMandate
+      security:
+        - MerchantApiKey: []
+      parameters:
+        - $ref: '#/components/parameters/MandateId'
+      responses:
+        '200':
+          description: Mandate cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MandateResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /recurring/mandates/{mandate_id}/charge:
+    post:
+      tags: [Recurring]
+      summary: Execute a charge against an active mandate
+      description: |
+        Triggers a payment against an ACTIVE mandate. No re-authentication required —
+        the mandate consent covers this charge provided amount ≤ mandate amount_limit.
+        Webhook `mandate.charge.completed` or `mandate.charge.failed` is sent on completion.
+      operationId: chargeMandate
+      security:
+        - MerchantApiKey: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/MandateId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChargeMandateRequest'
+      responses:
+        '202':
+          description: Charge accepted and processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Mandate not ACTIVE or amount exceeds limit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /recurring/mandates/{mandate_id}/charges:
+    get:
+      tags: [Recurring]
+      summary: List all charges for a mandate
+      operationId: listMandateCharges
+      security:
+        - MerchantApiKey: []
+      parameters:
+        - $ref: '#/components/parameters/MandateId'
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: List of charges
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargeListResponse'
+
+  # ---------------------------------------------------------------------------
+  # WEBHOOKS — Merchant API
+  # ---------------------------------------------------------------------------
+
+  /webhooks/test:
+    post:
+      tags: [Webhooks]
+      summary: Send a test webhook to the merchant's configured endpoint
+      description: |
+        Sends a sample `payment.completed` webhook to the merchant's configured
+        `webhook_url`. Useful for verifying endpoint reachability and signature validation.
+      operationId: testWebhook
+      security:
+        - MerchantApiKey: []
+      responses:
+        '200':
+          description: Test webhook dispatched
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  delivered:
+                    type: boolean
+                  http_status:
+                    type: integer
+                  response_time_ms:
+                    type: integer
+
+  # ---------------------------------------------------------------------------
+  # ALIAS — Bank Partner API
+  # ---------------------------------------------------------------------------
+
+  /alias/enroll:
+    post:
+      tags: [Alias]
+      summary: Enroll a customer NPT alias (bank-initiated)
+      description: |
+        Called by a bank to register a customer's NPT alias in the OpenWave gateway.
+        The alias format will be `{alias_username}@{bank_handle}`.
+        Authenticated using the bank's partner API key.
+      operationId: enrollAlias
+      security:
+        - BankPartnerKey: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollAliasRequest'
+      responses:
+        '201':
+          description: Alias enrolled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AliasResponse'
+        '409':
+          description: Alias already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /alias/{alias}:
+    get:
+      tags: [Alias]
+      summary: Lookup alias details
+      description: Returns the enrolled accounts for an alias. Masked for privacy.
+      operationId: lookupAlias
+      security:
+        - BankPartnerKey: []
+      parameters:
+        - name: alias
+          in: path
+          required: true
+          description: Full alias e.g. `mtellesy@andalus`
+          schema:
+            type: string
+            example: mtellesy@andalus
+      responses:
+        '200':
+          description: Alias found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AliasResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Alias]
+      summary: Deactivate an alias
+      operationId: deactivateAlias
+      security:
+        - BankPartnerKey: []
+      parameters:
+        - name: alias
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Alias deactivated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AliasResponse'
+
+  /alias/{alias}/default-account:
+    patch:
+      tags: [Alias]
+      summary: Set default account for alias
+      operationId: setDefaultAccount
+      security:
+        - BankPartnerKey: []
+      parameters:
+        - name: alias
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [iban]
+              properties:
+                iban:
+                  type: string
+                  example: LY83002700100020200590
+      responses:
+        '200':
+          description: Default account updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AliasResponse'
+
+  /alias/{alias}/accounts:
+    get:
+      tags: [Alias]
+      summary: List accounts linked to an alias
+      operationId: listAliasAccounts
+      security:
+        - BankPartnerKey: []
+      parameters:
+        - name: alias
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  alias:
+                    type: string
+                  accounts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AliasAccount'
+
+  # ---------------------------------------------------------------------------
+  # BANKS — Bank Partner Registration
+  # ---------------------------------------------------------------------------
+
+  /banks/register:
+    post:
+      tags: [Banks]
+      summary: Register a bank with the OpenWave gateway (Bank Partner API)
+      description: |
+        Registers a bank and its Neptune Core BE endpoint with the gateway.
+        In Neptune Astro, this is done by Astro admin staff. Exposed here as part
+        of the open standard so any compliant gateway can implement it.
+      operationId: registerBank
+      security:
+        - BankPartnerKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterBankRequest'
+      responses:
+        '201':
+          description: Bank registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankResponse'
+
+  /banks/{bank_handle}/test-connection:
+    post:
+      tags: [Banks]
+      summary: Test connectivity to a registered bank's Neptune Core BE
+      operationId: testBankConnection
+      security:
+        - BankPartnerKey: []
+      parameters:
+        - name: bank_handle
+          in: path
+          required: true
+          schema:
+            type: string
+            example: andalus
+      responses:
+        '200':
+          description: Connection test result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reachable:
+                    type: boolean
+                  latency_ms:
+                    type: integer
+                  auth_modes_available:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AuthMode'
+
+# =============================================================================
+# COMPONENTS
+# =============================================================================
+
+components:
+
+  # ---------------------------------------------------------------------------
+  # SECURITY SCHEMES
+  # ---------------------------------------------------------------------------
+
+  securitySchemes:
+    MerchantApiKey:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Merchant API key issued by the OpenWave gateway
+    BankPartnerKey:
+      type: apiKey
+      in: header
+      name: X-OpenWave-Bank-Key
+      description: Bank partner API key issued by the OpenWave gateway
+    SessionToken:
+      type: apiKey
+      in: header
+      name: X-Session-Token
+      description: Short-lived token (15 min) scoped to a single payment session, issued by the gateway when the payment_url is opened
+
+  # ---------------------------------------------------------------------------
+  # PARAMETERS
+  # ---------------------------------------------------------------------------
+
+  parameters:
+    SessionId:
+      name: session_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Payment session UUID
+    MandateId:
+      name: mandate_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema:
+        type: string
+        maxLength: 64
+      description: Optional unique key to make the request idempotent within 24h
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 1
+    LimitParam:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 20
+        maximum: 100
+
+  # ---------------------------------------------------------------------------
+  # SCHEMAS
+  # ---------------------------------------------------------------------------
+
+  schemas:
+
+    # --- Enums ---
+
+    PaymentStatus:
+      type: string
+      enum:
+        - PENDING
+        - OTP_SENT
+        - PUSH_SENT
+        - CONFIRMED
+        - FAILED
+        - EXPIRED
+        - CANCELLED
+      description: Lifecycle status of a payment session
+
+    MandateStatus:
+      type: string
+      enum:
+        - PENDING_CONSENT
+        - ACTIVE
+        - CANCELLED
+        - SUSPENDED
+        - EXPIRED
+
+    MandateFrequency:
+      type: string
+      enum:
+        - ON_DEMAND
+        - DAILY
+        - WEEKLY
+        - MONTHLY
+
+    AuthMode:
+      type: string
+      enum:
+        - OTP
+        - PUSH
+      description: Authentication method available for this payer
+
+    ChargeStatus:
+      type: string
+      enum:
+        - PROCESSING
+        - COMPLETED
+        - FAILED
+
+    CancelledBy:
+      type: string
+      enum:
+        - CUSTOMER
+        - MERCHANT
+        - BANK
+        - GATEWAY
+
+    # --- Core Payment ---
+
+    PaymentInitiateRequest:
+      type: object
+      required:
+        - amount
+        - currency
+        - description
+        - merchant_reference
+        - redirect_url
+      properties:
+        payer_alias:
+          type: string
+          description: NPT alias of the payer (format `username@bank-handle`). Provide this OR payer_iban.
+          example: mtellesy@andalus
+        payer_iban:
+          type: string
+          description: IBAN of the payer account. Provide this OR payer_alias.
+          example: LY83002700100020200590
+        amount:
+          type: integer
+          format: int64
+          description: Amount in minor units (e.g. 50000 = 500.00 LYD)
+          example: 50000
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          description: ISO 4217 currency code
+          example: LYD
+        description:
+          type: string
+          maxLength: 255
+          description: Payment description shown to the payer
+          example: "Order #1042 — MyShop"
+        merchant_reference:
+          type: string
+          maxLength: 128
+          description: Your internal reference (order ID, invoice number, etc.)
+          example: ORD-1042
+        redirect_url:
+          type: string
+          format: uri
+          description: URL to redirect payer after payment completion or failure
+        cancel_url:
+          type: string
+          format: uri
+          description: URL to redirect payer if they cancel (optional; falls back to redirect_url)
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Optional key-value metadata stored on the session, returned in webhooks
+          example:
+            cart_id: "cart_abc123"
+            customer_email: "customer@example.com"
+
+    PaymentInitiateResponse:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        payment_url:
+          type: string
+          format: uri
+          description: URL to open in SDK webview or redirect the customer to
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+        expires_at:
+          type: string
+          format: date-time
+        merchant_reference:
+          type: string
+
+    PaymentStatusResponse:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+        amount:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        merchant_reference:
+          type: string
+        transfer_reference:
+          type: string
+          description: Bank transfer reference (available when CONFIRMED)
+        astro_fee:
+          type: integer
+          format: int64
+          description: Fee charged by the gateway (minor units)
+        created_at:
+          type: string
+          format: date-time
+        confirmed_at:
+          type: string
+          format: date-time
+          nullable: true
+        metadata:
+          type: object
+          additionalProperties: true
+
+    # --- Session (SDK/Webview) ---
+
+    SessionDetailsResponse:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        merchant_name:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+        expires_at:
+          type: string
+          format: date-time
+        payer_alias:
+          type: string
+          nullable: true
+          description: Pre-filled alias if merchant provided one
+        payer_iban:
+          type: string
+          nullable: true
+          description: Pre-filled IBAN if merchant provided one
+
+    ResolvePayerRequest:
+      type: object
+      properties:
+        payer_alias:
+          type: string
+          example: mtellesy@andalus
+        payer_iban:
+          type: string
+          example: LY83002700100020200590
+
+    ResolvePayerResponse:
+      type: object
+      properties:
+        resolved:
+          type: boolean
+        bank_handle:
+          type: string
+        bank_name:
+          type: string
+        account_name_masked:
+          type: string
+          description: Customer name, partially masked
+          example: "M*** T***"
+        iban_masked:
+          type: string
+          example: "LY83****0590"
+        auth_modes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthMode'
+          description: Authentication methods available for this payer at their bank
+
+    SelectAuthRequest:
+      type: object
+      required: [auth_mode]
+      properties:
+        auth_mode:
+          $ref: '#/components/schemas/AuthMode'
+
+    SelectAuthResponse:
+      type: object
+      properties:
+        auth_mode:
+          $ref: '#/components/schemas/AuthMode'
+        phone_masked:
+          type: string
+          description: Masked phone number OTP was sent to (OTP mode)
+          example: "+218***4521"
+        push_sent_to:
+          type: string
+          description: Masked device description push was sent to (PUSH mode)
+          example: "iPhone 14 (***4521)"
+        otp_expires_in_seconds:
+          type: integer
+          description: OTP validity window in seconds
+
+    ConfirmOtpRequest:
+      type: object
+      required: [otp_code]
+      properties:
+        otp_code:
+          type: string
+          minLength: 4
+          maxLength: 8
+          example: "123456"
+
+    PushStatusResponse:
+      type: object
+      properties:
+        push_status:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED, EXPIRED]
+        payment_status:
+          $ref: '#/components/schemas/PaymentStatus'
+
+    # --- Recurring Mandates ---
+
+    CreateMandateRequest:
+      type: object
+      required:
+        - amount_limit
+        - currency
+        - frequency
+        - description
+        - consent_redirect_url
+      properties:
+        payer_alias:
+          type: string
+          example: mtellesy@andalus
+        payer_iban:
+          type: string
+        amount_limit:
+          type: integer
+          format: int64
+          description: Maximum amount per charge in minor units
+          example: 100000
+        currency:
+          type: string
+          example: LYD
+        frequency:
+          $ref: '#/components/schemas/MandateFrequency'
+        description:
+          type: string
+          example: "Monthly subscription — Premium Plan"
+        consent_redirect_url:
+          type: string
+          format: uri
+          description: URL to redirect customer after granting or declining consent
+        merchant_reference:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+
+    MandateResponse:
+      type: object
+      properties:
+        mandate_id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/MandateStatus'
+        payer_alias:
+          type: string
+          nullable: true
+        payer_iban_masked:
+          type: string
+          nullable: true
+        amount_limit:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        frequency:
+          $ref: '#/components/schemas/MandateFrequency'
+        description:
+          type: string
+        consent_url:
+          type: string
+          format: uri
+          nullable: true
+          description: Present to customer when status is PENDING_CONSENT
+        consented_at:
+          type: string
+          format: date-time
+          nullable: true
+        cancelled_at:
+          type: string
+          format: date-time
+          nullable: true
+        cancelled_by:
+          $ref: '#/components/schemas/CancelledBy'
+          nullable: true
+        merchant_reference:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+
+    MandateListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MandateResponse'
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    ChargeMandateRequest:
+      type: object
+      required: [amount, description]
+      properties:
+        amount:
+          type: integer
+          format: int64
+          description: Amount to charge in minor units (must be ≤ mandate amount_limit)
+          example: 50000
+        description:
+          type: string
+          example: "March subscription charge"
+        merchant_reference:
+          type: string
+
+    ChargeResponse:
+      type: object
+      properties:
+        charge_id:
+          type: string
+          format: uuid
+        mandate_id:
+          type: string
+          format: uuid
+        payment_session_id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/ChargeStatus'
+        amount:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    ChargeListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChargeResponse'
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    # --- Alias ---
+
+    EnrollAliasRequest:
+      type: object
+      required:
+        - alias_username
+        - customer_id
+        - customer_phone
+        - accounts
+      properties:
+        alias_username:
+          type: string
+          description: The username part of the alias (without @bank-handle)
+          pattern: '^[a-z0-9._-]{3,32}$'
+          example: mtellesy
+        customer_id:
+          type: string
+          description: Customer ID in the bank's core banking system
+        customer_phone:
+          type: string
+          description: Masked or full phone for OTP delivery
+          example: "+218912345678"
+        accounts:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/AliasAccountInput'
+
+    AliasAccountInput:
+      type: object
+      required: [iban, currency]
+      properties:
+        iban:
+          type: string
+          example: LY83002700100020200590
+        account_name:
+          type: string
+        currency:
+          type: string
+          example: LYD
+        is_default:
+          type: boolean
+          default: false
+
+    AliasAccount:
+      type: object
+      properties:
+        iban_masked:
+          type: string
+          example: LY83****0590
+        account_name:
+          type: string
+        currency:
+          type: string
+        is_default:
+          type: boolean
+
+    AliasResponse:
+      type: object
+      properties:
+        alias:
+          type: string
+          description: Full alias e.g. mtellesy@andalus
+          example: mtellesy@andalus
+        bank_handle:
+          type: string
+          example: andalus
+        is_active:
+          type: boolean
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AliasAccount'
+        enrolled_at:
+          type: string
+          format: date-time
+
+    # --- Banks ---
+
+    RegisterBankRequest:
+      type: object
+      required:
+        - handle
+        - name
+        - bank_code
+        - core_base_url
+        - settlement_account_iban
+      properties:
+        handle:
+          type: string
+          description: Unique bank identifier used in NPT aliases
+          pattern: '^[a-z0-9-]{2,32}$'
+          example: andalus
+        name:
+          type: string
+          example: Andalus Bank
+        bank_code:
+          type: string
+          description: IBAN bank code (positions 4-7)
+          example: "027"
+        core_base_url:
+          type: string
+          format: uri
+          description: Base URL of the bank's Neptune Core BE (or any OpenWave-compatible core)
+          example: https://api.andalus.ly
+        settlement_account_iban:
+          type: string
+          description: IBAN of the Astro settlement account held at this bank
+          example: LY83002700100099900001
+        auth_modes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthMode'
+          default: [OTP]
+          description: Authentication modes this bank supports
+        fee_type:
+          type: string
+          enum: [PERCENTAGE, FLAT, PERCENTAGE_PLUS_FLAT]
+          default: PERCENTAGE
+        fee_value:
+          type: number
+          format: double
+          description: Fee percentage (e.g. 1.5 for 1.5%) or flat amount in minor units
+          example: 1.5
+        bank_cut_percentage:
+          type: number
+          format: double
+          description: Percentage of Astro fee allocated to the bank (e.g. 30.0 for 30%)
+          example: 30.0
+
+    BankResponse:
+      type: object
+      properties:
+        handle:
+          type: string
+        name:
+          type: string
+        bank_code:
+          type: string
+        auth_modes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthMode'
+        is_active:
+          type: boolean
+        registered_at:
+          type: string
+          format: date-time
+
+    # --- Error ---
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code
+          example: ALIAS_NOT_FOUND
+        message:
+          type: string
+          description: Human-readable error description
+          example: The alias mtellesy@andalus was not found
+        details:
+          type: object
+          additionalProperties: true
+          nullable: true
+
+  # ---------------------------------------------------------------------------
+  # RESPONSES
+  # ---------------------------------------------------------------------------
+
+  responses:
+    BadRequest:
+      description: Invalid request payload or parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Missing or invalid API key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Request conflicts with current state (e.g. already cancelled)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity:
+      description: Request is well-formed but semantically invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Gone:
+      description: Session has expired
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+# =============================================================================
+# WEBHOOK EVENT SCHEMAS (documented separately for reference)
+# =============================================================================
+# Webhooks are POST requests sent by the gateway to merchant's webhook_url.
+# All webhook bodies follow this envelope:
+#
+# {
+#   "event": "payment.completed",          // event type
+#   "gateway": "neptune-astro",            // gateway identifier
+#   "api_version": "1.0.0",
+#   "timestamp": "2026-04-23T20:00:00Z",
+#   "data": { ... }                        // event-specific payload
+# }
+#
+# Webhook Signature:
+#   Header: X-OpenWave-Signature: sha256={hmac_hex}
+#   Computed: HMAC-SHA256(raw_body, merchant_webhook_secret)
+#
+# Event Types:
+#   payment.completed       — payment_session confirmed and deducted
+#   payment.failed          — payment_session failed (OTP wrong, timeout, CBS error)
+#   payment.expired         — session expired without completion
+#   mandate.activated       — customer consented to mandate
+#   mandate.cancelled       — mandate cancelled (any party)
+#   mandate.charge.completed — recurring charge succeeded
+#   mandate.charge.failed   — recurring charge failed
+#   settlement.completed    — daily settlement batch for this merchant completed
+# =============================================================================
