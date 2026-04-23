@@ -18,6 +18,8 @@ info:
 
     ## What is an NPT Handle?
 
+    **NPT** stands for **National Payment Tag**.
+
     An **NPT Handle** is a global payment identity in the format `username` or
     `username@bank-handle`.
 

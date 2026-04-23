@@ -39,7 +39,7 @@ OpenWave is **bank-agnostic and gateway-agnostic by design**. Any institution or
 |:---|:---:|:---:|:---|
 | **Payments** | 1.0.0 | ✅ Stable | Online payment sessions via IBAN or NPT alias |
 | **Recurring Payments** | 1.0.0 | ✅ Stable | Mandate-based recurring charges |
-| **Alias (NPT)** | 1.0.0 | ✅ Stable | Universal payment alias enrollment & resolution |
+| **Alias (NPT — National Payment Tag)** | 1.0.0 | ✅ Stable | Universal payment identity enrollment & resolution |
 | **Webhooks** | 1.0.0 | ✅ Stable | Real-time event notifications with HMAC signature |
 | **Open Banking — AISP** | 1.0.0 | ✅ Stable | Account info, balances, transactions |
 | **Open Banking — PISP** | 1.0.0 | ✅ Stable | TPP-initiated payment orders |
@@ -61,9 +61,9 @@ Both files are valid **OpenAPI 3.0.3** — load them directly into Swagger UI, P
 
 ## Core Concepts
 
-### NPT Identity & Alias
+### NPT — National Payment Tag
 
-An NPT handle is a **global payment identity** — not just an alias for one account. A person owns a username and can link accounts from multiple banks to it.
+An **NPT (National Payment Tag)** handle is a **global payment identity** — not just an alias for one account. A person owns a username and can link accounts from multiple banks to it.
 
 | Format | Resolves to |
 |:---|:---|

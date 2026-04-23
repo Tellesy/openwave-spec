@@ -12,7 +12,7 @@ info:
     `openwave-open-banking-v1.0.yaml`.
 
     ## Key Concepts
-    - **NPT Alias**: Universal payment alias `username@bank-handle` (e.g. `mtellesy@andalus`)
+    - **NPT (National Payment Tag)**: Universal payment identity `username@bank-handle` (e.g. `mtellesy@andalus`)
     - **Payment Session**: Single payment attempt lifecycle from initiation to confirmation
     - **Mandate**: Recurring payment authorization granted by a customer to a merchant
     - **Settlement**: Daily batch settlement from gateway settlement accounts to merchants
