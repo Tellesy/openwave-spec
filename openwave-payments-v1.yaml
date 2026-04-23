@@ -9,14 +9,14 @@ info:
     modules of the OpenWave standard.
 
     For the **Open Banking** module (account data, TPP payment initiation), see
-    `openwave-open-banking-v0.9.yaml`.
+    `openwave-open-banking-v1.0.yaml`.
 
     ## Key Concepts
     - **NPT Alias**: Universal payment alias `username@bank-handle` (e.g. `mtellesy@andalus`)
     - **Payment Session**: Single payment attempt lifecycle from initiation to confirmation
     - **Mandate**: Recurring payment authorization granted by a customer to a merchant
     - **Settlement**: Daily batch settlement from gateway settlement accounts to merchants
-    - **OpenWave Gateway**: Any server implementing this standard (e.g. Neptune Astro)
+    - **OpenWave Gateway**: Any server implementing this standard
 
     ## Authentication
     - **Merchant API**: `Authorization: Bearer {merchant_api_key}`
@@ -45,13 +45,11 @@ externalDocs:
   url: https://github.com/openwave-standard/openwave-spec
 
 servers:
-  - url: https://astro.example.com/api/v1
-    description: Neptune Astro Reference Implementation
   - url: https://{gateway_host}/api/v1
-    description: Any OpenWave-compliant gateway
+    description: Your OpenWave-compliant gateway
     variables:
       gateway_host:
-        default: astro.example.com
+        default: gateway.example.com
         description: Your OpenWave gateway host
 
 tags:
@@ -639,8 +637,7 @@ paths:
       summary: Register a bank with the OpenWave gateway (Bank Partner API)
       description: |
         Registers a bank and its Neptune Core BE endpoint with the gateway.
-        In Neptune Astro, this is done by Astro admin staff. Exposed here as part
-        of the open standard so any compliant gateway can implement it.
+        Exposed here as part of the open standard so any compliant gateway can implement it.
       operationId: registerBank
       security:
         - BankPartnerKey: []
@@ -909,7 +906,7 @@ components:
         transfer_reference:
           type: string
           description: Bank transfer reference (available when CONFIRMED)
-        astro_fee:
+        gateway_fee:
           type: integer
           format: int64
           description: Fee charged by the gateway (minor units)
@@ -1287,11 +1284,11 @@ components:
         core_base_url:
           type: string
           format: uri
-          description: Base URL of the bank's Neptune Core BE (or any OpenWave-compatible core)
+          description: Base URL of the bank's core banking system (any OpenWave-compatible core)
           example: https://api.andalus.ly
         settlement_account_iban:
           type: string
-          description: IBAN of the Astro settlement account held at this bank
+          description: IBAN of the gateway settlement account held at this bank
           example: LY83002700100099900001
         auth_modes:
           type: array
@@ -1401,7 +1398,7 @@ components:
 #
 # {
 #   "event": "payment.completed",          // event type
-#   "gateway": "neptune-astro",            // gateway identifier
+#   "gateway": "openwave-gateway",         // gateway identifier
 #   "api_version": "1.0.0",
 #   "timestamp": "2026-04-23T20:00:00Z",
 #   "data": { ... }                        // event-specific payload

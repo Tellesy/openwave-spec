@@ -96,7 +96,7 @@ Always pair `amount` with a `currency` field (ISO 4217).
 | Bank Partner | Static bank key | `X-OpenWave-Bank-Key: <key>` |
 | Customer session | Short-lived session token | `X-Session-Token: <token>` |
 | TPP (Open Banking) | OAuth 2.0 + PKCE access token | `Authorization: Bearer <token>` |
-| Bank core → gateway | Pre-shared internal key | `X-Astro-Key: <secret>` |
+| Bank core → gateway | Pre-shared internal key | `X-OpenWave-Internal-Key: <secret>` |
 
 ---
 

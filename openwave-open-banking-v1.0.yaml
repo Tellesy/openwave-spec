@@ -160,13 +160,11 @@ externalDocs:
   url: https://github.com/openwave-standard/openwave-spec
 
 servers:
-  - url: https://astro.example.com/api/v1
-    description: Neptune Astro Reference Implementation
   - url: https://{gateway_host}/api/v1
-    description: Any OpenWave-compliant gateway
+    description: Your OpenWave-compliant gateway
     variables:
       gateway_host:
-        default: astro.example.com
+        default: gateway.example.com
         description: Your OpenWave gateway host
 
 tags:
@@ -1596,7 +1594,7 @@ components:
 # All OB webhooks use the same OpenWave envelope as Payments webhooks:
 # {
 #   "event":       "consent.granted",
-#   "gateway":     "neptune-astro",
+#   "gateway":     "openwave-gateway",
 #   "api_version": "1.0.0",
 #   "timestamp":   "2026-04-23T22:00:00Z",
 #   "data": { ... }
