@@ -15,7 +15,7 @@ The **OpenWave Standard** — an open, bank-agnostic payment and open banking sp
 | File | Module | Version | Status |
 |---|---|---|---|
 | `openwave-payments-v1.yaml` | Payments, Recurring, Alias, Webhooks | 1.0.0 | Stable |
-| `openwave-open-banking-v0.9.yaml` | Open Banking (AISP + PISP) | 0.9.0 | Draft |
+| `openwave-open-banking-v1.0.yaml` | Open Banking (AISP + PISP) | 1.0.0 | Stable |
 
 ## Module Status
 
@@ -30,13 +30,22 @@ The **OpenWave Standard** — an open, bank-agnostic payment and open banking sp
 - `POST /alias/enroll`, `GET/DELETE /alias/{alias}`
 - `POST /banks/register`, `POST /banks/{handle}/test-connection`
 
-### Open Banking v0.9 (DRAFT)
-- **TPP Registration**: `POST /ob/tpp/register`
-- **Consent**: `POST /ob/consents`, `GET /ob/consents/{id}`, `DELETE`, `POST /ob/consents/{id}/token`
+### Open Banking v1.0 (STABLE)
+- **TPP Registration**: `POST /ob/tpp/register`, `GET/PATCH /ob/tpp/{client_id}`
+- **Consent**: `POST /ob/consents`, `GET /ob/consents/{id}`, `DELETE /ob/consents/{id}` (revoke)
+- **Token**: `POST /ob/token` (authorization_code + refresh_token grants), `POST /ob/token/revoke`
 - **Accounts (AISP)**: `GET /ob/accounts`, `GET /ob/accounts/{id}`
 - **Balances (AISP)**: `GET /ob/accounts/{id}/balances`
-- **Transactions (AISP)**: `GET /ob/accounts/{id}/transactions`
+- **Transactions (AISP)**: `GET /ob/accounts/{id}/transactions` (paginated, date-filtered, pending support)
 - **Payment Orders (PISP)**: `POST /ob/payment-orders`, `GET /ob/payment-orders/{id}`
+- **Capabilities**: `GET /banks/{handle}/capabilities`
+
+**Key design decisions in spec:**
+- PKCE S256 only (plain rejected)
+- Opaque tokens stored as SHA-256 hashes; access_token 15 min, refresh_token 90 days
+- `X-Consent-Id` required header on all data/payment calls
+- RFC 7009 compliant token revocation
+- 17 typed error codes
 
 ## Key Conventions (enforce in all spec edits)
 - Amounts: **minor unit integers** always (50000 = 500.00 LYD)
@@ -56,12 +65,13 @@ The **OpenWave Standard** — an open, bank-agnostic payment and open banking sp
 
 ## Current State / Last Session (2026-04-23)
 - [x] Payments v1.0.0 spec published (stable)
-- [x] Open Banking v0.9.0 spec published (draft)
+- [x] Open Banking v1.0.0 spec published (stable) — v0.9.0 removed
 - [x] README, CONTRIBUTING, CHANGELOG, LICENSE added
 - [x] Repo created and pushed: https://github.com/Tellesy/openwave-spec (public)
 
 ## Pending / Next Steps
-- [ ] Open Banking v1.0 (after pilot feedback from Neptune Astro implementation)
+- [ ] Neptune Astro implementation of OB v1.0 (Flyway V3 + services + controllers)
+- [ ] Andalus bank internal OB endpoints (/astro/ob/*)
 - [ ] Standing Orders / Variable Recurring Payments (OB v1.1)
 - [ ] Refund API (Payments v1.1)
 - [ ] Multi-bank cross-network NPT routing (Payments v1.1)

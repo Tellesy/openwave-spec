@@ -14,8 +14,8 @@ It enables merchants to accept payments via IBAN or NPT alias, banks to particip
 | **Recurring** | 1.0.0 | ✅ Stable | Mandate-based recurring payments |
 | **Alias** | 1.0.0 | ✅ Stable | NPT alias enrollment and management |
 | **Webhooks** | 1.0.0 | ✅ Stable | Event-driven merchant notifications |
-| **Open Banking** | 0.9.0 | 🚧 Draft | Account data, balances, transactions (PSD2-inspired) |
-| **Open Banking — Payments** | 0.9.0 | 🚧 Draft | TPP-initiated payment orders |
+| **Open Banking** | 1.0.0 | ✅ Stable | Account data, balances, transactions (AISP) |
+| **Open Banking — Payments** | 1.0.0 | ✅ Stable | TPP-initiated payment orders (PISP) |
 
 ---
 
@@ -29,11 +29,26 @@ Inspired by UPI (India) and PromptPay (Thailand). Bank-agnostic by design.
 Any server implementing this standard. The reference implementation is **Neptune Astro** (Kotlin + Spring Boot).  
 → https://github.com/Tellesy/neptune-astro
 
-### Open Banking (Phase 2)
-Inspired by PSD2/UK Open Banking. Allows regulated Third-Party Providers (TPPs) to:
-- Read account information (balances, transactions, account details)
-- Initiate payments on behalf of customers
-- All with explicit, revocable customer consent
+### Open Banking
+Inspired by PSD2/UK Open Banking/SAMA. Allows regulated Third-Party Providers (TPPs) to:
+- Read account information (balances, transactions, account details) — **AISP**
+- Initiate payments on behalf of customers — **PISP**
+- All under explicit, revocable, scope-limited customer consent
+
+**Consent lifecycle:**
+```
+POST /ob/consents      → consent_url (redirect customer)
+customer approves      → bank redirects back with auth_code
+POST /ob/token         → access_token + refresh_token (PKCE verified)
+[API calls]            → Authorization: Bearer {access_token} + X-Consent-Id
+DELETE /ob/consents/id → revoke (customer or TPP)
+```
+
+**Scopes:** `accounts:read`, `balances:read`, `transactions:read`, `payments:write`
+
+**Tokens:** Opaque (not JWT). access_token = 15 min. refresh_token = 90 days, rotated on use. Revocable instantly.
+
+**Bank capabilities:** `GET /banks/{handle}/capabilities` — check which OB scopes a bank supports before creating consents.
 
 ---
 
@@ -42,7 +57,7 @@ Inspired by PSD2/UK Open Banking. Allows regulated Third-Party Providers (TPPs) 
 | File | Description |
 |---|---|
 | [`openwave-payments-v1.yaml`](./openwave-payments-v1.yaml) | Payments, Recurring, Alias, Webhooks — stable |
-| [`openwave-open-banking-v0.9.yaml`](./openwave-open-banking-v0.9.yaml) | Open Banking (Account Info + Payment Initiation) — draft |
+| [`openwave-open-banking-v1.0.yaml`](./openwave-open-banking-v1.0.yaml) | Open Banking — AISP (accounts/balances/transactions) + PISP (payment orders), OAuth 2.0 + PKCE |
 
 Both files are valid **OpenAPI 3.0.3** and can be loaded into Swagger UI, Postman, or any OpenAPI tooling.
 
@@ -98,9 +113,12 @@ Signature verification: `X-OpenWave-Signature: sha256={HMAC-SHA256(raw_body, web
 
 **Open Banking**
 - `consent.granted` — customer approved TPP access
-- `consent.revoked` — customer revoked TPP access
-- `payment_order.completed`
-- `payment_order.failed`
+- `consent.revoked` — revoked by TPP, customer, or bank
+- `consent.expired` — consent passed expiry date
+- `payment_order.completed` — funds transferred
+- `payment_order.failed` — processing error
+- `payment_order.pending_sca` — bank requires SCA
+- `payment_order.rejected` — bank declined
 
 ---
 

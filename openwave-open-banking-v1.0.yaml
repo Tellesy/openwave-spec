@@ -1,0 +1,1617 @@
+openapi: 3.0.3
+
+info:
+  title: OpenWave — Open Banking API
+  description: |
+    # OpenWave Open Banking API v1.0
+
+    This file covers the **Open Banking** module of the OpenWave standard.
+    It enables regulated Third-Party Providers (TPPs) to access customer account
+    data and initiate payments on behalf of customers — with explicit, revocable,
+    scope-limited customer consent.
+
+    Inspired by PSD2 (EU), UK Open Banking, and SAMA Open Banking (Saudi Arabia).
+    Designed for practical deployment in emerging markets without the full complexity
+    of Berlin Group / FAPI 2.0, while maintaining strong security guarantees.
+
+    ---
+
+    ## Roles
+
+    | Role | Abbreviation | Description |
+    |---|---|---|
+    | Account Information Service Provider | AISP | Reads account data (balances, transactions) |
+    | Payment Initiation Service Provider | PISP | Initiates payments from customer accounts |
+    | Bank (Account Servicing PSP) | ASPSP | Holds customer accounts; implements `BankCoreClient` |
+    | Gateway | OpenWave | OAuth authority; routes between TPPs and ASPSPs |
+
+    A TPP may be both AISP and PISP simultaneously.
+
+    ---
+
+    ## Consent Lifecycle
+
+    ```
+    1. TPP → POST /ob/consents              Create consent, get consent_url
+    2. TPP → Redirect customer to consent_url
+    3. Customer authenticates at ASPSP consent screen
+    4. ASPSP → GET {redirect_uri}?code={auth_code}&state={state}&consent_id={id}
+    5. TPP → POST /ob/token                 Exchange auth_code + PKCE for tokens
+    6. TPP → API calls with access_token
+    7. TPP/Customer → DELETE /ob/consents/{id}  Revoke at any time
+    ```
+
+    ### Consent States
+    ```
+    AWAITING_AUTHORISATION → (customer approves) → AUTHORISED
+    AWAITING_AUTHORISATION → (customer rejects)  → REJECTED
+    AUTHORISED             → (TPP/customer revoke) → REVOKED
+    AUTHORISED             → (expiry date passed) → EXPIRED
+    ```
+
+    ---
+
+    ## Authentication
+
+    ### TPP Registration
+    TPPs register with the gateway (admin-reviewed). They receive a `client_id` (public)
+    and `client_secret` (shown once, store securely).
+
+    ### OAuth 2.0 Authorization Code + PKCE
+    ```
+    Step 1: TPP generates code_verifier (random 43-128 chars)
+    Step 2: code_challenge = BASE64URL(SHA256(code_verifier))
+    Step 3: POST /ob/consents { code_challenge, code_challenge_method: "S256", ... }
+    Step 4: Customer redirected to consent_url (includes consent_id + client_id)
+    Step 5: ASPSP redirects back with auth_code (10 min TTL, single-use)
+    Step 6: POST /ob/token { grant_type: "authorization_code", auth_code, code_verifier, ... }
+    Step 7: Gateway verifies: SHA256(code_verifier) == stored code_challenge → issues tokens
+    ```
+
+    ### Token Properties
+    - **access_token**: Opaque UUID, 15 min TTL. Stored as SHA-256 hash server-side.
+    - **refresh_token**: Opaque UUID, 90 day TTL. Stored as SHA-256 hash. Rotated on use.
+    - Tokens are bound to a specific consent. Revoking consent invalidates all tokens instantly.
+    - No JWT — opaque tokens are simpler to revoke and do not leak consent data.
+
+    ### API Authentication
+    All TPP API calls: `Authorization: Bearer {access_token}`
+    Plus: `X-Consent-Id: {consent_id}` header for explicit consent binding and auditability.
+
+    ---
+
+    ## Scopes
+
+    | Scope | Description |
+    |---|---|
+    | `accounts:read` | List accounts and basic details |
+    | `balances:read` | Read account balances |
+    | `transactions:read` | Read transaction history |
+    | `payments:write` | Initiate single payment orders |
+    | `mandates:write` | Create standing payment mandates (future) |
+
+    Scopes are granted at consent time. A token can only access scopes included in its consent.
+
+    ---
+
+    ## Bank Capabilities
+
+    Before creating a consent, TPPs should check which OB scopes a bank supports:
+    `GET /banks/{handle}/capabilities`
+
+    This allows graceful degradation when a bank only supports AISP but not PISP.
+
+    ---
+
+    ## SCA (Strong Customer Authentication)
+
+    For PISP payment orders, the bank may require additional SCA after the initial consent.
+    When required, the `POST /ob/payment-orders` response includes a `sca_url`.
+    The TPP must redirect the customer there. After approval, the order status moves to ACCEPTED.
+
+    SCA exemption is bank-defined via `sca_exemption_limit` in capabilities.
+
+    ---
+
+    ## Amounts
+    All monetary amounts are **minor unit integers** (e.g. 50000 = 500.00 LYD).
+    Always include `currency` (ISO 4217) alongside any `amount` field.
+
+    ---
+
+    ## Idempotency
+    All write endpoints accept `Idempotency-Key` header (max 64 chars).
+    Same key within 24 h returns the original response without re-processing.
+
+    ---
+
+    ## Error Codes
+
+    | Code | HTTP | Description |
+    |---|---|---|
+    | `CONSENT_NOT_FOUND` | 404 | Consent ID does not exist |
+    | `CONSENT_EXPIRED` | 403 | Consent has passed its expiry date |
+    | `CONSENT_REVOKED` | 403 | Consent was revoked by customer or TPP |
+    | `CONSENT_AWAITING_AUTH` | 403 | Consent not yet authorised by customer |
+    | `CONSENT_REJECTED` | 403 | Customer rejected the consent |
+    | `SCOPE_INSUFFICIENT` | 403 | Token scope does not cover this operation |
+    | `ACCOUNT_NOT_COVERED` | 403 | Account not included in consent |
+    | `SCA_REQUIRED` | 202 | Bank requires SCA before order executes |
+    | `INVALID_TOKEN` | 401 | Missing, expired, or revoked access token |
+    | `INVALID_AUTH_CODE` | 400 | auth_code is invalid, expired, or already used |
+    | `PKCE_VERIFICATION_FAILED` | 400 | code_verifier does not match code_challenge |
+    | `TPP_NOT_FOUND` | 404 | client_id not registered |
+    | `TPP_INACTIVE` | 403 | TPP registration has been suspended |
+    | `INVALID_REDIRECT_URI` | 400 | redirect_uri does not match registered URIs |
+    | `PAYMENT_ORDER_NOT_FOUND` | 404 | Payment order ID does not exist |
+    | `BANK_NOT_OB_ENABLED` | 503 | Bank does not support Open Banking |
+    | `BANK_CORE_ERROR` | 502 | Bank core backend returned an error |
+
+  version: "1.0.0"
+  contact:
+    name: OpenWave Standard
+    url: https://github.com/openwave-standard/openwave-spec
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+externalDocs:
+  description: OpenWave Standard Repository
+  url: https://github.com/openwave-standard/openwave-spec
+
+servers:
+  - url: https://astro.example.com/api/v1
+    description: Neptune Astro Reference Implementation
+  - url: https://{gateway_host}/api/v1
+    description: Any OpenWave-compliant gateway
+    variables:
+      gateway_host:
+        default: astro.example.com
+        description: Your OpenWave gateway host
+
+tags:
+  - name: TPP Registration
+    description: Register and manage TPP applications (admin-reviewed)
+  - name: Consent
+    description: Consent lifecycle — create, authorise, token exchange, revoke
+  - name: Token
+    description: OAuth token operations (exchange, refresh, revoke)
+  - name: Accounts
+    description: AISP — account list and details (requires `accounts:read`)
+  - name: Balances
+    description: AISP — account balances (requires `balances:read`)
+  - name: Transactions
+    description: AISP — transaction history (requires `transactions:read`)
+  - name: Payment Orders
+    description: PISP — initiate and track payment orders (requires `payments:write`)
+  - name: Capabilities
+    description: Query which OB features a bank supports
+
+# =============================================================================
+# PATHS
+# =============================================================================
+
+paths:
+
+  # ---------------------------------------------------------------------------
+  # BANK CAPABILITIES — Public
+  # ---------------------------------------------------------------------------
+
+  /banks/{bank_handle}/capabilities:
+    get:
+      tags: [Capabilities]
+      summary: Get bank Open Banking capabilities
+      description: |
+        Returns which payment auth modes and Open Banking scopes a bank supports.
+        TPPs should call this before creating a consent to know which scopes are available.
+        This endpoint is public (no authentication required).
+      operationId: getBankCapabilities
+      parameters:
+        - name: bank_handle
+          in: path
+          required: true
+          schema:
+            type: string
+            example: andalus
+      responses:
+        '200':
+          description: Bank capabilities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankCapabilities'
+              example:
+                bank_handle: andalus
+                bank_name: Andalus Bank
+                payment_auth_modes: [OTP, PUSH]
+                ob_enabled: true
+                ob_scopes_supported:
+                  - accounts:read
+                  - balances:read
+                  - transactions:read
+                  - payments:write
+                sca_exemption_limit: 5000
+                max_consent_expiry_days: 365
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------------------
+  # TPP REGISTRATION — Admin API
+  # ---------------------------------------------------------------------------
+
+  /ob/tpp/register:
+    post:
+      tags: [TPP Registration]
+      summary: Register a Third-Party Provider application
+      description: |
+        Registers a new TPP client with the OpenWave gateway.
+        Returns `client_id` (public) and `client_secret` (shown once — store securely).
+
+        In production this requires manual admin review. The `X-OpenWave-Admin-Key`
+        header must be provided (gateway operator key, not a TPP key).
+      operationId: registerTpp
+      security:
+        - AdminKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterTppRequest'
+      responses:
+        '201':
+          description: TPP registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TppRegistrationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /ob/tpp/{client_id}:
+    get:
+      tags: [TPP Registration]
+      summary: Get TPP registration details
+      operationId: getTpp
+      security:
+        - AdminKey: []
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+      responses:
+        '200':
+          description: TPP details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TppRegistrationResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [TPP Registration]
+      summary: Update TPP registration (redirect URIs, name, active status)
+      operationId: updateTpp
+      security:
+        - AdminKey: []
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTppRequest'
+      responses:
+        '200':
+          description: TPP updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TppRegistrationResponse'
+
+  # ---------------------------------------------------------------------------
+  # CONSENT LIFECYCLE
+  # ---------------------------------------------------------------------------
+
+  /ob/consents:
+    post:
+      tags: [Consent]
+      summary: Create a consent request
+      description: |
+        TPP creates a consent request specifying the scopes needed, the bank,
+        PKCE parameters, and redirect URI. Returns a `consent_url` to redirect
+        the customer to for authorisation.
+
+        The `auth_code` returned after customer authorisation is single-use
+        and expires in **10 minutes**.
+      operationId: createConsent
+      security:
+        - TppClientCredentials: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateConsentRequest'
+            example:
+              client_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+              scopes: [accounts:read, balances:read, transactions:read]
+              bank_handle: andalus
+              redirect_uri: https://myapp.example.com/ob/callback
+              state: csrf-protection-random-value
+              code_challenge: E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM
+              code_challenge_method: S256
+              expiry_days: 90
+      responses:
+        '201':
+          description: Consent request created — redirect customer to `consent_url`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          description: TPP not authorised for requested scopes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ob/consents/{consent_id}:
+    get:
+      tags: [Consent]
+      summary: Get consent status and details
+      operationId: getConsent
+      security:
+        - TppClientCredentials: []
+      parameters:
+        - $ref: '#/components/parameters/ConsentId'
+      responses:
+        '200':
+          description: Consent details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Consent]
+      summary: Revoke consent
+      description: |
+        Revokes an authorised consent. Can be called by the TPP or forwarded
+        from a customer-initiated revocation in their banking app.
+
+        All access tokens and refresh tokens for this consent are immediately
+        invalidated. Subsequent API calls with tokens from this consent will
+        receive `401 INVALID_TOKEN`.
+      operationId: revokeConsent
+      security:
+        - TppOAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ConsentId'
+      responses:
+        '200':
+          description: Consent revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Consent already revoked or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ---------------------------------------------------------------------------
+  # OAUTH TOKEN OPERATIONS
+  # ---------------------------------------------------------------------------
+
+  /ob/token:
+    post:
+      tags: [Token]
+      summary: Exchange authorization code for access + refresh tokens
+      description: |
+        Standard OAuth 2.0 token endpoint supporting two grant types:
+
+        **`authorization_code`** — Exchange the `auth_code` from the consent redirect
+        for an `access_token` and `refresh_token`. Requires PKCE `code_verifier`.
+
+        **`refresh_token`** — Exchange an existing `refresh_token` for a new
+        `access_token` and rotated `refresh_token`. Previous refresh token is
+        immediately invalidated.
+
+        `client_id` and `client_secret` must be provided in the request body
+        (or via HTTP Basic Auth).
+      operationId: exchangeToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRequest'
+            examples:
+              authorization_code:
+                summary: Exchange auth_code for tokens
+                value:
+                  grant_type: authorization_code
+                  client_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                  client_secret: "your-client-secret"
+                  auth_code: "one-time-auth-code-from-redirect"
+                  code_verifier: "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
+                  redirect_uri: "https://myapp.example.com/ob/callback"
+                  consent_id: "consent-uuid-here"
+              refresh_token:
+                summary: Refresh access token
+                value:
+                  grant_type: refresh_token
+                  client_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                  client_secret: "your-client-secret"
+                  refresh_token: "existing-refresh-token"
+      responses:
+        '200':
+          description: Tokens issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          description: Invalid grant (bad code, PKCE mismatch, expired code, wrong redirect)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid client credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ob/token/revoke:
+    post:
+      tags: [Token]
+      summary: Revoke a specific access or refresh token
+      description: |
+        Revokes a single token without revoking the entire consent.
+        If a `refresh_token` is revoked, the corresponding `access_token` is
+        also invalidated. If an `access_token` is revoked, the refresh token
+        remains valid (customer can still get a new access token).
+      operationId: revokeToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRevokeRequest'
+      responses:
+        '200':
+          description: Token revoked (always 200, even if token was not found — RFC 7009)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  revoked:
+                    type: boolean
+                    example: true
+
+  # ---------------------------------------------------------------------------
+  # ACCOUNTS — AISP
+  # ---------------------------------------------------------------------------
+
+  /ob/accounts:
+    get:
+      tags: [Accounts]
+      summary: List accounts covered by this consent
+      description: |
+        Returns all accounts the customer authorised access to under the current
+        consent. Requires `accounts:read` scope.
+
+        If specific accounts were pre-selected at consent creation (`account_ibans`),
+        only those are returned. Otherwise, all accounts the customer approved.
+      operationId: listAccounts
+      security:
+        - TppOAuth: [accounts:read]
+      parameters:
+        - $ref: '#/components/parameters/ConsentHeader'
+      responses:
+        '200':
+          description: Account list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /ob/accounts/{account_id}:
+    get:
+      tags: [Accounts]
+      summary: Get single account details
+      operationId: getAccount
+      security:
+        - TppOAuth: [accounts:read]
+      parameters:
+        - $ref: '#/components/parameters/AccountId'
+        - $ref: '#/components/parameters/ConsentHeader'
+      responses:
+        '200':
+          description: Account details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------------------
+  # BALANCES — AISP
+  # ---------------------------------------------------------------------------
+
+  /ob/accounts/{account_id}/balances:
+    get:
+      tags: [Balances]
+      summary: Get account balances
+      description: |
+        Returns `CURRENT`, `AVAILABLE`, and `PENDING` balances for the account.
+        Requires `balances:read` scope.
+        The account must be covered by the active consent.
+      operationId: getBalances
+      security:
+        - TppOAuth: [balances:read]
+      parameters:
+        - $ref: '#/components/parameters/AccountId'
+        - $ref: '#/components/parameters/ConsentHeader'
+      responses:
+        '200':
+          description: Account balances
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancesResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------------------
+  # TRANSACTIONS — AISP
+  # ---------------------------------------------------------------------------
+
+  /ob/accounts/{account_id}/transactions:
+    get:
+      tags: [Transactions]
+      summary: Get transaction history
+      description: |
+        Returns paginated transaction history for an account.
+        Requires `transactions:read` scope.
+
+        **Date filtering**: Use `from_booking_date` and `to_booking_date` (ISO 8601 date).
+        Date range is limited to the consent's authorised period.
+
+        **Pending transactions**: Include unposted transactions with `include_pending=true`.
+        Pending transactions have `status: PENDING` and no `booking_date`.
+
+        Results are ordered by `booking_date` descending (most recent first).
+      operationId: getTransactions
+      security:
+        - TppOAuth: [transactions:read]
+      parameters:
+        - $ref: '#/components/parameters/AccountId'
+        - $ref: '#/components/parameters/ConsentHeader'
+        - name: from_booking_date
+          in: query
+          schema:
+            type: string
+            format: date
+            example: "2026-01-01"
+          description: Start booking date (inclusive). Defaults to 90 days ago.
+        - name: to_booking_date
+          in: query
+          schema:
+            type: string
+            format: date
+            example: "2026-04-23"
+          description: End booking date (inclusive). Defaults to today.
+        - name: include_pending
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Include pending (unposted) transactions
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Transaction list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionListResponse'
+        '400':
+          description: Invalid date range or parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # ---------------------------------------------------------------------------
+  # PAYMENT ORDERS — PISP
+  # ---------------------------------------------------------------------------
+
+  /ob/payment-orders:
+    post:
+      tags: [Payment Orders]
+      summary: Initiate a payment order
+      description: |
+        Creates a payment order from the customer's account to a beneficiary.
+        Requires `payments:write` scope.
+
+        The `debtor_iban` must be covered by the active consent.
+
+        **SCA behaviour:**
+        - If the bank requires Strong Customer Authentication for this payment
+          (amount above `sca_exemption_limit`, first use of PISP, etc.), the
+          response status will be `PENDING_SCA` and a `sca_url` is returned.
+        - The TPP must redirect the customer to `sca_url`. After approval, the
+          order transitions to `ACCEPTED` → `COMPLETED`.
+        - If SCA is not required, order transitions directly to `ACCEPTED`.
+
+        **Scheduled payments:**
+        - Include `scheduled_date` (future date) to schedule a payment.
+        - Scheduled payments are not executed until that date.
+
+        Webhook `payment_order.completed` or `payment_order.failed` is sent on completion.
+      operationId: createPaymentOrder
+      security:
+        - TppOAuth: [payments:write]
+      parameters:
+        - $ref: '#/components/parameters/ConsentHeader'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentOrderRequest'
+            examples:
+              immediate:
+                summary: Immediate payment
+                value:
+                  debtor_iban: LY83002700100020200590
+                  creditor_iban: LY83002700100099900001
+                  creditor_name: Landlord Properties LLC
+                  amount: 150000
+                  currency: LYD
+                  description: Rent April 2026
+                  merchant_reference: RENT-2026-04
+              scheduled:
+                summary: Scheduled future payment
+                value:
+                  debtor_iban: LY83002700100020200590
+                  creditor_iban: LY83002700100099900001
+                  creditor_name: Internet Provider Co
+                  amount: 25000
+                  currency: LYD
+                  description: Monthly internet subscription
+                  scheduled_date: "2026-05-01"
+      responses:
+        '201':
+          description: Payment order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentOrderResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          description: Insufficient funds or invalid IBAN
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ob/payment-orders/{order_id}:
+    get:
+      tags: [Payment Orders]
+      summary: Get payment order status
+      operationId: getPaymentOrder
+      security:
+        - TppOAuth: [payments:write]
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Payment order UUID
+        - $ref: '#/components/parameters/ConsentHeader'
+      responses:
+        '200':
+          description: Payment order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentOrderResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+# =============================================================================
+# COMPONENTS
+# =============================================================================
+
+components:
+
+  # ---------------------------------------------------------------------------
+  # SECURITY SCHEMES
+  # ---------------------------------------------------------------------------
+
+  securitySchemes:
+    TppOAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Opaque access token
+      description: |
+        Opaque access token issued after OAuth 2.0 consent flow.
+        Short-lived (15 min). Use `POST /ob/token` with `refresh_token` grant to renew.
+    TppClientCredentials:
+      type: http
+      scheme: bearer
+      bearerFormat: client_id:client_secret (Base64)
+      description: |
+        HTTP Basic auth using `client_id` as username and `client_secret` as password.
+        Used for consent management operations (create, get) that do not require
+        a user-scoped token.
+    AdminKey:
+      type: apiKey
+      in: header
+      name: X-OpenWave-Admin-Key
+      description: Gateway operator admin key — for TPP registration management only
+
+  # ---------------------------------------------------------------------------
+  # PARAMETERS
+  # ---------------------------------------------------------------------------
+
+  parameters:
+    ConsentId:
+      name: consent_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Consent UUID
+    AccountId:
+      name: account_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Account UUID (from `/ob/accounts` list response)
+    ClientId:
+      name: client_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: TPP client UUID
+    ConsentHeader:
+      name: X-Consent-Id
+      in: header
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: |
+        Active consent UUID that authorises this request.
+        Must match the consent bound to the access token.
+        Provides an explicit audit trail per consent.
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema:
+        type: string
+        maxLength: 64
+      description: Unique key for idempotent requests (24 h window)
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+    LimitParam:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 20
+        minimum: 1
+        maximum: 100
+
+  # ---------------------------------------------------------------------------
+  # SCHEMAS
+  # ---------------------------------------------------------------------------
+
+  schemas:
+
+    # --- Enums ---
+
+    ConsentStatus:
+      type: string
+      enum:
+        - AWAITING_AUTHORISATION
+        - AUTHORISED
+        - REJECTED
+        - REVOKED
+        - EXPIRED
+      description: |
+        - AWAITING_AUTHORISATION: Created, customer not yet redirected or not yet approved
+        - AUTHORISED: Customer approved, tokens can be issued
+        - REJECTED: Customer declined at bank consent screen
+        - REVOKED: Explicitly revoked by TPP or customer
+        - EXPIRED: Passed expiry_date without being revoked
+
+    PaymentOrderStatus:
+      type: string
+      enum:
+        - PENDING
+        - PENDING_SCA
+        - ACCEPTED
+        - COMPLETED
+        - REJECTED
+        - FAILED
+        - SCHEDULED
+      description: |
+        - PENDING: Created, awaiting bank processing
+        - PENDING_SCA: Bank requires Strong Customer Authentication (sca_url provided)
+        - ACCEPTED: Bank has accepted; will execute
+        - COMPLETED: Funds transferred successfully
+        - REJECTED: Bank rejected (compliance, limits, etc.)
+        - FAILED: Processing error
+        - SCHEDULED: Waiting for scheduled_date
+
+    TransactionStatus:
+      type: string
+      enum:
+        - BOOKED
+        - PENDING
+      description: |
+        - BOOKED: Posted to account; has booking_date and value_date
+        - PENDING: Not yet posted; no booking_date
+
+    TransactionType:
+      type: string
+      enum:
+        - DEBIT
+        - CREDIT
+
+    BalanceType:
+      type: string
+      enum:
+        - CURRENT
+        - AVAILABLE
+        - PENDING
+      description: |
+        - CURRENT: Ledger balance (posted transactions only)
+        - AVAILABLE: Spendable balance (current minus holds/pending debits + overdraft if any)
+        - PENDING: Total of unposted pending debits
+
+    AccountType:
+      type: string
+      enum:
+        - CURRENT
+        - SAVINGS
+        - LOAN
+        - INVESTMENT
+        - BUSINESS
+
+    AccountStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - DORMANT
+        - FROZEN
+        - CLOSED
+
+    GrantType:
+      type: string
+      enum:
+        - authorization_code
+        - refresh_token
+
+    TokenType:
+      type: string
+      enum:
+        - access_token
+        - refresh_token
+
+    # --- Bank Capabilities ---
+
+    BankCapabilities:
+      type: object
+      properties:
+        bank_handle:
+          type: string
+          example: andalus
+        bank_name:
+          type: string
+          example: Andalus Bank
+        payment_auth_modes:
+          type: array
+          items:
+            type: string
+            enum: [OTP, PUSH]
+          example: [OTP, PUSH]
+        ob_enabled:
+          type: boolean
+          description: Whether this bank supports Open Banking at all
+          example: true
+        ob_scopes_supported:
+          type: array
+          items:
+            type: string
+          description: Which OB scopes this bank's adapter implements
+          example: [accounts:read, balances:read, transactions:read, payments:write]
+        sca_exemption_limit:
+          type: integer
+          format: int64
+          description: |
+            Minor unit threshold below which SCA may be exempted.
+            0 means SCA always required for PISP. Null means bank decides case-by-case.
+          example: 5000
+          nullable: true
+        max_consent_expiry_days:
+          type: integer
+          description: Maximum consent validity period this bank allows
+          example: 365
+
+    # --- TPP Registration ---
+
+    RegisterTppRequest:
+      type: object
+      required: [name, redirect_uris, contact_email, scopes_requested]
+      properties:
+        name:
+          type: string
+          description: Application display name shown on consent screen
+          example: MyFinApp
+        description:
+          type: string
+          example: Personal finance aggregator and payment initiator
+        redirect_uris:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            type: string
+            format: uri
+          description: Allowed redirect URIs — exact match required during consent flow
+          example:
+            - https://myfinapp.example.com/ob/callback
+            - https://myfinapp.example.com/ob/callback-mobile
+        contact_email:
+          type: string
+          format: email
+          example: dev@myfinapp.example.com
+        website:
+          type: string
+          format: uri
+          example: https://myfinapp.example.com
+        scopes_requested:
+          type: array
+          minItems: 1
+          items:
+            type: string
+          description: Scopes this TPP is permitted to request in consents
+          example: [accounts:read, balances:read, transactions:read, payments:write]
+        logo_url:
+          type: string
+          format: uri
+          description: Logo shown on bank consent screen
+          nullable: true
+
+    UpdateTppRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        redirect_uris:
+          type: array
+          items:
+            type: string
+            format: uri
+        contact_email:
+          type: string
+          format: email
+        logo_url:
+          type: string
+          format: uri
+          nullable: true
+        is_active:
+          type: boolean
+          description: Set to false to suspend this TPP
+
+    TppRegistrationResponse:
+      type: object
+      properties:
+        client_id:
+          type: string
+          format: uuid
+          description: Public client identifier — include in all consent requests
+        client_secret:
+          type: string
+          description: Secret for token endpoint. Shown ONCE at registration — store securely.
+          nullable: true
+        name:
+          type: string
+        redirect_uris:
+          type: array
+          items:
+            type: string
+        scopes_allowed:
+          type: array
+          items:
+            type: string
+        is_active:
+          type: boolean
+        registered_at:
+          type: string
+          format: date-time
+
+    # --- Consent ---
+
+    CreateConsentRequest:
+      type: object
+      required: [client_id, scopes, bank_handle, redirect_uri, code_challenge, code_challenge_method]
+      properties:
+        client_id:
+          type: string
+          format: uuid
+          description: TPP client ID
+        scopes:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            enum:
+              - accounts:read
+              - balances:read
+              - transactions:read
+              - payments:write
+              - mandates:write
+          example: [accounts:read, balances:read, transactions:read]
+        bank_handle:
+          type: string
+          description: Target bank (ASPSP) handle
+          example: andalus
+        redirect_uri:
+          type: string
+          format: uri
+          description: Must exactly match one of the TPP's registered redirect URIs
+          example: https://myapp.example.com/ob/callback
+        state:
+          type: string
+          description: CSRF protection value. Returned unchanged in redirect callback.
+          example: random-csrf-state-value
+        code_challenge:
+          type: string
+          description: PKCE challenge — BASE64URL(SHA256(code_verifier))
+          example: E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM
+        code_challenge_method:
+          type: string
+          enum: [S256]
+          default: S256
+          description: Only S256 is supported (plain is not accepted)
+        expiry_days:
+          type: integer
+          default: 90
+          minimum: 1
+          maximum: 365
+          description: Consent validity period in days from authorisation. Bank may cap this.
+        account_ibans:
+          type: array
+          items:
+            type: string
+          description: |
+            Optional — pre-select specific accounts for the customer to approve.
+            If omitted, customer selects accounts at the bank consent screen.
+          example:
+            - LY83002700100020200590
+          nullable: true
+
+    ConsentResponse:
+      type: object
+      properties:
+        consent_id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/ConsentStatus'
+        client_id:
+          type: string
+          format: uuid
+        bank_handle:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        consent_url:
+          type: string
+          format: uri
+          description: Redirect customer to this URL for bank authorisation. Present when AWAITING_AUTHORISATION.
+          nullable: true
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+          description: Date after which the consent expires (set after authorisation)
+        created_at:
+          type: string
+          format: date-time
+        authorised_at:
+          type: string
+          format: date-time
+          nullable: true
+        revoked_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    # --- Token ---
+
+    TokenRequest:
+      type: object
+      required: [grant_type, client_id, client_secret]
+      properties:
+        grant_type:
+          $ref: '#/components/schemas/GrantType'
+        client_id:
+          type: string
+          format: uuid
+        client_secret:
+          type: string
+        auth_code:
+          type: string
+          description: Required for `authorization_code` grant
+        code_verifier:
+          type: string
+          description: PKCE verifier. Required for `authorization_code` grant.
+          minLength: 43
+          maxLength: 128
+        redirect_uri:
+          type: string
+          format: uri
+          description: Must match the URI used in `POST /ob/consents`. Required for `authorization_code` grant.
+        consent_id:
+          type: string
+          format: uuid
+          description: Required for `authorization_code` grant
+        refresh_token:
+          type: string
+          description: Required for `refresh_token` grant
+
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: Opaque access token. TTL 15 minutes.
+        token_type:
+          type: string
+          example: Bearer
+        expires_in:
+          type: integer
+          description: Access token TTL in seconds
+          example: 900
+        refresh_token:
+          type: string
+          description: Opaque refresh token. TTL 90 days. Rotated on each use.
+        refresh_token_expires_in:
+          type: integer
+          description: Refresh token TTL in seconds
+          example: 7776000
+        scope:
+          type: string
+          description: Space-separated list of granted scopes
+          example: "accounts:read balances:read transactions:read"
+        consent_id:
+          type: string
+          format: uuid
+
+    TokenRevokeRequest:
+      type: object
+      required: [client_id, client_secret, token, token_type_hint]
+      properties:
+        client_id:
+          type: string
+          format: uuid
+        client_secret:
+          type: string
+        token:
+          type: string
+          description: The token to revoke
+        token_type_hint:
+          $ref: '#/components/schemas/TokenType'
+          description: Hint to speed up lookup. Use `access_token` or `refresh_token`.
+
+    # --- Accounts ---
+
+    Account:
+      type: object
+      properties:
+        account_id:
+          type: string
+          format: uuid
+          description: Stable account identifier within this gateway
+        iban:
+          type: string
+          example: LY83002700100020200590
+        account_name:
+          type: string
+          example: Mohamed Tellesy — Current Account
+        currency:
+          type: string
+          example: LYD
+        account_type:
+          $ref: '#/components/schemas/AccountType'
+        status:
+          $ref: '#/components/schemas/AccountStatus'
+        bank_handle:
+          type: string
+          example: andalus
+        bank_name:
+          type: string
+          example: Andalus Bank
+        is_default:
+          type: boolean
+          description: Customer's primary account for this bank
+
+    AccountListResponse:
+      type: object
+      properties:
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Account'
+        consent_id:
+          type: string
+          format: uuid
+        total:
+          type: integer
+
+    # --- Balances ---
+
+    Balance:
+      type: object
+      properties:
+        balance_type:
+          $ref: '#/components/schemas/BalanceType'
+        amount:
+          type: integer
+          format: int64
+          description: Balance in minor units. Always ≥ 0 (overdraft shown as 0 available).
+          example: 2500000
+        currency:
+          type: string
+          example: LYD
+        as_of:
+          type: string
+          format: date-time
+          description: Timestamp of when this balance was computed by the bank
+
+    BalancesResponse:
+      type: object
+      properties:
+        account_id:
+          type: string
+          format: uuid
+        iban:
+          type: string
+        balances:
+          type: array
+          items:
+            $ref: '#/components/schemas/Balance'
+          description: Contains CURRENT and AVAILABLE at minimum; PENDING if bank supports it
+
+    # --- Transactions ---
+
+    Transaction:
+      type: object
+      properties:
+        transaction_id:
+          type: string
+          description: Bank's internal transaction reference
+        status:
+          $ref: '#/components/schemas/TransactionStatus'
+        type:
+          $ref: '#/components/schemas/TransactionType'
+        amount:
+          type: integer
+          format: int64
+          description: Transaction amount in minor units (always positive)
+          example: 50000
+        currency:
+          type: string
+          example: LYD
+        description:
+          type: string
+          example: Payment for Order #1042
+        booking_date:
+          type: string
+          format: date
+          nullable: true
+          description: Date transaction was posted to account. Null for PENDING.
+        value_date:
+          type: string
+          format: date
+          nullable: true
+          description: Date funds became available. Null for PENDING.
+        reference:
+          type: string
+          description: Bank transaction reference number
+          nullable: true
+        counterparty_name:
+          type: string
+          nullable: true
+        counterparty_iban:
+          type: string
+          nullable: true
+        balance_after:
+          type: integer
+          format: int64
+          nullable: true
+          description: Account balance after this transaction in minor units (BOOKED only)
+
+    TransactionListResponse:
+      type: object
+      properties:
+        account_id:
+          type: string
+          format: uuid
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+        total:
+          type: integer
+          description: Total matching transactions (for pagination)
+        page:
+          type: integer
+        limit:
+          type: integer
+        from_booking_date:
+          type: string
+          format: date
+        to_booking_date:
+          type: string
+          format: date
+        includes_pending:
+          type: boolean
+
+    # --- Payment Orders ---
+
+    CreatePaymentOrderRequest:
+      type: object
+      required:
+        - debtor_iban
+        - creditor_iban
+        - creditor_name
+        - amount
+        - currency
+        - description
+      properties:
+        debtor_iban:
+          type: string
+          description: Customer's account to debit. Must be covered by active consent.
+          example: LY83002700100020200590
+        creditor_iban:
+          type: string
+          description: Beneficiary account IBAN
+          example: LY83002700100099900001
+        creditor_name:
+          type: string
+          description: Beneficiary name
+          maxLength: 255
+          example: Landlord Properties LLC
+        amount:
+          type: integer
+          format: int64
+          description: Amount in minor units
+          minimum: 1
+          example: 150000
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          example: LYD
+        description:
+          type: string
+          maxLength: 255
+          description: Payment description / purpose
+          example: Rent April 2026
+        merchant_reference:
+          type: string
+          maxLength: 128
+          description: TPP's internal reference for this payment
+          example: RENT-2026-04
+          nullable: true
+        scheduled_date:
+          type: string
+          format: date
+          nullable: true
+          description: Future date to execute payment. If omitted, execute immediately.
+          example: "2026-05-01"
+        metadata:
+          type: object
+          additionalProperties: true
+          nullable: true
+          description: Optional key-value metadata; returned in webhooks
+
+    PaymentOrderResponse:
+      type: object
+      properties:
+        order_id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/PaymentOrderStatus'
+        debtor_iban_masked:
+          type: string
+          example: LY83****0590
+        creditor_iban:
+          type: string
+        creditor_name:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        description:
+          type: string
+        sca_url:
+          type: string
+          format: uri
+          nullable: true
+          description: Redirect customer here for SCA if status is PENDING_SCA
+        transfer_reference:
+          type: string
+          nullable: true
+          description: Bank transfer reference — available when status is COMPLETED
+        merchant_reference:
+          type: string
+          nullable: true
+        scheduled_date:
+          type: string
+          format: date
+          nullable: true
+        consent_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    # --- Error ---
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code (see error codes table in description)
+          example: CONSENT_EXPIRED
+        message:
+          type: string
+          description: Human-readable error description
+          example: The consent has expired. Request a new consent from the customer.
+        details:
+          type: object
+          additionalProperties: true
+          nullable: true
+          description: Additional context for debugging (field errors, etc.)
+
+  # ---------------------------------------------------------------------------
+  # COMMON RESPONSES
+  # ---------------------------------------------------------------------------
+
+  responses:
+    BadRequest:
+      description: Invalid request payload or parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Missing, expired, or revoked access token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: INVALID_TOKEN
+            message: Access token is missing or has expired
+    Forbidden:
+      description: Valid token but insufficient scope or consent does not cover this account
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: SCOPE_INSUFFICIENT
+            message: Token scope does not include balances:read
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Request conflicts with current resource state
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+# =============================================================================
+# WEBHOOK EVENTS — Open Banking
+# =============================================================================
+# All OB webhooks use the same OpenWave envelope as Payments webhooks:
+# {
+#   "event":       "consent.granted",
+#   "gateway":     "neptune-astro",
+#   "api_version": "1.0.0",
+#   "timestamp":   "2026-04-23T22:00:00Z",
+#   "data": { ... }
+# }
+#
+# Signature: X-OpenWave-Signature: sha256={HMAC-SHA256(raw_body, tpp_webhook_secret)}
+#
+# CONSENT EVENTS:
+#   consent.granted           data: { consent_id, tpp_client_id, bank_handle, scopes }
+#   consent.revoked           data: { consent_id, revoked_by: "tpp"|"customer"|"bank", reason? }
+#   consent.expired           data: { consent_id, expired_at }
+#
+# PAYMENT ORDER EVENTS:
+#   payment_order.completed   data: { order_id, consent_id, amount, currency, transfer_reference }
+#   payment_order.failed      data: { order_id, consent_id, reason }
+#   payment_order.pending_sca data: { order_id, consent_id, sca_url }
+#   payment_order.rejected    data: { order_id, consent_id, reason }
+# =============================================================================
