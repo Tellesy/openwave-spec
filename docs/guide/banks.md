@@ -111,6 +111,61 @@ The gateway batches net settlement amounts and calls your core once per settleme
 
 A settlement is a **net credit or debit** to your `settlement_account_iban`. The gateway handles individual customer debits and credits — settlement reconciles the net position between banks.
 
+## LyPay & NAD Integration
+
+To participate in cross-bank OpenWave payments, your bank must be connected to **CBL's National Payment Infrastructure**:
+
+### NAD — National Alias Directory
+
+NAD is the CBL-operated alias registry. Your bank must:
+
+1. **Enroll your customers** in NAD when they activate their alias (NPT handle) — this maps alias → IBAN + institution code
+2. **Keep NAD in sync** — deactivate entries when accounts are closed or aliases are released
+3. **Expose the enrollment callback** so the gateway can trigger NAD enrollment via your bank's OpenWave interface
+
+```http
+POST /openwave/callbacks/v1/alias/enroll
+{
+  "alias": "mtellesy",
+  "account_iban": "LY83002700100099900001",
+  "customer_ref": "CUST-001"
+}
+```
+
+### LyPay — Outbound (Sending)
+
+When your customer pays a merchant at another bank:
+
+1. Gateway instructs your bank to debit the customer
+2. Your bank CBS debits, then initiates a **LyPay transfer** to the creditor IBAN
+3. LyPay routes to the merchant's bank
+4. You receive a LyPay `debit notice` (your RRN) — store this for reconciliation
+
+### LyPay — Inbound (Receiving)
+
+When your merchant customer receives a payment from another bank:
+
+1. CBL LyPay delivers a **credit instruction** to your bank
+2. Your CBS credits the merchant's account
+3. Your bank (or the gateway) fires the **credit confirmation** back to the Astro gateway
+4. Astro updates the session to `COMPLETED` and fires `payment.completed` to the merchant
+
+::: warning Credit confirmation is mandatory
+The Astro gateway will not fire `payment.completed` to the merchant until it receives credit confirmation from your bank. Implement the credit callback promptly — delays here delay merchant fulfillment.
+:::
+
+```http
+POST /openwave/callbacks/v1/payment/credit-confirmed
+{
+  "payment_reference": "LYPAY-REF-001",
+  "session_id": "ops_01HZGV...",
+  "creditor_iban": "LY83002700100099900001",
+  "amount": 50000,
+  "currency": "LYD",
+  "rrn": "20260424-000123"
+}
+```
+
 ## Security Requirements
 
 | Requirement | Detail |

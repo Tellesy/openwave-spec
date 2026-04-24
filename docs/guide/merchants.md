@@ -135,6 +135,35 @@ Authorization: Bearer mk_live_...
 | `alias` with bank | `mtellesy@andalus` | Specific bank routing |
 | `iban` | `LY83002700100099900001` | Direct IBAN |
 
+## How Your Account Gets Credited
+
+When a customer pays you, the money flows differently depending on whether you and the customer bank with the same institution:
+
+| Scenario | What happens | Timing |
+|---|---|---|
+| **Same bank** | Internal CBS book transfer — instant debit and credit | < 1 second |
+| **Different banks** | Customer's bank debits, sends via **CBL LyPay** to your bank, your bank credits | 2–10 seconds |
+
+**You only need to act on `payment.completed`** — this webhook fires only after the credit at your bank is confirmed. Never fulfil an order on `payment.initiated` or `payment.processing` alone.
+
+```json
+{
+  "event": "payment.completed",
+  "data": {
+    "session_id": "ops_01HZGV...",
+    "reference": "order_1042",
+    "settlement_type": "lypay",
+    "creditor_bank": "andalus"
+  }
+}
+```
+
+The `settlement_type` field is `internal` for same-bank payments and `lypay` for cross-bank. Your bank handles the actual credit — the gateway simply confirms it happened and fires this webhook.
+
+::: tip Cross-bank payments are still real-time
+LyPay is a real-time settlement rail. Cross-bank payments typically complete in under 10 seconds — you don't need to poll or wait.
+:::
+
 ## Recurring Payments
 
 Set up a mandate for recurring charges (subscriptions, instalments):

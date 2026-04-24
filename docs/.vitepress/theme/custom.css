@@ -1,20 +1,26 @@
+/* ── Brand tokens ──────────────────────────────────────────────────────────── */
 :root {
   --vp-c-brand-1: #7c3aed;
   --vp-c-brand-2: #6d28d9;
   --vp-c-brand-3: #5b21b6;
-  --vp-c-brand-soft: rgba(124, 58, 237, 0.14);
+  --vp-c-brand-soft: rgba(124, 58, 237, 0.12);
 
   --vp-button-brand-bg: #7c3aed;
   --vp-button-brand-hover-bg: #6d28d9;
   --vp-button-brand-active-bg: #5b21b6;
   --vp-button-brand-border: transparent;
   --vp-button-brand-hover-border: transparent;
+  --vp-button-brand-text: #ffffff;
 
   --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: linear-gradient(135deg, #7c3aed 20%, #06b6d4 80%);
+  --vp-home-hero-name-background: linear-gradient(135deg, #7c3aed 10%, #a855f7 50%, #06b6d4 90%);
 
-  --vp-home-hero-image-background-image: linear-gradient(135deg, #7c3aed33 20%, #06b6d433 80%);
-  --vp-home-hero-image-filter: blur(44px);
+  --vp-home-hero-image-background-image: linear-gradient(135deg, #7c3aed22 0%, #06b6d422 100%);
+  --vp-home-hero-image-filter: blur(56px);
+
+  --ow-cyan: #06b6d4;
+  --ow-purple: #7c3aed;
+  --ow-purple-soft: rgba(124, 58, 237, 0.12);
 }
 
 .dark {
@@ -24,22 +30,22 @@
   --vp-c-brand-soft: rgba(167, 139, 250, 0.14);
 }
 
-/* Feature cards */
+/* ── Feature cards ─────────────────────────────────────────────────────────── */
 .VPFeature {
-  border-radius: 12px !important;
-  transition: transform 0.2s, box-shadow 0.2s;
+  border-radius: 14px !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .VPFeature:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(124, 58, 237, 0.12);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(124, 58, 237, 0.15);
 }
 
-/* Code blocks */
+/* ── Code blocks ───────────────────────────────────────────────────────────── */
 .vp-code-group .tabs label {
   font-family: monospace;
 }
 
-/* Badges in tables */
+/* ── Inline code badges in tables ──────────────────────────────────────────── */
 .vp-doc table td code {
   background: var(--vp-c-brand-soft);
   color: var(--vp-c-brand-1);
@@ -48,10 +54,228 @@
   font-size: 0.85em;
 }
 
-/* Nav logo animation */
+/* ── Nav logo hover ─────────────────────────────────────────────────────────── */
 .VPNavBarTitle .logo {
   transition: transform 0.2s;
 }
 .VPNavBarTitle:hover .logo {
   transform: rotate(-10deg) scale(1.1);
+}
+
+/* ── Stats bar ──────────────────────────────────────────────────────────────── */
+.ow-stats-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0;
+  padding: 2rem 1rem;
+  background: var(--vp-c-bg-soft);
+  border-top: 1px solid var(--vp-c-border);
+  border-bottom: 1px solid var(--vp-c-border);
+  margin: 0 0 2rem;
+}
+.ow-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 2.5rem;
+}
+.ow-stat-num {
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--ow-purple), var(--ow-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+}
+.ow-stat-label {
+  font-size: 0.78rem;
+  color: var(--vp-c-text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 0.3rem;
+  font-weight: 500;
+}
+.ow-stat-div {
+  width: 1px;
+  height: 40px;
+  background: var(--vp-c-border);
+}
+
+/* ── Section wrapper ─────────────────────────────────────────────────────────── */
+.ow-section {
+  max-width: 860px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+/* ── Module cards grid ───────────────────────────────────────────────────────── */
+.ow-modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 1.25rem;
+  max-width: 960px;
+  margin: 1.5rem auto 2.5rem;
+  padding: 0 1.5rem;
+}
+.ow-module-card {
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.ow-module-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 36px rgba(124, 58, 237, 0.12);
+  border-color: var(--vp-c-brand-1);
+}
+.ow-module-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+.ow-module-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--vp-c-text-1);
+  margin-bottom: 0.25rem;
+}
+.ow-module-spec {
+  font-size: 0.78rem;
+  font-family: var(--vp-font-family-mono);
+  color: var(--vp-c-brand-1);
+  margin-bottom: 0.9rem;
+  opacity: 0.85;
+}
+.ow-module-card ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.9rem;
+  color: var(--vp-c-text-2);
+  line-height: 1.75;
+}
+
+/* ── Downloads section ───────────────────────────────────────────────────────── */
+.ow-downloads-section {
+  max-width: 960px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+.ow-downloads-section h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.ow-download-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.25rem;
+}
+.ow-download-card {
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.ow-download-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 36px rgba(124, 58, 237, 0.12);
+  border-color: var(--vp-c-brand-1);
+}
+.ow-dl-icon {
+  font-size: 1.6rem;
+}
+.ow-dl-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--vp-c-text-1);
+}
+.ow-dl-sub {
+  font-size: 0.78rem;
+  font-family: var(--vp-font-family-mono);
+  color: var(--vp-c-text-3);
+  margin-bottom: 0.5rem;
+}
+.ow-dl-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+/* ── Download buttons (home page cards) ──────────────────────────────────────── */
+.ow-dl-btn {
+  display: inline-block;
+  padding: 0.4rem 0.9rem;
+  background: var(--vp-c-brand-1);
+  color: #fff !important;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  transition: background 0.18s ease;
+  white-space: nowrap;
+}
+.ow-dl-btn:hover {
+  background: var(--vp-c-brand-2);
+}
+.ow-dl-btn-ghost {
+  display: inline-block;
+  padding: 0.4rem 0.9rem;
+  background: transparent;
+  color: var(--vp-c-brand-1) !important;
+  border: 1px solid var(--vp-c-brand-1);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  transition: background 0.18s ease, color 0.18s ease;
+  white-space: nowrap;
+}
+.ow-dl-btn-ghost:hover {
+  background: var(--ow-purple-soft);
+}
+
+/* ── Download row (downloads.md inline rows) ─────────────────────────────────── */
+.ow-dl-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 1rem 0 1.75rem;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .ow-stat { padding: 0.5rem 1.2rem; }
+  .ow-stat-div { display: none; }
+  .ow-stats-bar { gap: 0.5rem; }
+  .ow-modules-grid { grid-template-columns: 1fr; }
+  .ow-download-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Custom tip/warning blocks ───────────────────────────────────────────────── */
+.vp-doc .tip code,
+.vp-doc .warning code,
+.vp-doc .info code {
+  border-radius: 4px;
+}
+
+/* ── Hero action button spacing ──────────────────────────────────────────────── */
+.VPHero .actions {
+  gap: 0.6rem;
+}
+
+/* ── Table improvements ──────────────────────────────────────────────────────── */
+.vp-doc table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.vp-doc table th {
+  background: var(--vp-c-bg-soft);
+  font-weight: 600;
 }

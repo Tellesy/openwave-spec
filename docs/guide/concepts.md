@@ -23,14 +23,33 @@ CREATE SESSION          POST /payments/sessions
       ↓
    PENDING              Waiting for customer action
       ↓
-   PROCESSING           Customer authenticated, bank transfer in-flight
+   PROCESSING           Customer authenticated, bank debit in-flight
       ↓
- COMPLETED / FAILED     Final state
+SETTLEMENT_PENDING      Cross-bank only: LyPay routing in progress
       ↓
-   webhook delivered    merchant notified of outcome
+ COMPLETED / FAILED     Final state — credit confirmed at merchant's bank
+      ↓
+   webhook delivered    payment.completed / payment.failed fires here
 ```
 
+::: info SETTLEMENT_PENDING only for cross-bank payments
+Same-bank payments skip `SETTLEMENT_PENDING` and go directly to `COMPLETED` since debit and credit happen atomically within the same CBS. See [Settlement & CBL Infrastructure](/guide/settlement) for full details.
+:::
+
 Sessions expire after a configurable TTL (default 15 minutes). Expired sessions fire a `payment.expired` webhook.
+
+## CBL National Payment Infrastructure
+
+OpenWave cross-bank payments run over Libya's Central Bank (CBL) infrastructure, which has two components:
+
+| Component | Role |
+|---|---|
+| **NAD** (National Alias Directory) | Resolves alias / phone / IBAN → canonical IBAN + bank institution code |
+| **LyPay** (National Transfer Rail) | Moves funds between any two Libyan banks in real time |
+
+When a payment destination is an alias (NPT handle), the gateway first calls NAD to resolve it to an IBAN, then routes the debit instruction via LyPay to the creditor's bank.
+
+> See [Settlement & CBL Infrastructure](/guide/settlement) for the full flow diagram and timing details.
 
 ## Authentication Contexts
 

@@ -49,6 +49,50 @@ externalDocs:
   description: OpenWave Standard GitHub Repository
   url: https://github.com/openwave-standard/openwave-spec
 
+x-settlement:
+  description: >
+    OpenWave payments are settled over the CBL National Payment Infrastructure.
+    The debtor's bank is always responsible for debiting the customer and initiating
+    the interbank transfer. The creditor's bank credits the merchant account.
+    The gateway is informed via callback and fires the merchant webhook.
+  rails:
+    - id: internal
+      name: Internal CBS Transfer
+      description: >
+        Same-bank payment. Debit and credit happen atomically within the bank's
+        core banking system. No interbank rail involved.
+      timing: instant
+    - id: lypay
+      name: CBL LyPay
+      description: >
+        Cross-bank payment. Debtor bank debits customer and sends a LyPay transfer
+        instruction to CBL. CBL routes to creditor bank which credits the merchant.
+        Gateway receives LyPay credit callback and fires payment.completed.
+      timing: real-time (2–10 seconds)
+      operator: Central Bank of Libya (CBL)
+  nad:
+    name: CBL NAD — National Alias Directory
+    description: >
+      Resolves NPT alias, phone number, or NID to canonical IBAN + institution code.
+      Used by the gateway before initiating any LyPay transfer when destination is an alias.
+    operator: Central Bank of Libya (CBL)
+  webhook_timing:
+    payment.completed: >
+      Fires only after credit is confirmed at the merchant's bank — not on debit alone.
+      For SAME_BANK: fires immediately after CBS internal credit.
+      For LYPAY: fires after CBL LyPay credit_notice arrives at the creditor bank.
+    payment.settlement_pending: >
+      Cross-bank (LYPAY) only. Fires when the debtor bank has confirmed the debit and
+      the LyPay transfer instruction is submitted to CBL. The payment is not yet credited
+      to the merchant. Merchants should use this to show an "in progress" state.
+      Payment advances to CONFIRMED (and payment.completed fires) when credit is confirmed.
+    payment.failed: >
+      Fires when LyPay reports status 04 (declined) or 05 (failed), or when session expires.
+  status_codes:
+    lypay_03: completed — credit confirmed
+    lypay_04: declined by creditor bank
+    lypay_05: failed — routing or timeout error
+
 servers:
   - url: https://{gateway_host}/api/v1
     description: Your OpenWave-compliant gateway
@@ -1514,10 +1558,26 @@ components:
         - OTP_SENT
         - PUSH_SENT
         - CONFIRMED
+        - SETTLEMENT_PENDING
         - FAILED
         - EXPIRED
         - CANCELLED
-      description: Lifecycle status of a payment session
+      description: |
+        Lifecycle status of a payment session.
+        - `SETTLEMENT_PENDING`: Debit confirmed at the debtor bank; LyPay transfer
+          is in-flight to the creditor bank. The merchant webhook `payment.settlement_pending`
+          fires at this point. Once the creditor bank confirms credit, status advances to
+          `CONFIRMED` and `payment.completed` fires.
+
+    SettlementType:
+      type: string
+      enum:
+        - SAME_BANK
+        - LYPAY
+      description: |
+        How the payment was settled between debtor and creditor banks.
+        - `SAME_BANK`: Both accounts are at the same bank; settled via internal book transfer.
+        - `LYPAY`: Cross-bank; the debtor bank originated a CBL LyPay transfer to the creditor bank.
 
     MandateStatus:
       type: string
@@ -1649,7 +1709,24 @@ components:
           type: string
         transfer_reference:
           type: string
-          description: Bank transfer reference (available when CONFIRMED)
+          description: Bank transfer reference (available when CONFIRMED or SETTLEMENT_PENDING)
+        settlement_type:
+          $ref: '#/components/schemas/SettlementType'
+          nullable: true
+          description: How the payment was routed between banks (set after auth confirmed)
+        lypay_ref:
+          type: string
+          nullable: true
+          description: LyPay transaction reference (present only when settlement_type is LYPAY)
+        creditor_bank_handle:
+          type: string
+          nullable: true
+          description: Bank handle of the merchant's bank (creditor)
+        settlement_pending_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp when status transitioned to SETTLEMENT_PENDING
         gateway_fee:
           type: integer
           format: int64
@@ -2054,6 +2131,14 @@ components:
           format: double
           description: Percentage of Astro fee allocated to the bank (e.g. 30.0 for 30%)
           example: 30.0
+        lypay_participant_code:
+          type: string
+          nullable: true
+          maxLength: 16
+          description: |
+            CBL LyPay participant/institution code for this bank. Required when the bank
+            is the creditor in a cross-bank LYPAY settlement. Assigned by CBL.
+          example: "ANDB001"
 
     BankResponse:
       type: object
@@ -2153,12 +2238,29 @@ components:
 #   Computed: HMAC-SHA256(raw_body, merchant_webhook_secret)
 #
 # Event Types:
-#   payment.completed       — payment_session confirmed and deducted
-#   payment.failed          — payment_session failed (OTP wrong, timeout, CBS error)
-#   payment.expired         — session expired without completion
-#   mandate.activated       — customer consented to mandate
-#   mandate.cancelled       — mandate cancelled (any party)
-#   mandate.charge.completed — recurring charge succeeded
-#   mandate.charge.failed   — recurring charge failed
-#   settlement.completed    — daily settlement batch for this merchant completed
+#   payment.completed           — debit AND credit both confirmed; payment fully settled
+#   payment.settlement_pending  — debit confirmed at debtor bank; LyPay transfer in-flight
+#                                  to creditor bank (cross-bank only). Fires before
+#                                  payment.completed so merchant can show "processing" state.
+#   payment.failed              — payment_session failed (OTP wrong, timeout, CBS error)
+#   payment.expired             — session expired without completion
+#   mandate.activated           — customer consented to mandate
+#   mandate.cancelled           — mandate cancelled (any party)
+#   mandate.charge.completed    — recurring charge succeeded
+#   mandate.charge.failed       — recurring charge failed
+#   settlement.completed        — daily settlement batch for this merchant completed
+#
+# payment.settlement_pending data fields:
+#   session_id, merchant_reference, amount, currency,
+#   transfer_reference (debit ref at debtor bank),
+#   settlement_type: "LYPAY",
+#   lypay_ref (CBL LyPay transaction ID),
+#   creditor_iban, creditor_bank_handle,
+#   settlement_pending_at
+#
+# payment.completed data fields (enriched):
+#   session_id, merchant_reference, amount, currency,
+#   transfer_reference, settlement_type (SAME_BANK | LYPAY),
+#   lypay_ref (nullable), creditor_iban, creditor_bank_handle,
+#   gateway_fee, confirmed_at
 # =============================================================================

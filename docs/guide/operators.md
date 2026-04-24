@@ -84,6 +84,71 @@ Protocol:
 
 This requires a **cross-gateway routing table** — maintained via the Identity Registry's bank phonebook (`GET /v1/banks`).
 
+## CBL Infrastructure Dependencies
+
+If operating in Libya, your gateway must integrate with CBL's National Payment Infrastructure to enable cross-bank payments.
+
+### NAD Integration
+
+Your gateway calls NAD (National Alias Directory) to resolve alias/phone/NID → IBAN + bank code before routing any LyPay transfer.
+
+```
+alias "mtellesy"  →  NAD lookup  →  { iban: "LY83...", institution: { code: "ABCD" } }
+```
+
+The Nexus reference implementation uses `UniversalLookupService` which queries NAD via the `NadIndividualHandler` / `NadMerchantHandler` strategy pattern. Cache NAD responses (short TTL: 60 seconds) to reduce latency.
+
+### LyPay Outbound
+
+When the gateway instructs a bank to debit a customer for a cross-bank payment:
+
+1. Bank CBS debits customer
+2. Bank sends LyPay transfer instruction to CBL
+3. CBL routes to creditor bank
+4. Creditor bank credits merchant
+
+Your gateway **does not need to call LyPay directly** — the debtor bank handles the LyPay instruction. You instruct the bank via the standard `debit` core callback.
+
+### LyPay Inbound Callback
+
+CBL LyPay (or the creditor bank) sends a credit notification to your gateway when funds land. You must:
+
+1. Register a webhook endpoint with CBL LyPay for your gateway
+2. Handle the `credit_notice` payload
+3. Find the matching session by `payment_reference`
+4. Update session status to `COMPLETED`
+5. Fire `payment.completed` webhook to the merchant
+
+```kotlin
+// Pattern from Nexus LyPayTransactionNotificationService
+when (statusCode) {
+    "03" -> { // completed — credit confirmed
+        session.status = COMPLETED
+        webhookService.fire("payment.completed", session)
+    }
+    "04", "05" -> { // declined / failed
+        session.status = FAILED
+        webhookService.fire("payment.failed", session)
+    }
+}
+```
+
+::: warning Idempotency is critical
+CBL LyPay may send duplicate callbacks on retry. Use the `payment_reference` as an idempotency key — process each reference only once.
+:::
+
+### Settlement Model with LyPay
+
+LyPay handles the **actual money movement** between banks. Your gateway tracks the **logical state** of each payment session. Settlement reconciliation options:
+
+| Model | Description |
+|---|---|
+| **Real-time (gross)** | Each payment triggers one LyPay transfer; no net settlement needed |
+| **Net batch** | Gateway batches obligations; single LyPay transfer per bank per cycle |
+| **Prefunded** | Banks maintain escrow balance at gateway; LyPay only for rebalancing |
+
+The reference Astro implementation uses real-time gross settlement — each confirmed payment maps to one LyPay transfer.
+
 ## Compliance Checklist
 
 - [ ] All spec endpoints implemented with correct HTTP methods and status codes
