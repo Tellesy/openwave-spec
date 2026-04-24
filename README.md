@@ -7,7 +7,7 @@
 **Bank-agnostic · Interoperable · Built for the Libyan Banking Ecosystem**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
-[![Spec](https://img.shields.io/badge/OpenAPI-3.0.3-green.svg)](./openwave-payments-v1.yaml)
+[![Spec](https://img.shields.io/badge/OpenAPI-3.0.3-green.svg)](https://github.com/Tellesy/openwave-spec-v1.yaml)
 [![Status](https://img.shields.io/badge/Payments%20API-v1.0%20Stable-brightgreen.svg)]()
 [![Status](https://img.shields.io/badge/Open%20Banking%20API-v1.0%20Stable-brightgreen.svg)]()
 
@@ -121,7 +121,7 @@ Merchant B ──→ [ Gateway 2 ] ──┘
 
 | Value | Meaning |
 |:---|:---|
-| `50000` | 500.00 LYD |
+| `50000` | 50.000 LYD |
 | `100` | 1.00 USD |
 | `75050` | 750.50 EUR |
 

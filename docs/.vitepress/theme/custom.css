@@ -133,8 +133,14 @@
   border-color: var(--vp-c-brand-1);
 }
 .ow-module-icon {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
+  width: 2rem;
+  height: 2rem;
+  margin-bottom: 0.75rem;
+  color: var(--vp-c-brand-1);
+}
+.ow-module-icon svg {
+  width: 100%;
+  height: 100%;
 }
 .ow-module-title {
   font-size: 1.05rem;
@@ -188,7 +194,14 @@
   border-color: var(--vp-c-brand-1);
 }
 .ow-dl-icon {
-  font-size: 1.6rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--vp-c-brand-1);
+  margin-bottom: 0.15rem;
+}
+.ow-dl-icon svg {
+  width: 100%;
+  height: 100%;
 }
 .ow-dl-title {
   font-size: 1rem;

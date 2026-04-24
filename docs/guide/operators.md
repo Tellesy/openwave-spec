@@ -6,7 +6,7 @@ Any organisation can run an **OpenWave-compliant gateway**. This page covers wha
 
 A gateway is compliant if it:
 
-1. Implements all endpoints defined in [`openwave-payments-v1.yaml`](https://github.com/openwave-standard/openwave-spec/blob/main/openwave-payments-v1.yaml) and [`openwave-open-banking-v1.0.yaml`](https://github.com/openwave-standard/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml)
+1. Implements all endpoints defined in [`openwave-payments-v1.yaml`](https://github.com/Tellesy/openwave-spec/blob/main/openwave-payments-v1.yaml) and [`openwave-open-banking-v1.0.yaml`](https://github.com/Tellesy/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml)
 2. Follows the authentication model specified (API keys, OAuth 2.0 + PKCE for OB)
 3. Delivers webhooks with correct `X-OpenWave-Signature` HMAC signing
 4. Enforces the amount convention (integers, minor units)

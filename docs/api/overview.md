@@ -6,9 +6,9 @@ OpenWave is defined by three OpenAPI 3.0.3 specification files. All are ready to
 
 | File | Covers | Download |
 |:---|:---|:---|
-| `openwave-payments-v1.yaml` | Payments · Recurring · Alias · Webhooks | [View](https://github.com/openwave-standard/openwave-spec/blob/main/openwave-payments-v1.yaml) |
-| `openwave-open-banking-v1.0.yaml` | AISP · PISP · OAuth 2.0 + PKCE Consent | [View](https://github.com/openwave-standard/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml) |
-| `openwave-identity-v1.0.yaml` | NPT Identity · Multi-bank Alias · Bank Phonebook | [View](https://github.com/openwave-standard/openwave-spec/blob/main/openwave-identity-v1.0.yaml) |
+| `openwave-payments-v1.yaml` | Payments · Recurring · Alias · Webhooks | [View](https://github.com/Tellesy/openwave-spec/blob/main/openwave-payments-v1.yaml) |
+| `openwave-open-banking-v1.0.yaml` | AISP · PISP · OAuth 2.0 + PKCE Consent | [View](https://github.com/Tellesy/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml) |
+| `openwave-identity-v1.0.yaml` | NPT Identity · Multi-bank Alias · Bank Phonebook | [View](https://github.com/Tellesy/openwave-spec/blob/main/openwave-identity-v1.0.yaml) |
 
 ## Interactive Explorer
 

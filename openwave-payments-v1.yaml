@@ -30,7 +30,7 @@ info:
     - **Webhook Verification**: `X-OpenWave-Signature: sha256={HMAC-SHA256(body, secret)}`
 
     ## Amounts
-    All monetary amounts are **minor unit integers** (e.g. 50000 = 500.00 LYD).
+    All monetary amounts are **minor unit integers** (e.g. 50000 = 50.000 LYD — LYD has 3 decimal places).
     Always include `currency` (ISO 4217) alongside any `amount` field.
 
     ## Idempotency
@@ -40,14 +40,14 @@ info:
   version: "1.0.0"
   contact:
     name: OpenWave Standard
-    url: https://github.com/openwave-standard/openwave-spec
+    url: https://github.com/Tellesy/openwave-spec
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
 
 externalDocs:
   description: OpenWave Standard GitHub Repository
-  url: https://github.com/openwave-standard/openwave-spec
+  url: https://github.com/Tellesy/openwave-spec
 
 x-settlement:
   description: >
@@ -1640,7 +1640,7 @@ components:
         amount:
           type: integer
           format: int64
-          description: Amount in minor units (e.g. 50000 = 500.00 LYD)
+          description: Amount in minor units (e.g. 50000 = 50.000 LYD — LYD has 3 decimal places)
           example: 50000
         currency:
           type: string

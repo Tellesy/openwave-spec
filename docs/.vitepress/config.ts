@@ -12,7 +12,7 @@ export default defineConfig({
     ['meta', { name: 'theme-color', content: '#7c3aed' }],
     ['meta', { property: 'og:title', content: 'OpenWave — Open Payment Standard' }],
     ['meta', { property: 'og:description', content: 'Bank-agnostic payment & open banking standard built for emerging markets.' }],
-    ['meta', { property: 'og:image', content: 'https://openwave-standard.github.io/openwave-spec/og-preview.png' }],
+    ['meta', { property: 'og:image', content: 'https://Tellesy.github.io/openwave-spec/og-preview.png' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
   ],
 
@@ -23,7 +23,7 @@ export default defineConfig({
     nav: [
       { text: 'Guide', link: '/guide/introduction', activeMatch: '/guide/' },
       { text: 'API Reference', link: '/api/overview', activeMatch: '/api/' },
-      { text: '⬇ Downloads', link: '/downloads' },
+      { text: 'Downloads', link: '/downloads' },
       { text: 'Architecture', link: '/guide/architecture' },
       {
         text: 'Specs',
@@ -31,15 +31,15 @@ export default defineConfig({
           {
             text: 'OpenAPI Files',
             items: [
-              { text: '💳 Payments v1', link: 'https://raw.githubusercontent.com/openwave-standard/openwave-spec/main/openwave-payments-v1.yaml' },
-              { text: '🏛️ Open Banking v1', link: 'https://raw.githubusercontent.com/openwave-standard/openwave-spec/main/openwave-open-banking-v1.0.yaml' },
-              { text: '🪪 Identity v1', link: 'https://raw.githubusercontent.com/openwave-standard/openwave-spec/main/openwave-identity-v1.0.yaml' },
+              { text: 'Payments v1', link: 'https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-payments-v1.yaml' },
+              { text: 'Open Banking v1', link: 'https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-open-banking-v1.0.yaml' },
+              { text: 'Identity v1', link: 'https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-identity-v1.0.yaml' },
             ]
           },
           {
             text: 'Tools',
             items: [
-              { text: 'Swagger Editor', link: 'https://editor.swagger.io/?url=https://raw.githubusercontent.com/openwave-standard/openwave-spec/main/openwave-payments-v1.yaml' },
+              { text: 'Swagger Editor', link: 'https://editor.swagger.io/?url=https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-payments-v1.yaml' },
               { text: 'All Downloads', link: '/downloads' },
             ]
           }
@@ -48,9 +48,9 @@ export default defineConfig({
       {
         text: 'v1.0.0',
         items: [
-          { text: 'Changelog', link: 'https://github.com/openwave-standard/openwave-spec/blob/main/CHANGELOG.md' },
-          { text: 'Contributing', link: 'https://github.com/openwave-standard/openwave-spec/blob/main/CONTRIBUTING.md' },
-          { text: 'GitHub Repo', link: 'https://github.com/openwave-standard/openwave-spec' },
+          { text: 'Changelog', link: 'https://github.com/Tellesy/openwave-spec/blob/main/CHANGELOG.md' },
+          { text: 'Contributing', link: 'https://github.com/Tellesy/openwave-spec/blob/main/CONTRIBUTING.md' },
+          { text: 'GitHub Repo', link: 'https://github.com/Tellesy/openwave-spec' },
         ]
       }
     ],
@@ -64,17 +64,17 @@ export default defineConfig({
             { text: 'What is OpenWave?', link: '/guide/introduction' },
             { text: 'Core Concepts', link: '/guide/concepts' },
             { text: 'NPT — National Payment Tag', link: '/guide/npt' },
-            { text: '🏗️ Architecture & Infrastructure', link: '/guide/architecture' },
+            { text: 'Architecture & Infrastructure', link: '/guide/architecture' },
           ]
         },
         {
           text: 'Integration Guides',
           collapsed: false,
           items: [
-            { text: '🏪 For Merchants', link: '/guide/merchants' },
-            { text: '🏦 For Banks', link: '/guide/banks' },
-            { text: '🔗 For TPPs (Open Banking)', link: '/guide/tpp' },
-            { text: '⚙️ Gateway Operators', link: '/guide/operators' },
+            { text: 'For Merchants', link: '/guide/merchants' },
+            { text: 'For Banks', link: '/guide/banks' },
+            { text: 'For TPPs (Open Banking)', link: '/guide/tpp' },
+            { text: 'Gateway Operators', link: '/guide/operators' },
           ]
         },
         {
@@ -85,15 +85,15 @@ export default defineConfig({
             { text: 'Webhooks', link: '/guide/webhooks' },
             { text: 'Error Codes', link: '/guide/errors' },
             { text: 'Amount Convention', link: '/guide/amounts' },
-            { text: '🏛️ Settlement & CBL Infrastructure', link: '/guide/settlement' },
+            { text: 'Settlement & CBL Infrastructure', link: '/guide/settlement' },
           ]
         },
         {
           text: 'Downloads',
           collapsed: false,
           items: [
-            { text: '⬇ Spec Files & Postman', link: '/downloads' },
-            { text: '📖 Spec Files (raw)', link: '/spec' },
+            { text: 'Spec Files & Postman', link: '/downloads' },
+            { text: 'Spec Files (raw)', link: '/spec' },
           ]
         }
       ],
@@ -103,7 +103,7 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: 'Overview', link: '/api/overview' },
-            { text: '▶ Interactive Explorer', link: '/api/explorer' },
+            { text: 'Interactive Explorer', link: '/api/explorer' },
             { text: 'Payments', link: '/api/payments' },
             { text: 'Alias (NPT)', link: '/api/alias' },
             { text: 'Open Banking', link: '/api/open-banking' },
@@ -120,7 +120,7 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/openwave-standard/openwave-spec' }
+      { icon: 'github', link: 'https://github.com/Tellesy/openwave-spec' }
     ],
 
     footer: {
@@ -129,11 +129,6 @@ export default defineConfig({
     },
 
     search: { provider: 'local' },
-
-    editLink: {
-      pattern: 'https://github.com/openwave-standard/openwave-spec/edit/main/docs/:path',
-      text: 'Edit this page on GitHub'
-    },
 
     lastUpdated: {
       text: 'Last updated',

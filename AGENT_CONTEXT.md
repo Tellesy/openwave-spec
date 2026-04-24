@@ -14,7 +14,7 @@
 2. **VitePress docs site** — published to GitHub Pages
 
 **Path:** `/Users/mtellesy/GitHub/openwave-spec`  
-**GitHub Pages:** `https://openwave-standard.github.io/openwave-spec/`  
+**GitHub Pages:** `https://Tellesy.github.io/openwave-spec/`  
 **Build:** `npm run docs:build` (must pass before every commit)  
 **Dev server:** `npm run docs:dev`  
 **Deploy:** Push to `main` → GitHub Actions → GitHub Pages (`.github/workflows/deploy-docs.yml`)

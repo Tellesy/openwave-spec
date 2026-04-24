@@ -109,7 +109,7 @@ info:
 
 externalDocs:
   description: OpenWave Standard Repository
-  url: https://github.com/openwave-standard/openwave-spec
+  url: https://github.com/Tellesy/openwave-spec
 
 servers:
   - url: https://registry.openwave.ly/v1
@@ -728,8 +728,8 @@ paths:
                 spec_version: "1.0.0"
                 operator: Neptune Fintech
                 operator_url: https://www.neptune.ly
-                governance_charter_url: https://github.com/openwave-standard/openwave-spec/blob/main/GOVERNANCE.md
-                source_code_url: https://github.com/openwave-standard/openwave-identity-registry
+                governance_charter_url: https://github.com/Tellesy/openwave-spec/blob/main/GOVERNANCE.md
+                source_code_url: https://github.com/Tellesy/openwave-identity-registry
                 registered_banks: 4
                 active_identities: 12500
                 uptime_sla: "99.9%"
