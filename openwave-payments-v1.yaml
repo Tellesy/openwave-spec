@@ -70,6 +70,10 @@ tags:
     description: Payment and session status polling
   - name: Banks
     description: Bank partner registration and connectivity (Bank Partner API)
+  - name: Admin
+    description: Admin-only endpoints for merchant management and gateway stats (Admin API key required)
+  - name: Settlement
+    description: Settlement batch reporting and manual trigger (Admin API key required)
 
 # =============================================================================
 # PATHS
@@ -660,6 +664,457 @@ paths:
               schema:
                 $ref: '#/components/schemas/BankResponse'
 
+  /banks:
+    get:
+      tags: [Banks]
+      summary: List all registered banks
+      operationId: listBanks
+      security:
+        - AdminKey: []
+        - BankPartnerKey: []
+      responses:
+        '200':
+          description: List of banks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  banks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BankSummary'
+                  total:
+                    type: integer
+
+  /banks/{bank_handle}:
+    get:
+      tags: [Banks]
+      summary: Get a single bank by handle
+      operationId: getBank
+      security:
+        - AdminKey: []
+        - BankPartnerKey: []
+      parameters:
+        - name: bank_handle
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Bank detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankSummary'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Banks]
+      summary: Update a bank (toggle active status)
+      operationId: updateBank
+      security:
+        - AdminKey: []
+      parameters:
+        - name: bank_handle
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                is_active:
+                  type: boolean
+      responses:
+        '200':
+          description: Updated bank
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankSummary'
+
+  /banks/{bank_handle}/rotate-key:
+    post:
+      tags: [Banks]
+      summary: Rotate the bank API key
+      operationId: rotateBankKey
+      security:
+        - AdminKey: []
+      parameters:
+        - name: bank_handle
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: New API key (shown once only)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyRotateResponse'
+
+  /banks/{bank_handle}/capabilities:
+    get:
+      tags: [Banks]
+      summary: Get a bank's advertised auth modes and Open Banking scopes (public)
+      operationId: getBankCapabilities
+      parameters:
+        - name: bank_handle
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Bank capabilities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankCapabilities'
+
+  # ---------------------------------------------------------------------------
+  # ADMIN — Merchant Management
+  # ---------------------------------------------------------------------------
+
+  /admin/merchants:
+    post:
+      tags: [Admin]
+      summary: Register a merchant
+      operationId: registerMerchant
+      security:
+        - AdminKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterMerchantRequest'
+      responses:
+        '201':
+          description: Merchant registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MerchantRegisteredResponse'
+    get:
+      tags: [Admin]
+      summary: List all merchants
+      operationId: listMerchants
+      security:
+        - AdminKey: []
+      responses:
+        '200':
+          description: Merchant list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  merchants:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MerchantSummary'
+                  total:
+                    type: integer
+
+  /admin/merchants/{merchant_id}:
+    get:
+      tags: [Admin]
+      summary: Get a merchant
+      operationId: getMerchant
+      security:
+        - AdminKey: []
+      parameters:
+        - name: merchant_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Merchant detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MerchantSummary'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Admin]
+      summary: Update a merchant (webhook URL / active status)
+      operationId: updateMerchant
+      security:
+        - AdminKey: []
+      parameters:
+        - name: merchant_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                webhook_url:
+                  type: string
+                  format: uri
+                webhook_secret:
+                  type: string
+                is_active:
+                  type: boolean
+      responses:
+        '200':
+          description: Updated merchant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MerchantSummary'
+
+  /admin/merchants/{merchant_id}/rotate-key:
+    post:
+      tags: [Admin]
+      summary: Rotate the merchant API key
+      operationId: rotateMerchantKey
+      security:
+        - AdminKey: []
+      parameters:
+        - name: merchant_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: New API key (shown once only)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyRotateResponse'
+
+  /admin/stats:
+    get:
+      tags: [Admin]
+      summary: Gateway-wide statistics
+      operationId: getAdminStats
+      security:
+        - AdminKey: []
+      responses:
+        '200':
+          description: Stats snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminStats'
+
+  # ---------------------------------------------------------------------------
+  # ADMIN — Settlement
+  # ---------------------------------------------------------------------------
+
+  /admin/settlements:
+    get:
+      tags: [Settlement]
+      summary: List settlement batches
+      operationId: listSettlements
+      security:
+        - AdminKey: []
+      parameters:
+        - name: bank_handle
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by bank handle
+      responses:
+        '200':
+          description: Settlement batches
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  batches:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SettlementBatchSummary'
+                  total:
+                    type: integer
+
+  /admin/settlements/{batch_id}:
+    get:
+      tags: [Settlement]
+      summary: Get settlement batch detail with line items
+      operationId: getSettlementBatch
+      security:
+        - AdminKey: []
+      parameters:
+        - name: batch_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Batch detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettlementBatchDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /admin/settlements/run:
+    post:
+      tags: [Settlement]
+      summary: Manually trigger settlement for a bank
+      description: |
+        Runs the settlement process for all CONFIRMED unsettled sessions for the given bank.
+        If today's batch already exists and is COMPLETED, returns it without re-running.
+        Normally runs automatically daily at 01:00 UTC.
+      operationId: runSettlement
+      security:
+        - AdminKey: []
+      parameters:
+        - name: bank_handle
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Settlement batch result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettlementBatchSummary'
+
+  # ---------------------------------------------------------------------------
+  # FEE PREVIEW
+  # ---------------------------------------------------------------------------
+
+  /payments/fee:
+    get:
+      tags: [Payments]
+      summary: Preview fee breakdown before initiating a payment
+      operationId: previewFee
+      security:
+        - MerchantApiKey: []
+      parameters:
+        - name: bank_handle
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Bank handle whose fee schedule to use
+        - name: amount
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Amount in minor units
+      responses:
+        '200':
+          description: Fee breakdown
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeBreakdown'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------------------
+  # WEBHOOKS — Delivery Log
+  # ---------------------------------------------------------------------------
+
+  /webhooks:
+    get:
+      tags: [Webhooks]
+      summary: List webhook delivery log for the authenticated merchant
+      operationId: listWebhookDeliveries
+      security:
+        - MerchantApiKey: []
+      responses:
+        '200':
+          description: Delivery log
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deliveries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WebhookDelivery'
+                  total:
+                    type: integer
+
+  /webhooks/session/{session_id}:
+    get:
+      tags: [Webhooks]
+      summary: List webhook deliveries for a specific payment session
+      operationId: listWebhookDeliveriesBySession
+      security:
+        - MerchantApiKey: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Deliveries for session
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deliveries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WebhookDelivery'
+                  total:
+                    type: integer
+
+  /webhooks/{delivery_id}/retry:
+    post:
+      tags: [Webhooks]
+      summary: Force-retry a failed webhook delivery
+      operationId: retryWebhookDelivery
+      security:
+        - MerchantApiKey: []
+      parameters:
+        - name: delivery_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Delivery queued for retry
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  queued:
+                    type: boolean
+                    example: true
+                  delivery_id:
+                    type: string
+                    format: uuid
+
   /banks/{bank_handle}/test-connection:
     post:
       tags: [Banks]
@@ -717,6 +1172,11 @@ components:
       in: header
       name: X-Session-Token
       description: Short-lived token (15 min) scoped to a single payment session, issued by the gateway when the payment_url is opened
+    AdminKey:
+      type: http
+      scheme: bearer
+      bearerFormat: Admin API Key
+      description: Admin API key issued to the gateway operator. Required for bank/merchant registration, key rotation, and settlement management.
 
   # ---------------------------------------------------------------------------
   # PARAMETERS
@@ -765,6 +1225,285 @@ components:
   # ---------------------------------------------------------------------------
 
   schemas:
+
+    # --- Admin / Bank schemas ---
+
+    BankSummary:
+      type: object
+      properties:
+        handle:
+          type: string
+          example: andalus
+        name:
+          type: string
+          example: Andalus Bank
+        bank_code:
+          type: string
+          example: "027"
+        core_type:
+          type: string
+          example: ANDALUS
+        fee_type:
+          type: string
+          enum: [PERCENTAGE, FLAT, PERCENTAGE_PLUS_FLAT]
+        fee_value:
+          type: number
+          example: 1.5
+        flat_fee:
+          type: integer
+          format: int64
+          example: 0
+        bank_cut_percentage:
+          type: number
+          example: 30.0
+        is_active:
+          type: boolean
+        registered_at:
+          type: string
+          format: date-time
+
+    BankCapabilities:
+      type: object
+      properties:
+        bank_handle:
+          type: string
+        bank_name:
+          type: string
+        auth_modes:
+          type: array
+          items:
+            type: string
+          example: [OTP, PUSH]
+        supported_scopes:
+          type: array
+          items:
+            type: string
+          example: [accounts:read, balances:read, transactions:read, payments:write]
+
+    ApiKeyRotateResponse:
+      type: object
+      properties:
+        api_key:
+          type: string
+          description: New API key — store securely, shown once only
+        message:
+          type: string
+          example: Store api_key securely — it will not be shown again.
+
+    RegisterMerchantRequest:
+      type: object
+      required: [name, bank_handle, bank_customer_id, merchant_account_iban]
+      properties:
+        name:
+          type: string
+          example: MyShop
+        bank_handle:
+          type: string
+          example: andalus
+        bank_customer_id:
+          type: string
+          example: C001234
+        merchant_account_iban:
+          type: string
+          example: LY83002700100020200590
+        webhook_url:
+          type: string
+          format: uri
+        webhook_secret:
+          type: string
+
+    MerchantRegisteredResponse:
+      type: object
+      properties:
+        merchant_id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        bank_handle:
+          type: string
+        merchant_account_iban:
+          type: string
+        api_key:
+          type: string
+          description: One-time display only
+        message:
+          type: string
+
+    MerchantSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        bank_handle:
+          type: string
+        bank_customer_id:
+          type: string
+        merchant_account_iban:
+          type: string
+        webhook_url:
+          type: string
+          format: uri
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    AdminStats:
+      type: object
+      properties:
+        merchants_total:
+          type: integer
+          format: int64
+        merchants_active:
+          type: integer
+          format: int64
+        sessions_total:
+          type: integer
+          format: int64
+        generated_at:
+          type: string
+          format: date-time
+
+    FeeBreakdown:
+      type: object
+      properties:
+        bank_handle:
+          type: string
+        gross_amount:
+          type: integer
+          format: int64
+          description: Original payment amount (minor units)
+        astro_fee:
+          type: integer
+          format: int64
+          description: Total gateway fee charged to merchant (minor units)
+        bank_cut:
+          type: integer
+          format: int64
+          description: Bank's share of the fee (minor units)
+        net_amount:
+          type: integer
+          format: int64
+          description: Amount merchant receives after fees (minor units)
+        fee_type:
+          type: string
+          enum: [PERCENTAGE, FLAT, PERCENTAGE_PLUS_FLAT]
+        fee_value:
+          type: number
+        flat_fee:
+          type: integer
+          format: int64
+
+    SettlementBatchSummary:
+      type: object
+      properties:
+        batch_id:
+          type: string
+          format: uuid
+        bank_handle:
+          type: string
+        settlement_date:
+          type: string
+          format: date
+        total_gross:
+          type: integer
+          format: int64
+          description: Sum of all payment amounts (minor units)
+        total_fees:
+          type: integer
+          format: int64
+          description: Sum of all Astro fees (minor units)
+        total_bank_cuts:
+          type: integer
+          format: int64
+        total_net:
+          type: integer
+          format: int64
+          description: Net payout to merchants (minor units)
+        status:
+          type: string
+          enum: [PENDING, PROCESSING, COMPLETED, FAILED]
+        item_count:
+          type: integer
+        executed_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    SettlementItem:
+      type: object
+      properties:
+        payment_session_id:
+          type: string
+          format: uuid
+        merchant_id:
+          type: integer
+          format: int64
+        gross_amount:
+          type: integer
+          format: int64
+        astro_fee:
+          type: integer
+          format: int64
+        bank_cut:
+          type: integer
+          format: int64
+        net_amount:
+          type: integer
+          format: int64
+
+    SettlementBatchDetail:
+      type: object
+      properties:
+        batch:
+          $ref: '#/components/schemas/SettlementBatchSummary'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SettlementItem'
+
+    WebhookDelivery:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        event_type:
+          type: string
+          example: payment.completed
+        status:
+          type: string
+          enum: [PENDING, DELIVERED, FAILED]
+        attempt_count:
+          type: integer
+        last_response_status:
+          type: integer
+          nullable: true
+          example: 200
+        last_attempt_at:
+          type: string
+          format: date-time
+          nullable: true
+        payment_session_id:
+          type: string
+          format: uuid
+          nullable: true
+        mandate_id:
+          type: string
+          format: uuid
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
 
     # --- Enums ---
 
