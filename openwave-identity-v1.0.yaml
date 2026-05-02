@@ -705,6 +705,47 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   # ---------------------------------------------------------------------------
+  # KYC — National ID deduplication (bank-authenticated)
+  # ---------------------------------------------------------------------------
+
+  /admin/customers/lookup/nid/{national_id}:
+    get:
+      tags: [KYC]
+      summary: Lookup existing NPT handle by national ID
+      description: |
+        Allows any registered bank to check whether a customer with a given national ID
+        already has an NPT handle in the registry (from enrollment at another bank).
+
+        **Purpose — cross-bank identity deduplication:** When Bank B wants to enroll a
+        customer that Bank A already enrolled, they use this endpoint to discover the
+        existing NPT handle and reuse it, ensuring one person has one global identity.
+
+        **Non-citizen support (future):** When a customer has no national ID, banks
+        should use an alternative unique identifier (passport number, resident ID, etc.).
+        The system is designed to accommodate this as a future extension.
+      operationId: lookupByNationalId
+      security:
+        - BankApiKey: []
+      parameters:
+        - name: national_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Customer found — returns their existing NPT handle
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NidLookupResponse'
+        '404':
+          description: No customer with this national ID is enrolled yet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ---------------------------------------------------------------------------
   # REGISTRY — Metadata and governance
   # ---------------------------------------------------------------------------
 
@@ -1012,6 +1053,25 @@ components:
         country_scope:
           type: string
         future_operator:
+          type: string
+
+    NidLookupResponse:
+      type: object
+      description: Result of a national-ID-based KYC identity lookup
+      properties:
+        npt_handle:
+          type: string
+          description: The existing NPT username for this national ID (e.g. "mtellesy")
+        national_id:
+          type: string
+        enrolled_banks:
+          type: array
+          items:
+            type: object
+            properties:
+              bank_handle: { type: string }
+              is_active: { type: boolean }
+        customer_phone:
           type: string
 
     ErrorResponse:

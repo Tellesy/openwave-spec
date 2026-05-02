@@ -9,6 +9,15 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added — Identity API
+- `GET /admin/customers/lookup/nid/{national_id}` — KYC-based cross-bank identity deduplication. Banks can check if a customer is already enrolled in the network by national ID, receiving their existing NPT handle. This ensures one person has one global payment identity regardless of how many banks they enroll with.
+- `NidLookupResponse` schema documenting the response shape.
+- Non-citizen support note: the system is designed to accept alternative unique identifiers (passport, resident ID) in future.
+
+### Added — Payments API
+- Mandate `consent_redirect_url` now stored on mandate entity and used post-consent redirect.
+- Customer-facing mandate consent page served at `GET /mandate/{id}/consent?token=...`.
+
 ---
 
 ## Identity Registry API

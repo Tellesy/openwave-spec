@@ -2,14 +2,32 @@
 
 > **For AI agents:** Read this before editing any spec or docs in this project.
 > Master ecosystem map: `/Users/mtellesy/GitHub/nexus.mw/AGENT_CONTEXT.md`
-> Last updated: April 2026
+> Last updated: April 28, 2026
 
 ---
 
 ## What is this project?
 
-**openwave-spec** is the open standard that defines the unified API surface for payments and open banking across the Libyan banking ecosystem. It contains:
+**openwave-spec** is the **open standard** — NOT a product, NOT owned by any bank or vendor. Apache 2.0. Built for Libya, extensible to other emerging markets.
 
+**Critical distinction:**
+- OpenWave = the standard (this repo)
+- Astro (`neptune-astro`) = Neptune's commercial implementation of this standard
+- OpenWave Identity (`openwave-identity`) = the reference implementation of the identity module, future CBL governance
+- NexusMW = bank middleware; in testing = Andalus Bank
+
+**What the standard covers:**
+1. **NPT (National Payment Tag)** — universal alias `username@bank`, globally unique, bank-KYC-backed
+2. **Payments** — session lifecycle: initiate → authenticate → confirm → settle
+3. **Recurring / Mandates** — customer grants merchant recurring charge permission
+4. **Webhooks** — HMAC-signed events (`payment.completed`, `consent.granted`, etc.)
+5. **Open Banking AISP** — TPPs read account data, balances, transactions with customer consent
+6. **Open Banking PISP** — TPPs initiate payments on behalf of customers
+7. **Identity Registry** — global NPT handle ownership, multi-bank multi-IBAN, alias resolution
+
+Settlement runs over **CBL National Payment Infrastructure (LyPay)**.
+
+**Contains:**
 1. **OpenAPI 3.0.3 spec files** — machine-readable, used by all implementations
 2. **VitePress docs site** — published to GitHub Pages
 
@@ -25,7 +43,7 @@
 
 | Project | Path | Relationship |
 |---|---|---|
-| **neptune-astro** | `/Users/mtellesy/GitHub/neptune-astro` | Commercial gateway implementing this standard |
+| **neptune-astro** | `/Users/mtellesy/GitHub/neptune-astro` | Commercial gateway implementing this standard with unified transaction routing |
 | **openwave-identity** | `/Users/mtellesy/GitHub/openwave-identity` | Identity Registry implementing `openwave-identity-v1.0.yaml` |
 | **nexus.mw** | `/Users/mtellesy/GitHub/nexus.mw` | Bank middleware (banks implement the bank callback interface) |
 | **andalus** | `/Users/mtellesy/GitHub/ethaq/andalus` | Andalus Bank backend (implements bank core callbacks) |
