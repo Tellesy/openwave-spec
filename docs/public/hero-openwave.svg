@@ -3,6 +3,10 @@
   <path d="M78 111c14.4-26.3 30.7-39.4 48.8-39.4 13.2 0 21.6 8.2 30 16.4 6.1 5.9 12 11.3 20.4 11.9" stroke="#EB4E4D" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M78 130c14.4-17.9 30.7-26.8 48.8-26.8 13.2 0 21.8 5.6 30.3 11.2 6 4 11.9 7.6 20.1 8.2" stroke="#00A8AE" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
   <text x="220" y="92" fill="#071A2F" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="45" font-weight="830" letter-spacing="-.045em">OpenWave</text>
+  <circle cx="438" cy="83" r="5" fill="#EB4E4D"/>
   <text x="220" y="126" fill="#5F6B7A" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="18" font-weight="650">Open payments and banking</text>
-  <text x="220" y="190" fill="#5F6B7A" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="18" font-weight="700">Developed by Neptune. Fintech</text>
+  <text x="220" y="190" fill="#5F6B7A" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="18" font-weight="650">Developed by</text>
+  <text x="342" y="190" fill="#071A2F" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="18" font-weight="860" letter-spacing="-.035em">Neptune</text>
+  <circle cx="421" cy="186" r="3" fill="#EB4E4D"/>
+  <text x="431" y="190" fill="#071A2F" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="18" font-weight="760" letter-spacing="-.02em">Fintech</text>
 </svg>
