@@ -79,10 +79,71 @@ features:
 ---
 
 <div class="neptune-brand-strip" aria-label="Neptune brand">
-  <div class="neptune-wordmark">Neptune<span>.</span> Fintech</div>
+  <img class="neptune-logo neptune-logo-default" src="/neptune-logo.png" alt="Neptune. Financial Technology And Solutions">
+  <img class="neptune-logo neptune-logo-dark" src="/neptune-logo-light.png" alt="Neptune. Financial Technology And Solutions">
   <p>OpenWave is developed and maintained by Neptune. Fintech as open infrastructure: product-neutral, bank-agnostic, and built for a multi-gateway ecosystem.</p>
   <a href="/guide/architecture">Read the architecture</a>
 </div>
+
+---
+
+<section class="ow-architecture-motion" aria-label="Animated OpenWave architecture">
+  <div class="ow-motion-copy">
+    <p class="ow-eyebrow">Architecture in motion</p>
+    <h2>One standard connects every participant.</h2>
+    <p>Merchants, banks, identity, Open Banking providers, settlement rails, and gateway operators all speak the same OpenWave contract. The animation shows the route without pretending one operator owns the whole network.</p>
+  </div>
+  <div class="ow-network-graphic" aria-hidden="true">
+    <svg viewBox="0 0 920 520" role="img">
+      <defs>
+        <marker id="ow-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+        </marker>
+      </defs>
+      <g class="ow-lines">
+        <path class="ow-flow ow-flow-a" d="M160 155 C290 105 330 105 460 155"></path>
+        <path class="ow-flow ow-flow-b" d="M160 365 C290 415 330 415 460 365"></path>
+        <path class="ow-flow ow-flow-c" d="M460 155 C595 105 635 105 760 155"></path>
+        <path class="ow-flow ow-flow-d" d="M460 365 C595 415 635 415 760 365"></path>
+        <path class="ow-flow ow-flow-e" d="M460 260 C560 260 645 260 760 260"></path>
+        <path class="ow-flow ow-flow-f" d="M460 260 C365 260 260 260 160 260"></path>
+      </g>
+      <g class="ow-node ow-node-merchant" transform="translate(64 116)">
+        <rect width="192" height="78" rx="20"></rect>
+        <text x="96" y="34">Merchant</text>
+        <text class="ow-node-sub" x="96" y="56">sessions + webhooks</text>
+      </g>
+      <g class="ow-node ow-node-tpp" transform="translate(64 326)">
+        <rect width="192" height="78" rx="20"></rect>
+        <text x="96" y="34">TPP / App</text>
+        <text class="ow-node-sub" x="96" y="56">OAuth + PKCE</text>
+      </g>
+      <g class="ow-node ow-node-gateway" transform="translate(328 205)">
+        <rect width="264" height="110" rx="28"></rect>
+        <text x="132" y="45">OpenWave Gateway</text>
+        <text class="ow-node-sub" x="132" y="72">payments, OB, routing</text>
+      </g>
+      <g class="ow-node ow-node-bank" transform="translate(664 116)">
+        <rect width="192" height="78" rx="20"></rect>
+        <text x="96" y="34">Bank CBS</text>
+        <text class="ow-node-sub" x="96" y="56">OTP / push + debit</text>
+      </g>
+      <g class="ow-node ow-node-identity" transform="translate(664 221)">
+        <rect width="192" height="78" rx="20"></rect>
+        <text x="96" y="34">OW Identity</text>
+        <text class="ow-node-sub" x="96" y="56">NPT resolution</text>
+      </g>
+      <g class="ow-node ow-node-rail" transform="translate(664 326)">
+        <rect width="192" height="78" rx="20"></rect>
+        <text x="96" y="34">Settlement Rail</text>
+        <text class="ow-node-sub" x="96" y="56">same-bank or LyPay</text>
+      </g>
+      <circle class="ow-packet ow-packet-a" r="7"></circle>
+      <circle class="ow-packet ow-packet-b" r="7"></circle>
+      <circle class="ow-packet ow-packet-c" r="7"></circle>
+    </svg>
+  </div>
+</section>
 
 ---
 

@@ -156,16 +156,22 @@ body {
   box-shadow: 0 20px 54px rgba(7, 49, 95, 0.07);
 }
 
-.neptune-wordmark {
-  color: var(--vp-c-text-1);
-  font-size: 2rem;
-  line-height: 1;
-  font-weight: 840;
-  letter-spacing: -0.045em;
+.neptune-logo {
+  display: block;
+  width: min(290px, 48vw);
+  height: auto;
 }
 
-.neptune-wordmark span {
-  color: var(--npt-coral);
+.neptune-logo-dark {
+  display: none;
+}
+
+.dark .neptune-logo-default {
+  display: none;
+}
+
+.dark .neptune-logo-dark {
+  display: block;
 }
 
 .neptune-brand-strip p {
@@ -179,6 +185,127 @@ body {
   font-weight: 740;
   text-decoration: none !important;
   white-space: nowrap;
+}
+
+/* ── Architecture animation ───────────────────────────────────────────────── */
+.ow-architecture-motion {
+  max-width: 1120px;
+  margin: 2.5rem auto;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: minmax(260px, 0.72fr) minmax(520px, 1.28fr);
+  gap: 1.5rem;
+  align-items: center;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--vp-c-bg) 80%, var(--vp-c-bg-soft));
+  box-shadow: 0 24px 70px rgba(7, 49, 95, 0.09);
+  overflow: hidden;
+}
+
+.ow-architecture-motion-doc {
+  margin: 1.5rem 0 2rem;
+}
+
+.ow-motion-copy h2 {
+  margin: 0.25rem 0 0.75rem;
+  color: var(--vp-c-text-1);
+  font-size: clamp(1.7rem, 3vw, 2.65rem);
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.ow-motion-copy p:not(.ow-eyebrow) {
+  margin: 0;
+  color: var(--vp-c-text-2);
+  line-height: 1.7;
+}
+
+.ow-network-graphic {
+  min-height: 360px;
+  padding: 1rem;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--vp-c-bg-soft) 78%, transparent), color-mix(in srgb, var(--vp-c-bg) 88%, transparent));
+}
+
+.ow-network-graphic svg {
+  width: 100%;
+  height: auto;
+  color: var(--vp-c-brand-1);
+}
+
+.ow-flow {
+  fill: none;
+  stroke: color-mix(in srgb, var(--vp-c-brand-1) 72%, var(--vp-c-border));
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 10 14;
+  marker-end: url(#ow-arrow);
+  animation: owDash 4.8s linear infinite;
+}
+
+.ow-flow-b,
+.ow-flow-d { animation-delay: -1.2s; }
+.ow-flow-c,
+.ow-flow-e { animation-delay: -2.1s; }
+.ow-flow-f { animation-delay: -3s; }
+
+.ow-node rect {
+  fill: var(--vp-c-bg);
+  stroke: var(--vp-c-border);
+  stroke-width: 2;
+  filter: drop-shadow(0 12px 22px rgba(7, 49, 95, 0.08));
+}
+
+.ow-node-gateway rect {
+  fill: color-mix(in srgb, var(--vp-c-brand-1) 11%, var(--vp-c-bg));
+  stroke: color-mix(in srgb, var(--vp-c-brand-1) 42%, var(--vp-c-border));
+}
+
+.ow-node text {
+  fill: var(--vp-c-text-1);
+  font: 760 18px -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  text-anchor: middle;
+}
+
+.ow-node .ow-node-sub {
+  fill: var(--vp-c-text-2);
+  font-size: 13px;
+  font-weight: 620;
+}
+
+.ow-packet {
+  fill: var(--npt-coral);
+  filter: drop-shadow(0 0 10px rgba(235, 78, 77, 0.38));
+}
+
+.ow-packet-a {
+  offset-path: path("M160 155 C290 105 330 105 460 155 C595 105 635 105 760 155");
+  animation: owPacket 5.6s ease-in-out infinite;
+}
+
+.ow-packet-b {
+  fill: var(--npt-teal);
+  offset-path: path("M160 365 C290 415 330 415 460 365 C595 415 635 415 760 365");
+  animation: owPacket 6.2s ease-in-out infinite -1.4s;
+}
+
+.ow-packet-c {
+  fill: var(--npt-navy);
+  offset-path: path("M760 260 C645 260 560 260 460 260 C365 260 260 260 160 260");
+  animation: owPacket 5.8s ease-in-out infinite -2.6s;
+}
+
+@keyframes owDash {
+  to { stroke-dashoffset: -48; }
+}
+
+@keyframes owPacket {
+  0%, 12% { offset-distance: 0%; opacity: 0; }
+  18%, 82% { opacity: 1; }
+  90%, 100% { offset-distance: 100%; opacity: 0; }
 }
 .ow-stat-label {
   font-size: 0.78rem;
@@ -441,6 +568,28 @@ body {
   }
   .ow-path-grid {
     grid-template-columns: 1fr;
+  }
+
+  .ow-architecture-motion {
+    grid-template-columns: 1fr;
+    padding: 1.25rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+
+  .ow-network-graphic {
+    min-height: unset;
+    padding: 0.65rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ow-flow,
+  .ow-packet {
+    animation: none !important;
+  }
+  .ow-packet {
+    opacity: 0;
   }
 }
 

@@ -6,6 +6,34 @@ This page covers the full OpenWave system topology — the participants, how the
 
 ## System Overview
 
+<section class="ow-architecture-motion ow-architecture-motion-doc" aria-label="Animated OpenWave architecture overview">
+  <div class="ow-motion-copy">
+    <p class="ow-eyebrow">Live topology</p>
+    <h2>OpenWave separates identity, gateway routing, bank SCA, and settlement.</h2>
+    <p>The gateway coordinates. The bank authenticates and moves money. Identity resolves NPT handles. Settlement completes through same-bank books or national rails.</p>
+  </div>
+  <div class="ow-network-graphic" aria-hidden="true">
+    <svg viewBox="0 0 920 520" role="img">
+      <g class="ow-lines">
+        <path class="ow-flow ow-flow-a" d="M160 155 C290 105 330 105 460 155"></path>
+        <path class="ow-flow ow-flow-b" d="M160 365 C290 415 330 415 460 365"></path>
+        <path class="ow-flow ow-flow-c" d="M460 155 C595 105 635 105 760 155"></path>
+        <path class="ow-flow ow-flow-d" d="M460 365 C595 415 635 415 760 365"></path>
+        <path class="ow-flow ow-flow-e" d="M460 260 C560 260 645 260 760 260"></path>
+      </g>
+      <g class="ow-node" transform="translate(64 116)"><rect width="192" height="78" rx="20"></rect><text x="96" y="34">Merchant</text><text class="ow-node-sub" x="96" y="56">API + webhooks</text></g>
+      <g class="ow-node" transform="translate(64 326)"><rect width="192" height="78" rx="20"></rect><text x="96" y="34">TPP</text><text class="ow-node-sub" x="96" y="56">scoped consent</text></g>
+      <g class="ow-node ow-node-gateway" transform="translate(328 205)"><rect width="264" height="110" rx="28"></rect><text x="132" y="45">Gateway</text><text class="ow-node-sub" x="132" y="72">route + orchestrate</text></g>
+      <g class="ow-node" transform="translate(664 116)"><rect width="192" height="78" rx="20"></rect><text x="96" y="34">Bank</text><text class="ow-node-sub" x="96" y="56">SCA + CBS</text></g>
+      <g class="ow-node" transform="translate(664 221)"><rect width="192" height="78" rx="20"></rect><text x="96" y="34">Identity</text><text class="ow-node-sub" x="96" y="56">NPT source</text></g>
+      <g class="ow-node" transform="translate(664 326)"><rect width="192" height="78" rx="20"></rect><text x="96" y="34">Settlement</text><text class="ow-node-sub" x="96" y="56">books / rail</text></g>
+      <circle class="ow-packet ow-packet-a" r="7"></circle>
+      <circle class="ow-packet ow-packet-b" r="7"></circle>
+      <circle class="ow-packet ow-packet-c" r="7"></circle>
+    </svg>
+  </div>
+</section>
+
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                         OPENWAVE ECOSYSTEM                                    ║

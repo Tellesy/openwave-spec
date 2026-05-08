@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./docs/public/neptune-logo.png" alt="Neptune. Financial Technology And Solutions" width="520">
+
 # OpenWave
 
 ### Open Payment & Open Banking Standard

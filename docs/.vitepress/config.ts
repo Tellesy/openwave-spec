@@ -12,7 +12,7 @@ export default defineConfig({
     ['meta', { name: 'theme-color', content: '#07315F' }],
     ['meta', { property: 'og:title', content: 'OpenWave — Open Payments and Open Banking Standard' }],
     ['meta', { property: 'og:description', content: 'Developer-first standard for payments, Open Banking, NPT identity, webhooks, and gateway-to-gateway switching.' }],
-    ['meta', { property: 'og:image', content: 'https://neptune.github.io/openwave-spec/og-preview.png' }],
+    ['meta', { property: 'og:image', content: 'https://neptune-ly.github.io/openwave-spec/og-preview.png' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
   ],
 
@@ -31,16 +31,16 @@ export default defineConfig({
           {
             text: 'OpenAPI Files',
             items: [
-              { text: 'Payments v1', link: 'https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml' },
-              { text: 'Open Banking v1', link: 'https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-open-banking-v1.0.yaml' },
-              { text: 'Identity v1', link: 'https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-identity-v1.0.yaml' },
-              { text: 'Gateway Interconnect v1', link: 'https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-gateway-interconnect-v1.yaml' },
+              { text: 'Payments v1', link: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml' },
+              { text: 'Open Banking v1', link: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-open-banking-v1.0.yaml' },
+              { text: 'Identity v1', link: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-identity-v1.0.yaml' },
+              { text: 'Gateway Interconnect v1', link: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-gateway-interconnect-v1.yaml' },
             ]
           },
           {
             text: 'Tools',
             items: [
-              { text: 'Swagger Editor', link: 'https://editor.swagger.io/?url=https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml' },
+              { text: 'Swagger Editor', link: 'https://editor.swagger.io/?url=https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml' },
               { text: 'All Downloads', link: '/downloads' },
             ]
           }
@@ -49,9 +49,9 @@ export default defineConfig({
       {
         text: 'v1.0.0',
         items: [
-          { text: 'Changelog', link: 'https://github.com/neptune/openwave-spec/blob/main/CHANGELOG.md' },
-          { text: 'Contributing', link: 'https://github.com/neptune/openwave-spec/blob/main/CONTRIBUTING.md' },
-          { text: 'GitHub Repo', link: 'https://github.com/neptune/openwave-spec' },
+          { text: 'Changelog', link: 'https://github.com/neptune-ly/openwave-spec/blob/main/CHANGELOG.md' },
+          { text: 'Contributing', link: 'https://github.com/neptune-ly/openwave-spec/blob/main/CONTRIBUTING.md' },
+          { text: 'GitHub Repo', link: 'https://github.com/neptune-ly/openwave-spec' },
         ]
       }
     ],
@@ -123,7 +123,7 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/neptune/openwave-spec' }
+      { icon: 'github', link: 'https://github.com/neptune-ly/openwave-spec' }
     ],
 
     footer: {
