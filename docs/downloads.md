@@ -11,9 +11,9 @@ All OpenWave spec files are OpenAPI 3.0.3 and fully machine-readable. Import the
 Covers payment sessions, NPT alias routing, recurring mandates, webhooks, and bank partner callbacks.
 
 <div class="ow-dl-row">
-  <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml" download>Download YAML</a>
-  <a class="ow-dl-btn-ghost" href="https://github.com/neptune/openwave-spec/blob/main/openwave-payments-v1.yaml">View on GitHub</a>
-  <a class="ow-dl-btn-ghost" href="https://editor.swagger.io/?url=https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml" target="_blank">Open in Swagger Editor ↗</a>
+  <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml" download>Download YAML</a>
+  <a class="ow-dl-btn-ghost" href="https://github.com/neptune-ly/openwave-spec/blob/main/openwave-payments-v1.yaml">View on GitHub</a>
+  <a class="ow-dl-btn-ghost" href="https://editor.swagger.io/?url=https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml" target="_blank">Open in Swagger Editor ↗</a>
 </div>
 
 **Key endpoints:**
@@ -37,9 +37,9 @@ Covers payment sessions, NPT alias routing, recurring mandates, webhooks, and ba
 Covers OAuth 2.0 + PKCE consent, AISP (account data), PISP (payment initiation), and SCA.
 
 <div class="ow-dl-row">
-  <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-open-banking-v1.0.yaml" download>Download YAML</a>
-  <a class="ow-dl-btn-ghost" href="https://github.com/neptune/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml">View on GitHub</a>
-  <a class="ow-dl-btn-ghost" href="https://editor.swagger.io/?url=https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-open-banking-v1.0.yaml" target="_blank">Open in Swagger Editor ↗</a>
+  <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-open-banking-v1.0.yaml" download>Download YAML</a>
+  <a class="ow-dl-btn-ghost" href="https://github.com/neptune-ly/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml">View on GitHub</a>
+  <a class="ow-dl-btn-ghost" href="https://editor.swagger.io/?url=https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-open-banking-v1.0.yaml" target="_blank">Open in Swagger Editor ↗</a>
 </div>
 
 **Key endpoints:**
@@ -60,9 +60,9 @@ Covers OAuth 2.0 + PKCE consent, AISP (account data), PISP (payment initiation),
 Covers NPT handle ownership, multi-bank account linking, public alias resolution, and bank directory.
 
 <div class="ow-dl-row">
-  <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-identity-v1.0.yaml" download>Download YAML</a>
-  <a class="ow-dl-btn-ghost" href="https://github.com/neptune/openwave-spec/blob/main/openwave-identity-v1.0.yaml">View on GitHub</a>
-  <a class="ow-dl-btn-ghost" href="https://editor.swagger.io/?url=https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-identity-v1.0.yaml" target="_blank">Open in Swagger Editor ↗</a>
+  <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-identity-v1.0.yaml" download>Download YAML</a>
+  <a class="ow-dl-btn-ghost" href="https://github.com/neptune-ly/openwave-spec/blob/main/openwave-identity-v1.0.yaml">View on GitHub</a>
+  <a class="ow-dl-btn-ghost" href="https://editor.swagger.io/?url=https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-identity-v1.0.yaml" target="_blank">Open in Swagger Editor ↗</a>
 </div>
 
 **Key endpoints:**
@@ -89,13 +89,13 @@ Import any spec file directly into Postman to get a pre-built collection with al
 
 ```
 # Payments
-https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml
+https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml
 
 # Open Banking
-https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-open-banking-v1.0.yaml
+https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-open-banking-v1.0.yaml
 
 # Identity Registry
-https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-identity-v1.0.yaml
+https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-identity-v1.0.yaml
 ```
 
 4. Postman generates the full collection automatically. Set your environment variables:
@@ -123,7 +123,7 @@ Click any "Open in Swagger Editor" button above, or paste a raw URL into [editor
 
 ```bash
 docker run -p 8080:8080 \
-  -e SWAGGER_JSON_URL=https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml \
+  -e SWAGGER_JSON_URL=https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml \
   swaggerapi/swagger-ui
 ```
 
@@ -145,42 +145,42 @@ Generate a type-safe client in any language using [openapi-generator](https://op
 
 ```bash [TypeScript (fetch)]
 npx @openapitools/openapi-generator-cli generate \
-  -i https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml \
+  -i https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml \
   -g typescript-fetch \
   -o ./openwave-client-ts
 ```
 
 ```bash [TypeScript (axios)]
 npx @openapitools/openapi-generator-cli generate \
-  -i https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml \
+  -i https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml \
   -g typescript-axios \
   -o ./openwave-client-ts-axios
 ```
 
 ```bash [Kotlin]
 npx @openapitools/openapi-generator-cli generate \
-  -i https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml \
+  -i https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml \
   -g kotlin \
   -o ./openwave-client-kotlin
 ```
 
 ```bash [Python]
 npx @openapitools/openapi-generator-cli generate \
-  -i https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml \
+  -i https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml \
   -g python \
   -o ./openwave-client-python
 ```
 
 ```bash [Go]
 npx @openapitools/openapi-generator-cli generate \
-  -i https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml \
+  -i https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml \
   -g go \
   -o ./openwave-client-go
 ```
 
 ```bash [Java]
 npx @openapitools/openapi-generator-cli generate \
-  -i https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml \
+  -i https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml \
   -g java \
   -o ./openwave-client-java
 ```
@@ -198,7 +198,7 @@ OpenWave-compatible gateway operators may publish hand-crafted SDKs for their ow
 Clone the full spec repository for offline use or CI/CD validation:
 
 ```bash
-git clone https://github.com/neptune/openwave-spec.git
+git clone https://github.com/neptune-ly/openwave-spec.git
 cd openwave-spec
 
 # Validate specs with Redocly CLI
@@ -219,4 +219,4 @@ OpenWave follows **Semantic Versioning**:
 | New endpoint or optional field | `MINOR` (1.0 → 1.1) |
 | Clarification, fix, or example update | `PATCH` (1.0.0 → 1.0.1) |
 
-The `api_version` field in every webhook envelope and the `info.version` in each spec always reflect the current module version. All changes are logged in [CHANGELOG.md](https://github.com/neptune/openwave-spec/blob/main/CHANGELOG.md).
+The `api_version` field in every webhook envelope and the `info.version` in each spec always reflect the current module version. All changes are logged in [CHANGELOG.md](https://github.com/neptune-ly/openwave-spec/blob/main/CHANGELOG.md).

@@ -7,7 +7,7 @@
 **Bank-agnostic · Interoperable · Built for the Libyan Banking Ecosystem**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
-[![Spec](https://img.shields.io/badge/OpenAPI-3.0.3-green.svg)](https://github.com/neptune/openwave-spec-v1.yaml)
+[![Spec](https://img.shields.io/badge/OpenAPI-3.0.3-green.svg)](https://neptune-ly.github.io/openwave-spec/)
 [![Status](https://img.shields.io/badge/Payments%20API-v1.0%20Stable-brightgreen.svg)]()
 [![Status](https://img.shields.io/badge/Open%20Banking%20API-v1.0%20Stable-brightgreen.svg)]()
 

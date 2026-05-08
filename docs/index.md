@@ -117,7 +117,7 @@ OpenWave is an **open API standard** created and maintained by Neptune. Fintech 
 <div class="ow-module-card">
   <div class="ow-module-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
   <div class="ow-module-title">Payments Module</div>
-  <div class="ow-module-spec"><a href="https://github.com/neptune/openwave-spec/blob/main/openwave-payments-v1.yaml">openwave-payments-v1.yaml</a></div>
+  <div class="ow-module-spec"><a href="https://github.com/neptune-ly/openwave-spec/blob/main/openwave-payments-v1.yaml">openwave-payments-v1.yaml</a></div>
   <ul>
     <li>Payment sessions (IBAN + NPT alias)</li>
     <li>OTP &amp; push notification auth</li>
@@ -130,7 +130,7 @@ OpenWave is an **open API standard** created and maintained by Neptune. Fintech 
 <div class="ow-module-card">
   <div class="ow-module-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
   <div class="ow-module-title">Open Banking Module</div>
-  <div class="ow-module-spec"><a href="https://github.com/neptune/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml">openwave-open-banking-v1.0.yaml</a></div>
+  <div class="ow-module-spec"><a href="https://github.com/neptune-ly/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml">openwave-open-banking-v1.0.yaml</a></div>
   <ul>
     <li>OAuth 2.0 + PKCE consent flow</li>
     <li>AISP: accounts, balances, transactions</li>
@@ -143,7 +143,7 @@ OpenWave is an **open API standard** created and maintained by Neptune. Fintech 
 <div class="ow-module-card">
   <div class="ow-module-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="14" x="3" y="5" rx="2"/><path d="M8 10h.01M8 14h.01M12 10h4M12 14h4"/><circle cx="8" cy="10" r="1" fill="currentColor"/><circle cx="8" cy="14" r="1" fill="currentColor"/></svg></div>
   <div class="ow-module-title">Identity Registry</div>
-  <div class="ow-module-spec"><a href="https://github.com/neptune/openwave-spec/blob/main/openwave-identity-v1.0.yaml">openwave-identity-v1.0.yaml</a></div>
+  <div class="ow-module-spec"><a href="https://github.com/neptune-ly/openwave-spec/blob/main/openwave-identity-v1.0.yaml">openwave-identity-v1.0.yaml</a></div>
   <ul>
     <li>NPT handle ownership &amp; governance</li>
     <li>Multi-bank account linking</li>
@@ -214,8 +214,8 @@ Merchant           OpenWave Gateway        Debtor Bank (CBS)     CBL LyPay     M
   <div class="ow-dl-title">Payments OpenAPI</div>
   <div class="ow-dl-sub">openwave-payments-v1.yaml</div>
   <div class="ow-dl-links">
-    <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml" download>Download YAML</a>
-    <a class="ow-dl-btn-ghost" href="https://github.com/neptune/openwave-spec/blob/main/openwave-payments-v1.yaml">View on GitHub</a>
+    <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml" download>Download YAML</a>
+    <a class="ow-dl-btn-ghost" href="https://github.com/neptune-ly/openwave-spec/blob/main/openwave-payments-v1.yaml">View on GitHub</a>
   </div>
 </div>
 
@@ -224,8 +224,8 @@ Merchant           OpenWave Gateway        Debtor Bank (CBS)     CBL LyPay     M
   <div class="ow-dl-title">Open Banking OpenAPI</div>
   <div class="ow-dl-sub">openwave-open-banking-v1.0.yaml</div>
   <div class="ow-dl-links">
-    <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-open-banking-v1.0.yaml" download>Download YAML</a>
-    <a class="ow-dl-btn-ghost" href="https://github.com/neptune/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml">View on GitHub</a>
+    <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-open-banking-v1.0.yaml" download>Download YAML</a>
+    <a class="ow-dl-btn-ghost" href="https://github.com/neptune-ly/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml">View on GitHub</a>
   </div>
 </div>
 
@@ -234,8 +234,8 @@ Merchant           OpenWave Gateway        Debtor Bank (CBS)     CBL LyPay     M
   <div class="ow-dl-title">Identity Registry OpenAPI</div>
   <div class="ow-dl-sub">openwave-identity-v1.0.yaml</div>
   <div class="ow-dl-links">
-    <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-identity-v1.0.yaml" download>Download YAML</a>
-    <a class="ow-dl-btn-ghost" href="https://github.com/neptune/openwave-spec/blob/main/openwave-identity-v1.0.yaml">View on GitHub</a>
+    <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-identity-v1.0.yaml" download>Download YAML</a>
+    <a class="ow-dl-btn-ghost" href="https://github.com/neptune-ly/openwave-spec/blob/main/openwave-identity-v1.0.yaml">View on GitHub</a>
   </div>
 </div>
 

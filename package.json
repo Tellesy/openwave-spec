@@ -10,15 +10,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/neptune/openwave-spec.git"
+    "url": "git+https://github.com/neptune-ly/openwave-spec.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/neptune/openwave-spec/issues"
+    "url": "https://github.com/neptune-ly/openwave-spec/issues"
   },
-  "homepage": "https://neptune.github.io/openwave-spec/",
+  "homepage": "https://neptune-ly.github.io/openwave-spec/",
   "devDependencies": {
     "vitepress": "^1.6.4"
   },

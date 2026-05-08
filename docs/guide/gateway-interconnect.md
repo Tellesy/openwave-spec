@@ -16,7 +16,7 @@ OW-GIP v1 covers:
 - Gateway-to-gateway settlement batches
 - Health checks and retry-safe errors
 
-The normative OpenAPI file is [`openwave-gateway-interconnect-v1.yaml`](https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-gateway-interconnect-v1.yaml).
+The normative OpenAPI file is [`openwave-gateway-interconnect-v1.yaml`](https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-gateway-interconnect-v1.yaml).
 
 ## Gateway Identity
 
