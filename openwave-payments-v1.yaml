@@ -85,7 +85,7 @@ x-settlement:
       Cross-bank (LYPAY) only. Fires when the debtor bank has confirmed the debit and
       the LyPay transfer instruction is submitted to CBL. The payment is not yet credited
       to the merchant. Merchants should use this to show an "in progress" state.
-      Payment advances to CONFIRMED (and payment.completed fires) when credit is confirmed.
+      Payment advances to COMPLETED (and payment.completed fires) when credit is confirmed.
     payment.failed: >
       Fires when LyPay reports status 04 (declined) or 05 (failed), or when session expires.
   status_codes:
@@ -137,6 +137,11 @@ paths:
         Creates a new payment session. Returns a `payment_url` that the merchant
         opens in a webview (or redirects the customer to). The customer completes
         authentication (OTP or push notification) inside that URL.
+
+        Merchants must not collect payer credentials, OTPs, or push approvals in
+        their own UI. Customer-facing payment steps are performed through the
+        hosted OpenWave checkout or official SDK/webview using a gateway-issued
+        session token.
       operationId: initiatePayment
       security:
         - MerchantApiKey: []
@@ -373,6 +378,13 @@ paths:
         Creates a mandate and returns a `consent_url` the merchant directs the customer to.
         The customer reviews and authenticates to grant consent. The mandate becomes ACTIVE
         after successful consent.
+
+        Recurring mandate approval follows the same hosted-customer model as
+        checkout. The merchant creates the mandate only; OTP/PUSH approval is
+        completed inside the hosted OpenWave consent URL or official SDK/webview.
+        The hosted page issues a short-lived `X-OpenWave-Auth-Session` token for
+        mandate approval steps. Merchants must not collect OTPs or call mandate
+        approval endpoints directly from their backend.
       operationId: createMandate
       security:
         - MerchantApiKey: []
@@ -808,6 +820,7 @@ paths:
     get:
       tags: [Banks]
       summary: Get a bank's advertised auth modes and Open Banking scopes (public)
+      security: []
       operationId: getBankCapabilities
       parameters:
         - name: bank_handle
@@ -1025,7 +1038,7 @@ paths:
       tags: [Settlement]
       summary: Manually trigger settlement for a bank
       description: |
-        Runs the settlement process for all CONFIRMED unsettled sessions for the given bank.
+        Runs the settlement process for all COMPLETED unsettled sessions for the given bank.
         If today's batch already exists and is COMPLETED, returns it without re-running.
         Normally runs automatically daily at 01:00 UTC.
       operationId: runSettlement
@@ -1216,6 +1229,11 @@ components:
       in: header
       name: X-Session-Token
       description: Short-lived token (15 min) scoped to a single payment session, issued by the gateway when the payment_url is opened
+    HostedAuthorisationSession:
+      type: apiKey
+      in: header
+      name: X-OpenWave-Auth-Session
+      description: Short-lived token issued by hosted checkout/mandate consent surfaces for customer SCA. Store only in browser/webview memory.
     AdminKey:
       type: http
       scheme: bearer
@@ -1322,7 +1340,7 @@ components:
           type: array
           items:
             type: string
-          example: [accounts:read, balances:read, transactions:read, payments:write]
+          example: ["accounts:read", "balances:read", "transactions:read", "payments:write"]
 
     ApiKeyRotateResponse:
       type: object
@@ -1423,7 +1441,7 @@ components:
           type: integer
           format: int64
           description: Original payment amount (minor units)
-        astro_fee:
+        gateway_fee:
           type: integer
           format: int64
           description: Total gateway fee charged to merchant (minor units)
@@ -1462,7 +1480,7 @@ components:
         total_fees:
           type: integer
           format: int64
-          description: Sum of all Astro fees (minor units)
+          description: Sum of all gateway fees (minor units)
         total_bank_cuts:
           type: integer
           format: int64
@@ -1495,7 +1513,7 @@ components:
         gross_amount:
           type: integer
           format: int64
-        astro_fee:
+        gateway_fee:
           type: integer
           format: int64
         bank_cut:
@@ -1557,7 +1575,7 @@ components:
         - PENDING
         - OTP_SENT
         - PUSH_SENT
-        - CONFIRMED
+        - COMPLETED
         - SETTLEMENT_PENDING
         - FAILED
         - EXPIRED
@@ -1567,7 +1585,7 @@ components:
         - `SETTLEMENT_PENDING`: Debit confirmed at the debtor bank; LyPay transfer
           is in-flight to the creditor bank. The merchant webhook `payment.settlement_pending`
           fires at this point. Once the creditor bank confirms credit, status advances to
-          `CONFIRMED` and `payment.completed` fires.
+          `COMPLETED` and `payment.completed` fires.
 
     SettlementType:
       type: string
@@ -1709,7 +1727,7 @@ components:
           type: string
         transfer_reference:
           type: string
-          description: Bank transfer reference (available when CONFIRMED or SETTLEMENT_PENDING)
+          description: Bank transfer reference (available when COMPLETED or SETTLEMENT_PENDING)
         settlement_type:
           $ref: '#/components/schemas/SettlementType'
           nullable: true
@@ -2129,7 +2147,7 @@ components:
         bank_cut_percentage:
           type: number
           format: double
-          description: Percentage of Astro fee allocated to the bank (e.g. 30.0 for 30%)
+          description: Percentage of gateway fee allocated to the bank (e.g. 30.0 for 30%)
           example: 30.0
         lypay_participant_code:
           type: string

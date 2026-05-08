@@ -1,33 +1,42 @@
 /* ── Brand tokens ──────────────────────────────────────────────────────────── */
 :root {
-  --vp-c-brand-1: #7c3aed;
-  --vp-c-brand-2: #6d28d9;
-  --vp-c-brand-3: #5b21b6;
-  --vp-c-brand-soft: rgba(124, 58, 237, 0.12);
+  --npt-navy: #07315F;
+  --npt-coral: #EB4E4D;
+  --npt-teal: #00A8AE;
+  --npt-beige: #F0CE9D;
+  --npt-sky: #3BC1EE;
+  --vp-c-brand-1: #07315F;
+  --vp-c-brand-2: #EB4E4D;
+  --vp-c-brand-3: #00A8AE;
+  --vp-c-brand-soft: rgba(7, 49, 95, 0.12);
 
-  --vp-button-brand-bg: #7c3aed;
-  --vp-button-brand-hover-bg: #6d28d9;
-  --vp-button-brand-active-bg: #5b21b6;
+  --vp-button-brand-bg: #07315F;
+  --vp-button-brand-hover-bg: #EB4E4D;
+  --vp-button-brand-active-bg: #00A8AE;
   --vp-button-brand-border: transparent;
   --vp-button-brand-hover-border: transparent;
   --vp-button-brand-text: #ffffff;
 
   --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: linear-gradient(135deg, #7c3aed 10%, #a855f7 50%, #06b6d4 90%);
+  --vp-home-hero-name-background: linear-gradient(135deg, #07315F 10%, #EB4E4D 50%, #00A8AE 90%);
 
-  --vp-home-hero-image-background-image: linear-gradient(135deg, #7c3aed22 0%, #06b6d422 100%);
+  --vp-home-hero-image-background-image: linear-gradient(135deg, #07315F22 0%, #EB4E4D20 52%, #00A8AE22 100%);
   --vp-home-hero-image-filter: blur(56px);
 
-  --ow-cyan: #06b6d4;
-  --ow-purple: #7c3aed;
-  --ow-purple-soft: rgba(124, 58, 237, 0.12);
+  --ow-cyan: #00A8AE;
+  --ow-purple: #07315F;
+  --ow-purple-soft: rgba(7, 49, 95, 0.12);
 }
 
 .dark {
-  --vp-c-brand-1: #a78bfa;
-  --vp-c-brand-2: #8b5cf6;
-  --vp-c-brand-3: #7c3aed;
-  --vp-c-brand-soft: rgba(167, 139, 250, 0.14);
+  --vp-c-brand-1: #3BC1EE;
+  --vp-c-brand-2: #EB4E4D;
+  --vp-c-brand-3: #00A8AE;
+  --vp-c-brand-soft: rgba(59, 193, 238, 0.14);
+}
+
+body {
+  font-family: "SF Compact Rounded", "SF Pro Rounded", "Beiruti", var(--vp-font-family-base);
 }
 
 /* ── Feature cards ─────────────────────────────────────────────────────────── */
@@ -56,10 +65,16 @@
 
 /* ── Nav logo hover ─────────────────────────────────────────────────────────── */
 .VPNavBarTitle .logo {
+  border-radius: 8px;
   transition: transform 0.2s;
 }
 .VPNavBarTitle:hover .logo {
-  transform: rotate(-10deg) scale(1.1);
+  transform: scale(1.05);
+}
+
+.VPHomeHero .image-src {
+  width: min(420px, 86vw) !important;
+  max-height: 180px;
 }
 
 /* ── Stats bar ──────────────────────────────────────────────────────────────── */

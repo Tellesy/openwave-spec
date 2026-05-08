@@ -34,7 +34,7 @@ Every cross-bank OpenWave payment uses both: NAD for resolution, LyPay for movem
 Customer and merchant hold accounts at the **same bank**.
 
 ```
-Customer (Bank A)          Astro Gateway          Merchant (Bank A)
+Customer (Bank A)        OpenWave Gateway        Merchant (Bank A)
       │                         │                       │
       │── tap "Pay" ──────────►│                       │
       │                         │── CBS debit ─────────►│
@@ -58,7 +58,7 @@ Customer (Bank A)          Astro Gateway          Merchant (Bank A)
 Customer and merchant hold accounts at **different banks**.
 
 ```
-Customer (Bank A)    Astro Gateway    CBL LyPay    Bank B (Merchant's bank)
+Customer (Bank A)  OpenWave Gateway   CBL LyPay    Bank B (Merchant's bank)
       │                   │               │                │
       │── OTP confirm ───►│               │                │
       │                   │── debit at ──►│                │
@@ -78,8 +78,8 @@ Customer (Bank A)    Astro Gateway    CBL LyPay    Bank B (Merchant's bank)
 1. Customer's bank (Bank A) **debits** the customer account via CBS
 2. Bank A sends a **LyPay transfer instruction** to CBL with the merchant's IBAN
 3. CBL LyPay routes to Bank B and **credits the merchant's account**
-4. LyPay fires a **credit confirmation callback** to the Astro gateway
-5. Astro updates session status to `COMPLETED` and fires `payment.completed` webhook to the merchant
+4. LyPay fires a **credit confirmation callback** to the gateway
+5. The gateway updates session status to `COMPLETED` and fires `payment.completed` webhook to the merchant
 
 ::: warning Credit confirmation, not just debit
 The `payment.completed` event fires only after the **credit is confirmed** — not when the debit happens. This means the merchant webhook is reliable evidence that funds have actually arrived.
@@ -94,7 +94,7 @@ The `payment.completed` event fires only after the **credit is confirmed** — n
 | **Debtor's bank** | Validates customer, debits account, initiates LyPay transfer |
 | **CBL LyPay** | Routes interbank transfer, notifies creditor bank, sends callback |
 | **Creditor's bank** | Receives LyPay instruction, credits merchant account, confirms |
-| **Astro gateway** | Receives LyPay callback, updates session status, fires merchant webhook |
+| **Gateway** | Receives LyPay callback, updates session status, fires merchant webhook |
 | **Merchant** | Receives `payment.completed` webhook, fulfils order |
 
 ---
@@ -154,18 +154,18 @@ OTP_SENT / PUSH_SENT
    ├── [SAME_BANK] ──────────────────────────────────────────────────────────┐
    │   internal CBS book transfer                                             │
    │                                                                          ▼
-   └── [LYPAY cross-bank]                                               CONFIRMED
+   └── [LYPAY cross-bank]                                               COMPLETED
        LyPay instruction submitted              ◄──── payment.completed ─────────
             │
        SETTLEMENT_PENDING ◄── payment.settlement_pending fires
             │
        CBL credit callback received
             │
-       CONFIRMED ◄──── payment.completed fires
+       COMPLETED ◄──── payment.completed fires
 ```
 
 ::: info Same-bank payments skip SETTLEMENT_PENDING
-For `SAME_BANK` routes, the session moves atomically to `CONFIRMED`. The `SETTLEMENT_PENDING` status only appears for cross-bank `LYPAY` transactions.
+For `SAME_BANK` routes, the session moves atomically to `COMPLETED`. The `SETTLEMENT_PENDING` status only appears for cross-bank `LYPAY` transactions.
 :::
 
 ---

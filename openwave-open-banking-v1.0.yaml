@@ -62,10 +62,31 @@ info:
     Step 1: TPP generates code_verifier (random 43-128 chars)
     Step 2: code_challenge = BASE64URL(SHA256(code_verifier))
     Step 3: POST /ob/consents { code_challenge, code_challenge_method: "S256", ... }
-    Step 4: Customer redirected to consent_url (includes consent_id + client_id)
-    Step 5: ASPSP redirects back with auth_code (10 min TTL, single-use)
-    Step 6: POST /ob/token { grant_type: "authorization_code", auth_code, code_verifier, ... }
-    Step 7: Gateway verifies: SHA256(code_verifier) == stored code_challenge → issues tokens
+    Step 4: Customer redirected to consent_url on the gateway-hosted authorisation surface
+    Step 5: Gateway issues a short-lived hosted authorisation session for customer SCA
+    Step 6: Customer approves with bank OTP/PUSH through the hosted surface or official SDK/webview
+    Step 7: Gateway redirects back with auth_code (10 min TTL, single-use)
+    Step 8: POST /ob/token { grant_type: "authorization_code", auth_code, code_verifier, ... }
+    Step 9: Gateway verifies: SHA256(code_verifier) == stored code_challenge → issues tokens
+    ```
+
+    ### Hosted Authorisation Session
+    Open Banking consent approval is a customer-facing security ceremony. A TPP
+    can create a consent request and redirect or embed the returned `consent_url`,
+    but it **must not** collect bank OTPs, invoke SCA directly, or approve consent
+    from its own backend.
+
+    The gateway-hosted authorisation surface issues a short-lived opaque
+    `authorisation_session` and stores only its hash. Subsequent SCA calls must
+    include `X-OpenWave-Auth-Session`. This binds SCA to the customer surface and
+    prevents merchant or TPP server-to-server code from completing authorisation
+    without entering the gateway-controlled consent flow.
+
+    ```
+    GET  /ob/auth?consent_id=...  → { authorisation_session, scopes, bank_handle }
+    POST /ob/auth/sca             Header: X-OpenWave-Auth-Session
+    POST /ob/auth/confirm         Header: X-OpenWave-Auth-Session
+    GET  /ob/auth/push-status     Header: X-OpenWave-Auth-Session
     ```
 
     ### Token Properties
@@ -90,7 +111,11 @@ info:
     | `payments:write` | Initiate single payment orders |
     | `mandates:write` | Create standing payment mandates (future) |
 
-    Scopes are granted at consent time. A token can only access scopes included in its consent.
+    Scopes are requested by the TPP and granted at consent time. A token can
+    only access scopes included in its consent. The hosted authorisation surface
+    must show the customer each requested scope in plain language before SCA,
+    similar to OAuth consent screens used by major identity providers. Raw scope
+    strings alone are not enough for customer approval.
 
     ---
 
@@ -199,6 +224,7 @@ paths:
     get:
       tags: [Capabilities]
       summary: Get bank Open Banking capabilities
+      security: []
       description: |
         Returns which payment auth modes and Open Banking scopes a bank supports.
         TPPs should call this before creating a consent to know which scopes are available.
@@ -337,7 +363,7 @@ paths:
               $ref: '#/components/schemas/CreateConsentRequest'
             example:
               client_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-              scopes: [accounts:read, balances:read, transactions:read]
+              scopes: ["accounts:read", "balances:read", "transactions:read"]
               bank_handle: andalus
               redirect_uri: https://myapp.example.com/ob/callback
               state: csrf-protection-random-value
@@ -410,6 +436,143 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /ob/auth:
+    get:
+      tags: [Consent]
+      summary: Start hosted customer consent authorisation
+      security: []
+      description: |
+        Customer-facing endpoint rendered by the gateway-hosted authorisation
+        page or official SDK/webview. It returns the requested scopes, display
+        metadata for each scope, bank handler, TPP display information, and a
+        short-lived `authorisation_session` token.
+
+        TPPs and merchants must redirect/embed this surface. They must not
+        collect OTP/PUSH approval or call SCA approval endpoints directly.
+      operationId: getHostedConsentAuthorisation
+      parameters:
+        - name: consent_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Hosted authorisation context
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentAuthorisationView'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /ob/auth/sca:
+    post:
+      tags: [Consent]
+      summary: Start customer SCA for Open Banking consent
+      description: |
+        Starts bank OTP or push approval for a pending consent. Requires the
+        hosted authorisation session issued by `GET /ob/auth`.
+      operationId: startConsentSca
+      security:
+        - HostedAuthorisationSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartConsentScaRequest'
+      responses:
+        '200':
+          description: SCA challenge started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentScaChallenge'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /ob/auth/confirm:
+    post:
+      tags: [Consent]
+      summary: Confirm OTP and issue authorisation code
+      description: |
+        Confirms the customer bank OTP and issues the single-use authorisation
+        code. Requires `X-OpenWave-Auth-Session`.
+      operationId: confirmConsentOtp
+      security:
+        - HostedAuthorisationSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmConsentOtpRequest'
+      responses:
+        '200':
+          description: Consent approved; TPP may exchange auth code using PKCE
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthoriseConsentResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /ob/auth/push-status:
+    get:
+      tags: [Consent]
+      summary: Poll push approval status
+      operationId: getConsentPushStatus
+      security:
+        - HostedAuthorisationSession: []
+      parameters:
+        - name: consentId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: expiryDays
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 90
+      responses:
+        '200':
+          description: Push status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentPushStatus'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /ob/auth/reject:
+    post:
+      tags: [Consent]
+      summary: Reject a pending consent from hosted authorisation
+      operationId: rejectConsentFromHostedAuthorisation
+      security:
+        - HostedAuthorisationSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectConsentRequest'
+      responses:
+        '204':
+          description: Consent rejected
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
   # ---------------------------------------------------------------------------
   # OAUTH TOKEN OPERATIONS
   # ---------------------------------------------------------------------------
@@ -418,6 +581,7 @@ paths:
     post:
       tags: [Token]
       summary: Exchange authorization code for access + refresh tokens
+      security: []
       description: |
         Standard OAuth 2.0 token endpoint supporting two grant types:
 
@@ -447,7 +611,7 @@ paths:
                   auth_code: "one-time-auth-code-from-redirect"
                   code_verifier: "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
                   redirect_uri: "https://myapp.example.com/ob/callback"
-                  consent_id: "consent-uuid-here"
+                  consent_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
               refresh_token:
                 summary: Refresh access token
                 value:
@@ -479,6 +643,7 @@ paths:
     post:
       tags: [Token]
       summary: Revoke a specific access or refresh token
+      security: []
       description: |
         Revokes a single token without revoking the entire consent.
         If a `refresh_token` is revoked, the corresponding `access_token` is
@@ -519,7 +684,7 @@ paths:
         only those are returned. Otherwise, all accounts the customer approved.
       operationId: listAccounts
       security:
-        - TppOAuth: [accounts:read]
+        - TppOAuth: ["accounts:read"]
       parameters:
         - $ref: '#/components/parameters/ConsentHeader'
       responses:
@@ -540,7 +705,7 @@ paths:
       summary: Get single account details
       operationId: getAccount
       security:
-        - TppOAuth: [accounts:read]
+        - TppOAuth: ["accounts:read"]
       parameters:
         - $ref: '#/components/parameters/AccountId'
         - $ref: '#/components/parameters/ConsentHeader'
@@ -570,7 +735,7 @@ paths:
         The account must be covered by the active consent.
       operationId: getBalances
       security:
-        - TppOAuth: [balances:read]
+        - TppOAuth: ["balances:read"]
       parameters:
         - $ref: '#/components/parameters/AccountId'
         - $ref: '#/components/parameters/ConsentHeader'
@@ -609,7 +774,7 @@ paths:
         Results are ordered by `booking_date` descending (most recent first).
       operationId: getTransactions
       security:
-        - TppOAuth: [transactions:read]
+        - TppOAuth: ["transactions:read"]
       parameters:
         - $ref: '#/components/parameters/AccountId'
         - $ref: '#/components/parameters/ConsentHeader'
@@ -682,7 +847,7 @@ paths:
         Webhook `payment_order.completed` or `payment_order.failed` is sent on completion.
       operationId: createPaymentOrder
       security:
-        - TppOAuth: [payments:write]
+        - TppOAuth: ["payments:write"]
       parameters:
         - $ref: '#/components/parameters/ConsentHeader'
         - $ref: '#/components/parameters/IdempotencyKey'
@@ -741,7 +906,7 @@ paths:
       summary: Get payment order status
       operationId: getPaymentOrder
       security:
-        - TppOAuth: [payments:write]
+        - TppOAuth: ["payments:write"]
       parameters:
         - name: order_id
           in: path
@@ -787,6 +952,14 @@ components:
         HTTP Basic auth using `client_id` as username and `client_secret` as password.
         Used for consent management operations (create, get) that do not require
         a user-scoped token.
+    HostedAuthorisationSession:
+      type: apiKey
+      in: header
+      name: X-OpenWave-Auth-Session
+      description: |
+        Short-lived opaque token issued only by the gateway-hosted Open Banking
+        authorisation surface. Required for customer SCA endpoints. Gateways
+        store only a hash and SHOULD expire it within 15 minutes.
     AdminKey:
       type: apiKey
       in: header
@@ -954,6 +1127,193 @@ components:
         - access_token
         - refresh_token
 
+    # --- Hosted Consent Authorisation ---
+
+    ConsentAuthorisationView:
+      type: object
+      required:
+        - consentId
+        - bankHandle
+        - tpp
+        - scopes
+        - scopeDetails
+        - status
+        - authorisationSession
+        - authorisationSessionExpiresInSeconds
+      properties:
+        consentId:
+          type: string
+          format: uuid
+        bankHandle:
+          type: string
+          example: andalus
+        tpp:
+          $ref: '#/components/schemas/TppDisplay'
+        scopes:
+          type: array
+          items:
+            type: string
+        scopeDetails:
+          type: array
+          description: Display-safe scope metadata that the hosted consent page must show before OTP/PUSH approval.
+          items:
+            $ref: '#/components/schemas/ScopeDescriptor'
+        state:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/ConsentStatus'
+        authorisationSession:
+          type: string
+          description: Short-lived opaque token for hosted SCA calls. Store only in browser/webview memory.
+        authorisationSessionExpiresInSeconds:
+          type: integer
+          example: 900
+
+    TppDisplay:
+      type: object
+      required: [clientId, name]
+      properties:
+        clientId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: TPP/application name shown to the customer.
+        description:
+          type: string
+          nullable: true
+        website:
+          type: string
+          format: uri
+          nullable: true
+        logoUrl:
+          type: string
+          format: uri
+          nullable: true
+
+    ScopeDescriptor:
+      type: object
+      required: [scope, title, summary, details, category, sensitivity]
+      properties:
+        scope:
+          type: string
+          enum:
+            - accounts:read
+            - balances:read
+            - transactions:read
+            - payments:write
+            - mandates:write
+        title:
+          type: string
+          example: See your balances
+        summary:
+          type: string
+          example: Available and booked balances for approved accounts.
+        details:
+          type: string
+          example: The app can refresh balances for accounts covered by this consent. It cannot see accounts you did not approve.
+        category:
+          type: string
+          example: Account information
+        sensitivity:
+          type: string
+          enum: [LOW, MEDIUM, HIGH]
+
+    StartConsentScaRequest:
+      type: object
+      required: [consentId, customerAlias, authMode]
+      properties:
+        consentId:
+          type: string
+          format: uuid
+        customerAlias:
+          type: string
+          example: mtellesy@andalus
+        authMode:
+          type: string
+          enum: [OTP, PUSH]
+
+    ConsentScaChallenge:
+      type: object
+      required: [consentId, authMode]
+      properties:
+        consentId:
+          type: string
+          format: uuid
+        authMode:
+          type: string
+          enum: [OTP, PUSH]
+        phoneMasked:
+          type: string
+          nullable: true
+          example: "+218 *** **1234"
+        deviceMasked:
+          type: string
+          nullable: true
+          example: "iPhone 15 Pro"
+        expiresInSeconds:
+          type: integer
+          nullable: true
+          example: 300
+
+    ConfirmConsentOtpRequest:
+      type: object
+      required: [consentId, otpCode]
+      properties:
+        consentId:
+          type: string
+          format: uuid
+        otpCode:
+          type: string
+          minLength: 4
+          maxLength: 12
+        expiryDays:
+          type: integer
+          default: 90
+
+    AuthoriseConsentResponse:
+      type: object
+      required: [authCode, redirectUrl, consentId]
+      properties:
+        authCode:
+          type: string
+          description: Single-use OAuth authorisation code.
+        redirectUrl:
+          type: string
+          format: uri
+        consentId:
+          type: string
+          format: uuid
+
+    ConsentPushStatus:
+      type: object
+      required: [consentId, pushStatus, status]
+      properties:
+        consentId:
+          type: string
+          format: uuid
+        pushStatus:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED]
+        status:
+          $ref: '#/components/schemas/ConsentStatus'
+        authCode:
+          type: string
+          nullable: true
+        redirectUrl:
+          type: string
+          format: uri
+          nullable: true
+
+    RejectConsentRequest:
+      type: object
+      required: [consentId]
+      properties:
+        consentId:
+          type: string
+          format: uuid
+
     # --- Bank Capabilities ---
 
     BankCapabilities:
@@ -980,7 +1340,7 @@ components:
           items:
             type: string
           description: Which OB scopes this bank's adapter implements
-          example: [accounts:read, balances:read, transactions:read, payments:write]
+          example: ["accounts:read", "balances:read", "transactions:read", "payments:write"]
         sca_exemption_limit:
           type: integer
           format: int64
@@ -1032,7 +1392,7 @@ components:
           items:
             type: string
           description: Scopes this TPP is permitted to request in consents
-          example: [accounts:read, balances:read, transactions:read, payments:write]
+          example: ["accounts:read", "balances:read", "transactions:read", "payments:write"]
         logo_url:
           type: string
           format: uri
@@ -1108,7 +1468,7 @@ components:
               - transactions:read
               - payments:write
               - mandates:write
-          example: [accounts:read, balances:read, transactions:read]
+          example: ["accounts:read", "balances:read", "transactions:read"]
         bank_handle:
           type: string
           description: Target bank (ASPSP) handle

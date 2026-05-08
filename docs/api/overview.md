@@ -1,6 +1,6 @@
 # API Overview
 
-OpenWave is defined by three OpenAPI 3.0.3 specification files. All are ready to load into Swagger UI, Postman, Redocly, or any OpenAPI-compatible tool.
+OpenWave is defined by four OpenAPI 3.0.3 specification files. All are ready to load into Swagger UI, Postman, Redocly, or any OpenAPI-compatible tool.
 
 ## Spec Files
 
@@ -9,6 +9,7 @@ OpenWave is defined by three OpenAPI 3.0.3 specification files. All are ready to
 | `openwave-payments-v1.yaml` | Payments · Recurring · Alias · Webhooks | [View](https://github.com/Tellesy/openwave-spec/blob/main/openwave-payments-v1.yaml) |
 | `openwave-open-banking-v1.0.yaml` | AISP · PISP · OAuth 2.0 + PKCE Consent | [View](https://github.com/Tellesy/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml) |
 | `openwave-identity-v1.0.yaml` | NPT Identity · Multi-bank Alias · Bank Phonebook | [View](https://github.com/Tellesy/openwave-spec/blob/main/openwave-identity-v1.0.yaml) |
+| `openwave-gateway-interconnect-v1.yaml` | Gateway Discovery · Remote Routing · Interconnect Settlement | [View](https://github.com/Tellesy/openwave-spec/blob/main/openwave-gateway-interconnect-v1.yaml) |
 
 ## Interactive Explorer
 
@@ -85,13 +86,26 @@ Browse and test the full API surface in your browser.
 | `POST` | `/v1/banks` | Register bank (admin) |
 | `GET` | `/v1/registry/info` | Registry metadata (public) |
 
+### Gateway Interconnect (`openwave-gateway-interconnect-v1.yaml`)
+
+| Method | Path | Description |
+|:---|:---|:---|
+| `GET` | `/gateway-info` | Get gateway metadata, capabilities, and fees |
+| `POST` | `/gateway-register` | Register or update a gateway profile |
+| `POST` | `/resolve-alias-remote` | Resolve an alias hosted by another gateway |
+| `POST` | `/route-payment` | Initiate a cross-gateway payment route |
+| `POST` | `/route-status` | Check cross-gateway route status |
+| `POST` | `/settlement-batch` | Submit gateway-to-gateway settlement batch |
+| `GET` | `/settlement-status` | Check settlement batch status |
+| `GET` | `/gateway-health` | Get gateway health and routing availability |
+
 ## Base URL
 
 ```
 https://<your-gateway-host>/api/v1
 ```
 
-The exact base URL depends on your gateway operator. Neptune Fintech's Astro gateway:
+The exact base URL depends on your gateway operator. Example:
 
 ```
 https://astro.neptune.ly/api/v1

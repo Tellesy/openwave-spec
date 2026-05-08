@@ -29,46 +29,123 @@ The gateway issues you a **Bank API Key** (`owbk_...`). Store it securely — it
 
 ## Step 2 — Implement the Core Callback Interface
 
-The gateway calls your core at the `core_base_url` you registered. You must implement:
+The gateway calls your core at the `core_base_url` you registered. All endpoints receive `X-OpenWave-Internal-Key` for authentication. **You must implement all of the following:**
 
-### Customer Verification (OTP)
+| Endpoint | Method | Called when |
+|:---|:---|:---|
+| `/send-otp` | POST | Customer selects OTP auth |
+| `/verify-otp` | POST | Customer submits OTP code |
+| `/send-push` | POST | Customer selects push auth |
+| `/execute-transaction` | POST | OTP/push verified — debit + route funds |
+| `/notify-credit` | POST | Cross-bank credit arrives (non-blocking) |
+| `/ob/accounts` | POST | Open Banking AISP account list |
+| `/ob/balances` | POST | Open Banking AISP balance query |
+| `/ob/transactions` | POST | Open Banking AISP transaction history |
+| `/ob/payment-orders` | POST | Open Banking PISP payment initiation |
+
+::: tip Bank-agnostic routing
+The gateway has **one generic HTTP client** for all banks. There is no bank-specific code in the gateway — your `core_base_url` is the sole routing target.
+:::
+
+### Send OTP Challenge
 ```http
-POST {core_base_url}/customers/verify
-X-OpenWave-Internal-Key: <shared-secret>
-
-{ "customer_ref": "CUST-001", "otp": "123456" }
-```
-Return `{ "verified": true }` or a 401.
-
-### Debit Account
-```http
-POST {core_base_url}/accounts/debit
+POST {core_base_url}/send-otp
 X-OpenWave-Internal-Key: <shared-secret>
 
 {
-  "iban": "LY83002700100099900001",
+  "session_id": "ops_01HZGV...",
+  "payer_iban": "LY83002700100099900001"
+}
+```
+Your bank receives the payer IBAN, extracts the account number, looks up the customer in your CBS, and sends the OTP via SMS/email. Return:
+```json
+{ "otp_token": "<reference>", "phone_masked": "091****12", "expires_in_seconds": 300 }
+```
+
+::: warning CBS customer IDs never leave your bank
+The gateway passes only the **IBAN** — it never stores or transmits CBS-internal customer IDs.
+Your bank derives the customer from the IBAN internally. This is by design.
+:::
+
+### Verify OTP
+```http
+POST {core_base_url}/verify-otp
+X-OpenWave-Internal-Key: <shared-secret>
+
+{ "session_id": "ops_01HZGV...", "otp_token": "<reference>", "otp_code": "123456" }
+```
+Return `{ "verified": true }` or a 401.
+
+### Execute Transaction
+
+Called once after OTP/push auth is confirmed. Handles both same-bank and cross-bank routing:
+
+```http
+POST {core_base_url}/execute-transaction
+X-OpenWave-Internal-Key: <shared-secret>
+
+{
+  "session_id": "ops_01HZGV...",
+  "merchant_name": "My Store",
+  "merchant_reference": "order_1042",
+  "debtor_iban": "LY83002700100099900001",
+  "creditor_iban": "LY83002700200099900002",
+  "creditor_bank_handle": "bank-b",
+  "creditor_bank_lypay_code": "002",
   "amount": 50000,
   "currency": "LYD",
-  "reference": "ops_01HZGV...",
-  "description": "OpenWave payment — Order #1042"
+  "description": "Order #1042",
+  "route_type": "SAME_BANK"
 }
 ```
 
-### Credit Account (intra-bank or settlement)
-```http
-POST {core_base_url}/accounts/credit
-```
-Same structure as debit. The gateway calls this if the destination account is at your bank.
+`route_type` is either `SAME_BANK` (atomic CBS book transfer) or `LYPAY_INITIATE` (debtor bank initiates a CBL LyPay transfer). Return:
 
-### Get Account Details (for Open Banking AISP)
-```http
-GET {core_base_url}/accounts/{iban}
+```json
+{ "transfer_ref": "TRF-20260424-001", "route_used": "SAME_BANK", "lypay_ref": null }
 ```
-Returns account holder info, balance, currency.
+
+### Notify Credit (cross-bank, non-blocking)
+
+When a cross-bank payment credits the merchant's bank, the gateway calls the creditor bank to inform it:
+
+```http
+POST {core_base_url}/notify-credit
+X-OpenWave-Internal-Key: <shared-secret>
+
+{
+  "session_id": "ops_01HZGV...",
+  "creditor_iban": "LY83002700200099900002",
+  "amount": 50000,
+  "currency": "LYD",
+  "transfer_ref": "TRF-20260424-001"
+}
+```
+
+### Get Accounts (for Open Banking AISP)
+```http
+POST {core_base_url}/ob/accounts
+X-OpenWave-Internal-Key: <shared-secret>
+
+{ "customer_id": "CUST-001", "consent_id": "con_01HZGV..." }
+```
+Returns list of accounts with IBAN, account name, currency, and type.
+
+### Get Balances (for Open Banking AISP)
+```http
+POST {core_base_url}/ob/balances
+X-OpenWave-Internal-Key: <shared-secret>
+
+{ "customer_id": "CUST-001", "iban": "LY83...", "consent_id": "con_01HZGV..." }
+```
 
 ### Get Transactions (for Open Banking AISP)
 ```http
-GET {core_base_url}/accounts/{iban}/transactions?fromDate=...&toDate=...
+POST {core_base_url}/ob/transactions
+X-OpenWave-Internal-Key: <shared-secret>
+
+{ "customer_id": "CUST-001", "iban": "LY83...", "from_date": "2026-01-01",
+  "to_date": "2026-04-30", "page": 1, "limit": 50, "consent_id": "con_01HZGV..." }
 ```
 
 ## Step 3 — Enroll Your Customers' Aliases
@@ -77,7 +154,7 @@ When a customer chooses their NPT handle in your app, your backend calls the Ide
 
 ```http
 POST /v1/identity/claim
-X-OpenWave-Bank-Key: owbk_andalus_...
+X-OpenWave-Bank-Key: owbk_<your-bank-handle>_...
 
 {
   "npt_handle": "mtellesy",
@@ -147,11 +224,11 @@ When your merchant customer receives a payment from another bank:
 
 1. CBL LyPay delivers a **credit instruction** to your bank
 2. Your CBS credits the merchant's account
-3. Your bank (or the gateway) fires the **credit confirmation** back to the Astro gateway
-4. Astro updates the session to `COMPLETED` and fires `payment.completed` to the merchant
+3. Your bank (or the gateway) fires the **credit confirmation** back to the gateway
+4. The gateway updates the session to `COMPLETED` and fires `payment.completed` to the merchant
 
 ::: warning Credit confirmation is mandatory
-The Astro gateway will not fire `payment.completed` to the merchant until it receives credit confirmation from your bank. Implement the credit callback promptly — delays here delay merchant fulfillment.
+The gateway will not fire `payment.completed` to the merchant until it receives credit confirmation from your bank. Implement the credit callback promptly — delays here delay merchant fulfillment.
 :::
 
 ```http
@@ -182,7 +259,7 @@ If your key is compromised:
 
 ```http
 POST /banks/{handle}/rotate-key
-X-OpenWave-Bank-Key: owbk_andalus_...
+X-OpenWave-Bank-Key: owbk_<your-bank-handle>_...
 ```
 
 New key is returned **once**. Update your systems immediately.

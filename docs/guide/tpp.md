@@ -66,6 +66,16 @@ Response:
 
 Send the customer to `consent_url`. The gateway shows them what access they're granting (the bank handles authentication).
 
+Consent approval must happen on the gateway-hosted OpenWave authorisation page or in an official SDK/webview. Do not collect bank OTPs in your merchant or TPP UI, and do not call consent SCA endpoints from your backend. The hosted page receives a short-lived `authorisation_session` and sends it as `X-OpenWave-Auth-Session` when starting OTP/PUSH and confirming approval.
+
+The customer approval screen must be scope-explicit. Treat it like OAuth consent:
+
+- request only the scopes your app needs;
+- show the TPP/app name and bank handler;
+- show every requested scope in plain customer language before SCA;
+- do not hide high-sensitivity scopes such as `transactions:read`, `payments:write`, or `mandates:write`;
+- issue tokens only for the exact approved scopes.
+
 On approval, the bank redirects to your `redirect_uri`:
 ```
 https://myapp.com/callback

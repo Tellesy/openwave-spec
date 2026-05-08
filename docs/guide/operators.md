@@ -15,11 +15,9 @@ A gateway is compliant if it:
 
 ## Reference Implementation
 
-**Astro** (by Neptune Fintech) is the reference gateway implementation:
+OpenWave is implementation-neutral. Reference implementations may be published by gateway operators; they are examples, not normative parts of the standard.
 
-- Built with Kotlin + Spring Boot 3
-- Source: [`neptune-fintech/neptune-astro`](https://github.com/neptune-fintech/neptune-astro) *(private during beta)*
-- Runs on any JVM-compatible host
+Any implementation can be compliant if it follows the OpenAPI contracts, security requirements, webhook semantics, idempotency rules, and settlement behavior defined by this specification.
 
 ## Running Your Own Gateway
 
@@ -147,7 +145,7 @@ LyPay handles the **actual money movement** between banks. Your gateway tracks t
 | **Net batch** | Gateway batches obligations; single LyPay transfer per bank per cycle |
 | **Prefunded** | Banks maintain escrow balance at gateway; LyPay only for rebalancing |
 
-The reference Astro implementation uses real-time gross settlement — each confirmed payment maps to one LyPay transfer.
+In a real-time gross settlement model, each confirmed payment maps to one interbank transfer. Operators may also use net or prefunded models when they preserve merchant-facing OpenWave status and reconciliation semantics.
 
 ## Compliance Checklist
 

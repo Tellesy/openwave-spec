@@ -30,7 +30,7 @@ Use `mk_test_...` keys during development. Test mode payments never touch real f
 From your **backend** (never from the browser — your API key stays server-side):
 
 ```http
-POST /payments/sessions
+POST /api/v1/payments/sessions
 Authorization: Bearer mk_live_...
 Content-Type: application/json
 
@@ -123,7 +123,7 @@ app.post('/webhooks/openwave', express.raw({ type: 'application/json' }), (req, 
 After receiving the webhook, you can verify the session status directly:
 
 ```http
-GET /payments/sessions/{session_id}
+GET /api/v1/payments/sessions/{session_id}
 Authorization: Bearer mk_live_...
 ```
 
@@ -180,7 +180,9 @@ POST /recurring/mandates
 }
 ```
 
-Customer receives an OTP to confirm the mandate. Once active, you charge via:
+Send the customer to the returned `consent_url` or open it in the official SDK/webview. The customer reviews the amount limit and frequency, then approves with bank OTP or push inside the hosted OpenWave surface. Do not collect OTPs in your merchant UI and do not call mandate approval endpoints from your backend.
+
+Once active, you charge via:
 
 ```http
 POST /recurring/mandates/{mandate_id}/charge
@@ -193,3 +195,35 @@ POST /recurring/mandates/{mandate_id}/charge
 - Store it as an environment variable: `OPENWAVE_API_KEY`
 - Rotate your key immediately if you suspect it's compromised
 - Use `mk_test_...` keys in development and CI
+
+## Two-Tier Access Model
+
+::: warning Merchant API keys cannot drive the checkout flow
+`resolve-payer`, `select-auth`, and `confirm` are **customer-facing** endpoints. Any call to these with a merchant API key is rejected with `403 CHECKOUT_STEP_FORBIDDEN`.
+:::
+
+Your integration follows this split:
+
+| What you do (server-side) | What the customer does (in browser) |
+|:---|:---|
+| Create session with merchant key | Enter alias/IBAN in the hosted page |
+| Redirect to `checkout_url` | Receive OTP, confirm payment |
+| Poll status or wait for webhook | — |
+
+This design ensures:
+- **Your server never sees the customer's IBAN or phone** — that data lives in the browser session only.
+- **The customer controls the payment** — you cannot trigger the debit from your backend after session creation.
+- **Standard compliance** — follows SCA / PSD2 principles for delegated authentication.
+
+### Use the Official SDK
+
+```js
+// ✅ Correct — merchant server creates the session
+const session = await astro.payments.createSession({ amount, currency, destination })
+// Then redirect: window.location.href = session.checkout_url
+
+// ❌ Wrong — merchant cannot call checkout steps
+await astro.payments.resolvePayer(sessionId, { payer_alias: '09...' }) // 403 Forbidden
+```
+
+The `checkout_url` is the single handoff point: your server creates the session, the customer completes it.

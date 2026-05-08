@@ -13,12 +13,12 @@ This page covers the full OpenWave system topology — the participants, how the
 ║  MERCHANTS   ║    OPENWAVE GATEWAY        ║  BANKS & CUSTOMERS               ║
 ║              ║                           ║                                  ║
 ║  E-commerce  ║  ┌─────────────────────┐  ║  Bank A CBS ◄─── Bank A App      ║
-║  POS         ║  │  Payment Engine     │  ║  (Andalus, NUB,                  ║
-║  Billing     ║  │  Alias Registry     │◄─╫──FCUBS, ...)                     ║
+║  POS         ║  │  Payment Engine     │  ║                                  ║
+║  Billing     ║  │  Alias Registry     │◄─╫──Bank B CBS ◄─── Bank B App      ║
 ║  Apps        ║  │  Open Banking       │  ║                                  ║
-║              ║  │  Webhook Dispatcher │  ║  Bank B CBS ◄─── Bank B App      ║
+║              ║  │  Webhook Dispatcher │  ║  Bank C CBS ◄─── Bank C App      ║
 ║  ──────────► ║  │  Settlement Engine  │  ║                                  ║
-║  REST API    ║  └──────────┬──────────┘  ║  Bank C CBS ◄─── Bank C App      ║
+║  REST API    ║  └──────────┬──────────┘  ║  (any number of banks)           ║
 ║  + Webhooks  ║             │             ║                                  ║
 ╚══════════════╬═════════════╪═════════════╬══════════════════════════════════╝
                ║    CBL NATIONAL INFRASTRUCTURE                                ║
@@ -36,7 +36,7 @@ This page covers the full OpenWave system topology — the participants, how the
 Merchants integrate the gateway **once** and accept payments from customers at any participating bank.
 
 - Authenticate with a **merchant API key** (`Authorization: Bearer <key>`)
-- Create payment sessions via `POST /payments/initiate`
+- Create payment sessions via `POST /payments/sessions`
 - Receive outcomes via **signed webhooks** (`X-OpenWave-Signature`)
 - Never talk to banks directly — the gateway handles all bank routing
 
@@ -71,7 +71,7 @@ Any entity running a compliant OpenWave gateway instance. Operators register ban
 │  │ initiate()      │  │  register()      │  │  OAuth 2.0 + PKCE          │  │
 │  │ resolvePayer()  │  │  resolve()       │  │  SCA challenge             │  │
 │  │ selectAuth()    │  │  deactivate()    │  └────────────────────────────┘  │
-│  │ confirmOtp()    │  └──────────────────┘                                  │
+│  │ confirm()       │  └──────────────────┘                                  │
 │  │ confirmPush()   │                        ┌────────────────────────────┐  │
 │  │ executeDeduct() │  ┌──────────────────┐  │  Webhook Dispatcher        │  │
 │  └────────┬────────┘  │ Settlement       │  │                            │  │
@@ -82,11 +82,12 @@ Any entity running a compliant OpenWave gateway instance. Operators register ban
 │  │ Bank Core       │  │                  │  │  settlement.completed      │  │
 │  │ Client Factory  │  │  resolve_route() │  │                            │  │
 │  │                 │  └──────────────────┘  │  HMAC-SHA256 signature     │  │
-│  │  Andalus ───────┤                        │  Retry with backoff        │  │
-│  │  NUB     ───────┤  ┌──────────────────┐  └────────────────────────────┘  │
-│  │  FCUBS   ───────┤  │  Bank Routing    │                                  │
-│  │  (custom)───────┤  │  Service         │  ┌────────────────────────────┐  │
-│  └─────────────────┘  │                  │  │  Admin API                 │  │
+│  │ Generic HTTP    │                        │  Retry with backoff        │  │
+│  │ Forwarder       │  ┌──────────────────┐  └────────────────────────────┘  │
+│  │ (routes to any  │  │  Bank Routing    │                                  │
+│  │  bank via       │  │  Service         │  ┌────────────────────────────┐  │
+│  │  coreBaseUrl)   │  │                  │  │  Admin API                 │  │
+│  └─────────────────┘  │                  │  │                            │  │
 │                        │  IBAN → bank     │  │                            │  │
 │                        │  alias → bank    │  │  Bank CRUD + key rotation  │  │
 │                        │  handle lookup   │  │  Merchant CRUD             │  │
@@ -141,7 +142,7 @@ Customer (Bank A)    Gateway       Bank A CBS      CBL LyPay     Bank B CBS    M
 
 - **Used when:** debtor and merchant are at different banks
 - **Timing:** 2–10 seconds (CBL LyPay real-time rail)
-- **Status flow:** `CONFIRMED_AUTH` → `SETTLEMENT_PENDING` → `CONFIRMED`
+- **Status flow:** auth confirmed → `SETTLEMENT_PENDING` → `COMPLETED`
 - `payment.settlement_pending` fires when debit is confirmed + LyPay instruction submitted
 - `payment.completed` fires when CBL confirms credit at the merchant's bank
 
@@ -154,7 +155,7 @@ Customer (Bank A)    Gateway       Bank A CBS      CBL LyPay     Bank B CBS    M
                       │           Payment Session                │
                       └─────────────────────────────────────────┘
 
-     [merchant calls POST /payments/initiate]
+     [merchant calls POST /payments/sessions]
                       │
                       ▼
                   PENDING ──────────────────────────────────► EXPIRED
@@ -173,15 +174,73 @@ Customer (Bank A)    Gateway       Bank A CBS      CBL LyPay     Bank B CBS    M
                       │
                ┌──────┴──────────────┐
                ▼                     ▼
-           CONFIRMED          SETTLEMENT_PENDING   ◄── LYPAY cross-bank only
+           COMPLETED          SETTLEMENT_PENDING   ◄── LYPAY cross-bank only
            (SAME_BANK)             │
                │          [CBL LyPay credit callback]
                │                   │
                └──────┬────────────┘
                       ▼
-                  CONFIRMED ──────────────────────► FAILED
+                  COMPLETED ──────────────────────► FAILED
               (payment.completed)            (payment.failed)
 ```
+
+---
+
+## Checkout Session Flow (Step by Step)
+
+The gateway is **not a bank**. It routes. The bank handles OTP generation, customer lookup, and debit execution internally. The gateway only passes IBANs — never CBS customer IDs.
+
+```
+Merchant (backend)
+  │
+  │  POST /api/v1/payments/sessions
+  │  { amount, currency, description, destination }
+  │
+  ▼
+Gateway → creates PaymentSession (status: PENDING) → returns { session_id, checkout_url }
+  │
+Customer (browser / mobile)
+  │
+  │  POST /api/v1/payments/sessions/{id}/resolve-payer
+  │  { payer_iban OR payer_alias }
+  │
+  ▼
+Gateway → resolves bank via IBAN prefix / NAD alias → returns { bank_handle, auth_modes }
+  │
+  │  POST /api/v1/payments/sessions/{id}/select-auth  { auth_mode: "OTP" }
+  │
+  ▼
+Gateway → POST {bank.coreBaseUrl}/send-otp  { session_id, payer_iban }
+  │        ↳ Bank looks up customer from IBAN internally
+  │        ↳ Bank generates OTP, sends SMS/email to customer
+  │        ↳ Bank returns { otp_token, phone_masked }
+  ▼
+Gateway → session status: OTP_SENT → returns { otp_token, phone_masked }
+  │
+  │  POST /api/v1/payments/sessions/{id}/confirm  { otp_code }
+  │
+  ▼
+Gateway → POST {bank.coreBaseUrl}/verify-otp  { session_id, otp_token, otp_code }
+  │        ↳ Bank verifies OTP → returns { verified: true }
+  ▼
+Gateway → POST {bank.coreBaseUrl}/execute-transaction  { session_id, debtor_iban,
+  │        creditor_iban, amount, currency, route_type, ... }
+  │        ↳ Bank debits payer account (CBS book transfer or LyPay initiation)
+  │        ↳ Bank returns { transfer_ref, route_used }
+  ▼
+Gateway → session status: COMPLETED (or SETTLEMENT_PENDING for cross-bank LyPay)
+        → fires webhook: payment.completed to merchant
+```
+
+### Key Invariants
+
+| Rule | Enforcement |
+|---|---|
+| Gateway is bank-agnostic | One generic HTTP forwarder routes to any bank via `coreBaseUrl` |
+| No bank names in gateway code | Bank selection is dynamic — `BankEntity.coreBaseUrl` drives routing |
+| CBS customer IDs never leave the bank | Gateway only sends/receives IBANs |
+| OTP content is a bank concern | Gateway sends `payer_iban`; bank enriches SMS/email internally |
+| Merchant context in OTP notifications | Bank fetches from its own payment session record — not from gateway |
 
 ---
 
@@ -231,14 +290,14 @@ Bank A (debtor)                       CBL LyPay                 Bank B (creditor
 ```
                     ┌──────────────────────────────┐
                     │     OpenWave Gateway          │
-                    │     (Neptune Astro)           │
+                    │     (operator implementation) │
                     │                              │
                ┌────┤  Spring Boot + MySQL + Redis │────┐
                │    └──────────────────────────────┘    │
                │                                        │
         ┌──────▼──────┐                         ┌──────▼──────┐
         │  Bank A CBS │                         │  Bank B CBS │
-        │  (Andalus)  │                         │  (NUB, etc) │
+        │  (any bank) │                         │  (any bank) │
         └─────────────┘                         └─────────────┘
                │                                        │
                └────────────────────────────────────────┘
@@ -273,7 +332,7 @@ Multiple independent gateways can **interoperate** because the standard defines 
 | **Gateway Runtime** | Spring Boot 3, Kotlin, JPA/Hibernate |
 | **Database** | MySQL 8 (payment sessions, banks, merchants, aliases) |
 | **Cache / Jobs** | Redis (session cache, webhook retry queue) |
-| **Bank Comms** | HTTP (WebClient) with bank-specific API keys |
+| **Bank Comms** | HTTP (WebClient) — single generic forwarder to each bank's `coreBaseUrl` |
 | **CBL Comms** | LyPay REST API, NAD REST API |
 | **Webhooks** | HTTPS POST + HMAC-SHA256 signature, exponential backoff |
 | **Auth (Merchant)** | `Authorization: Bearer <api_key>` |

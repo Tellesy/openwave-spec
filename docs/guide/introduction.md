@@ -31,7 +31,7 @@ Any server that **implements this specification** is an **OpenWave Gateway**. A 
 - Delivers webhook events to merchants
 - Issues and validates NPT aliases
 
-Neptune Fintech operates **Astro**, the reference implementation. Any bank or fintech can run their own compliant gateway.
+Any bank, fintech, processor, or national switch operator can run an OpenWave-compliant gateway. The specification is not tied to a single product or operator.
 
 ## Deployment Models
 

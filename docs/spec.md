@@ -1,6 +1,6 @@
 # Spec Files
 
-Three OpenAPI 3.0.3 files define the complete OpenWave standard. All are machine-readable and compatible with any OpenAPI tooling.
+Four OpenAPI 3.0.3 files define the complete OpenWave standard. All are machine-readable and compatible with any OpenAPI tooling.
 
 ## openwave-payments-v1.yaml
 
@@ -30,6 +30,13 @@ curl https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-payme
 
 → [View on GitHub](https://github.com/Tellesy/openwave-spec/blob/main/openwave-identity-v1.0.yaml)  
 → [Raw YAML](https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-identity-v1.0.yaml)
+
+## openwave-gateway-interconnect-v1.yaml
+
+**Covers:** Gateway discovery, remote alias resolution, cross-gateway routing, route status, gateway-to-gateway settlement, health checks
+
+→ [View on GitHub](https://github.com/Tellesy/openwave-spec/blob/main/openwave-gateway-interconnect-v1.yaml)  
+→ [Raw YAML](https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-gateway-interconnect-v1.yaml)
 
 ---
 

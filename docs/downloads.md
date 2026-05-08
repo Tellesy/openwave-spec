@@ -188,7 +188,7 @@ npx @openapitools/openapi-generator-cli generate \
 :::
 
 ::: tip Native SDKs
-For production use, the **Neptune Astro** gateway ships hand-crafted SDKs for TypeScript, React, Flutter, Kotlin, and Swift. See the [Astro SDK docs](https://neptune-astro.github.io/neptune-astro/) for packages that are ready to drop into your project.
+OpenWave-compatible gateway operators may publish hand-crafted SDKs for their own products. For the standard itself, generated clients from the OpenAPI files remain the portable baseline.
 :::
 
 ---

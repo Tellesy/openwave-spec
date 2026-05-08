@@ -1,0 +1,666 @@
+openapi: 3.1.0
+info:
+  title: OpenWave Gateway Interconnect Protocol
+  version: 1.0.0
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  description: |
+    OW-GIP defines how independent OpenWave-compatible gateways discover each
+    other, resolve remote aliases, route cross-gateway payments, and reconcile
+    gateway-to-gateway settlement.
+servers:
+  - url: https://interconnect.openwave.org/ow-gip/v1
+    description: Gateway interconnect base URL
+tags:
+  - name: Discovery
+    description: Gateway metadata, directory registration, and capability exchange.
+  - name: Routing
+    description: Remote alias lookup and cross-gateway payment routing.
+  - name: Settlement
+    description: Gateway-to-gateway settlement batches and reconciliation status.
+  - name: Health
+    description: Liveness checks for routing and failover decisions.
+security:
+  - GatewayKey: []
+paths:
+  /gateway-info:
+    get:
+      tags: [Discovery]
+      operationId: getGatewayInfo
+      summary: Get gateway capabilities and routing metadata
+      security: []
+      responses:
+        '200':
+          description: Gateway metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayInfo'
+              examples:
+                standard:
+                  value:
+                    gateway_id: gw_ly_tripoli_001
+                    display_name: Tripoli OpenWave Gateway
+                    country: LY
+                    base_url: https://gw-a.example.ly/ow-gip/v1
+                    supported_banks: [andalus, wahda]
+                    supported_rails: [LYPAY, SAME_BANK]
+                    capabilities: [REMOTE_ALIAS_RESOLUTION, ROUTE_PAYMENT, NET_SETTLEMENT]
+                    fees:
+                      currency: LYD
+                      percentage_bps: 25
+                      flat_fee: 0
+                    mtls_required: true
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/GatewayUnavailable'
+  /gateway-register:
+    post:
+      tags: [Discovery]
+      operationId: registerGateway
+      summary: Register or update a gateway in a directory
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatewayRegistrationRequest'
+      responses:
+        '200':
+          description: Gateway registration accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayRegistrationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthorizedGateway'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /resolve-alias-remote:
+    post:
+      tags: [Routing]
+      operationId: resolveAliasRemote
+      summary: Resolve an alias owned by another gateway
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RemoteAliasResolveRequest'
+            examples:
+              remoteNpt:
+                value:
+                  request_id: req_01HZY7Z0W8E
+                  alias: sara@npt.ly
+                  requesting_gateway_id: gw_ly_tripoli_001
+                  purpose: PAYMENT_ROUTING
+      responses:
+        '200':
+          description: Alias resolution result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemoteAliasResolveResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthorizedGateway'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /route-payment:
+    post:
+      tags: [Routing]
+      operationId: routePayment
+      summary: Route a payment from one gateway to another
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoutePaymentRequest'
+            examples:
+              sameCountry:
+                value:
+                  routing_request_id: rpr_01HZY80X2PN
+                  source_gateway_id: gw_ly_tripoli_001
+                  destination_gateway_id: gw_ly_benghazi_002
+                  payment_session_id: ps_01HZY812Q0G
+                  debtor_alias: customer@npt.ly
+                  creditor_iban: LY83002048000020100120361
+                  amount: 25000
+                  currency: LYD
+                  description: Merchant checkout
+      responses:
+        '202':
+          description: Payment route accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoutePaymentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthorizedGateway'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '503':
+          $ref: '#/components/responses/GatewayUnavailable'
+  /route-status:
+    post:
+      tags: [Routing]
+      operationId: getRouteStatus
+      summary: Query the status of a routed payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteStatusRequest'
+      responses:
+        '200':
+          description: Route status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteStatusResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthorizedGateway'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /settlement-batch:
+    post:
+      tags: [Settlement]
+      operationId: submitSettlementBatch
+      summary: Submit a gateway-to-gateway settlement batch
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettlementBatch'
+            examples:
+              netSettlement:
+                value:
+                  settlement_batch_id: sb_20260507_001
+                  source_gateway_id: gw_ly_tripoli_001
+                  destination_gateway_id: gw_ly_benghazi_002
+                  settlement_date: '2026-05-07'
+                  currency: LYD
+                  gross_amount: 120000
+                  gateway_fee_total: 300
+                  net_amount: 119700
+                  entries:
+                    - route_id: route_01HZY82F0GH
+                      payment_session_id: ps_01HZY812Q0G
+                      amount: 25000
+                      gateway_fee: 63
+                      net_amount: 24937
+      responses:
+        '202':
+          description: Settlement batch accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettlementBatchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthorizedGateway'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /settlement-status:
+    get:
+      tags: [Settlement]
+      operationId: getSettlementStatus
+      summary: Get settlement batch status
+      parameters:
+        - name: settlement_batch_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Settlement status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettlementStatusResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthorizedGateway'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /gateway-health:
+    get:
+      tags: [Health]
+      operationId: getGatewayHealth
+      summary: Check gateway availability for interconnect routing
+      security: []
+      responses:
+        '200':
+          description: Gateway is available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayHealth'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          description: Gateway is unavailable or degraded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayHealth'
+              examples:
+                degraded:
+                  value:
+                    gateway_id: gw_ly_tripoli_001
+                    status: DEGRADED
+                    checked_at: '2026-05-07T10:30:00Z'
+                    reachable: true
+                    details:
+                      settlement: UP
+                      routing: DEGRADED
+                      alias_resolution: UP
+components:
+  responses:
+    BadRequest:
+      description: Invalid request.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RetryableError'
+          examples:
+            invalidRequest:
+              value:
+                code: INVALID_REQUEST
+                message: Required routing field is missing.
+                retryable: false
+    UnauthorizedGateway:
+      description: Gateway key, mutual TLS identity, or gateway status is invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RetryableError'
+          examples:
+            unauthorized:
+              value:
+                code: GATEWAY_UNAUTHORIZED
+                message: Gateway authentication failed.
+                retryable: false
+    Conflict:
+      description: Request conflicts with an existing idempotent operation or state.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RetryableError'
+          examples:
+            conflict:
+              value:
+                code: IDEMPOTENCY_CONFLICT
+                message: Idempotency key was already used for different request data.
+                retryable: false
+    NotFound:
+      description: Requested route or settlement batch was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RetryableError'
+          examples:
+            notFound:
+              value:
+                code: NOT_FOUND
+                message: Resource not found.
+                retryable: false
+    RateLimited:
+      description: Gateway request rate exceeded.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RetryableError'
+          examples:
+            rateLimited:
+              value:
+                code: RATE_LIMITED
+                message: Retry after the advertised delay.
+                retryable: true
+                retry_after_seconds: 30
+    GatewayUnavailable:
+      description: Gateway is temporarily unavailable.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RetryableError'
+          examples:
+            unavailable:
+              value:
+                code: GATEWAY_UNAVAILABLE
+                message: Destination gateway is degraded or offline.
+                retryable: true
+                retry_after_seconds: 60
+  securitySchemes:
+    GatewayKey:
+      type: apiKey
+      in: header
+      name: X-OpenWave-Gateway-Key
+      description: Gateway-to-gateway key with `owgw_` prefix. Production deployments must also require mutual TLS.
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
+      description: Unique retry key for this request.
+  schemas:
+    GatewayInfo:
+      type: object
+      required: [gateway_id, display_name, country, base_url, supported_banks, supported_rails, capabilities, fees, mtls_required]
+      properties:
+        gateway_id:
+          type: string
+        display_name:
+          type: string
+        country:
+          type: string
+          minLength: 2
+          maxLength: 2
+        base_url:
+          type: string
+          format: uri
+        supported_banks:
+          type: array
+          items:
+            type: string
+        supported_rails:
+          type: array
+          items:
+            type: string
+            enum: [SAME_BANK, LYPAY, NATIONAL_SWITCH, GATEWAY_INTERCONNECT]
+        capabilities:
+          type: array
+          items:
+            type: string
+            enum: [REMOTE_ALIAS_RESOLUTION, ROUTE_PAYMENT, NET_SETTLEMENT, GROSS_SETTLEMENT, FAILOVER_ROUTING]
+        fees:
+          $ref: '#/components/schemas/FeePolicy'
+        mtls_required:
+          type: boolean
+    FeePolicy:
+      type: object
+      required: [currency, percentage_bps, flat_fee]
+      properties:
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        percentage_bps:
+          type: integer
+          minimum: 0
+        flat_fee:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Flat fee in minor units.
+    FeeBreakdown:
+      type: object
+      required: [currency, source_gateway_fee, destination_gateway_fee, network_fee, total_fee]
+      properties:
+        currency:
+          type: string
+        source_gateway_fee:
+          type: integer
+          format: int64
+        destination_gateway_fee:
+          type: integer
+          format: int64
+        network_fee:
+          type: integer
+          format: int64
+        total_fee:
+          type: integer
+          format: int64
+    GatewayRegistrationRequest:
+      allOf:
+        - $ref: '#/components/schemas/GatewayInfo'
+        - type: object
+          required: [public_key, contact_email]
+          properties:
+            public_key:
+              type: string
+              description: PEM or JWK public key used for gateway verification.
+            contact_email:
+              type: string
+              format: email
+    GatewayRegistrationResponse:
+      type: object
+      required: [gateway_id, status, registered_at]
+      properties:
+        gateway_id:
+          type: string
+        status:
+          type: string
+          enum: [ACTIVE, PENDING_REVIEW, SUSPENDED]
+        registered_at:
+          type: string
+          format: date-time
+    RemoteAliasResolveRequest:
+      type: object
+      required: [request_id, alias, requesting_gateway_id, purpose]
+      properties:
+        request_id:
+          type: string
+        alias:
+          type: string
+        requesting_gateway_id:
+          type: string
+        purpose:
+          type: string
+          enum: [PAYMENT_ROUTING, ACCOUNT_VERIFICATION]
+    RemoteAliasResolveResponse:
+      type: object
+      required: [request_id, status]
+      properties:
+        request_id:
+          type: string
+        status:
+          type: string
+          enum: [RESOLVED, NOT_FOUND, BLOCKED]
+        owner_gateway_id:
+          type: string
+        bank_handle:
+          type: string
+        default_iban:
+          type: string
+        display_name:
+          type: string
+    RoutePaymentRequest:
+      type: object
+      required: [routing_request_id, source_gateway_id, destination_gateway_id, payment_session_id, amount, currency]
+      properties:
+        routing_request_id:
+          type: string
+        source_gateway_id:
+          type: string
+        destination_gateway_id:
+          type: string
+        payment_session_id:
+          type: string
+        debtor_alias:
+          type: string
+        debtor_iban:
+          type: string
+        creditor_alias:
+          type: string
+        creditor_iban:
+          type: string
+        amount:
+          type: integer
+          format: int64
+          minimum: 1
+        currency:
+          type: string
+        description:
+          type: string
+          maxLength: 280
+    RoutePaymentResponse:
+      type: object
+      required: [route_id, status, fee_breakdown, accepted_at]
+      properties:
+        route_id:
+          type: string
+        status:
+          $ref: '#/components/schemas/RouteStatus'
+        fee_breakdown:
+          $ref: '#/components/schemas/FeeBreakdown'
+        accepted_at:
+          type: string
+          format: date-time
+    RouteStatusRequest:
+      type: object
+      required: [route_id]
+      properties:
+        route_id:
+          type: string
+    RouteStatusResponse:
+      type: object
+      required: [route_id, status, updated_at]
+      properties:
+        route_id:
+          type: string
+        status:
+          $ref: '#/components/schemas/RouteStatus'
+        transfer_ref:
+          type: string
+        failure:
+          $ref: '#/components/schemas/RetryableError'
+        updated_at:
+          type: string
+          format: date-time
+    RouteStatus:
+      type: string
+      enum: [ACCEPTED, ROUTING, DEBIT_CONFIRMED, CREDIT_CONFIRMED, COMPLETED, FAILED, EXPIRED]
+    SettlementBatch:
+      type: object
+      required: [settlement_batch_id, source_gateway_id, destination_gateway_id, settlement_date, currency, gross_amount, gateway_fee_total, net_amount, entries]
+      properties:
+        settlement_batch_id:
+          type: string
+        source_gateway_id:
+          type: string
+        destination_gateway_id:
+          type: string
+        settlement_date:
+          type: string
+          format: date
+        currency:
+          type: string
+        gross_amount:
+          type: integer
+          format: int64
+        gateway_fee_total:
+          type: integer
+          format: int64
+        net_amount:
+          type: integer
+          format: int64
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/SettlementEntry'
+    SettlementEntry:
+      type: object
+      required: [route_id, payment_session_id, amount, gateway_fee, net_amount]
+      properties:
+        route_id:
+          type: string
+        payment_session_id:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        gateway_fee:
+          type: integer
+          format: int64
+        net_amount:
+          type: integer
+          format: int64
+    SettlementBatchResponse:
+      type: object
+      required: [settlement_batch_id, status, accepted_at]
+      properties:
+        settlement_batch_id:
+          type: string
+        status:
+          $ref: '#/components/schemas/SettlementStatus'
+        accepted_at:
+          type: string
+          format: date-time
+    SettlementStatusResponse:
+      type: object
+      required: [settlement_batch_id, status, updated_at]
+      properties:
+        settlement_batch_id:
+          type: string
+        status:
+          $ref: '#/components/schemas/SettlementStatus'
+        reconciliation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/RetryableError'
+        updated_at:
+          type: string
+          format: date-time
+    SettlementStatus:
+      type: string
+      enum: [ACCEPTED, RECONCILING, SETTLED, DISPUTED, FAILED]
+    GatewayHealth:
+      type: object
+      required: [gateway_id, status, checked_at, reachable]
+      properties:
+        gateway_id:
+          type: string
+        status:
+          type: string
+          enum: [UP, DEGRADED, DOWN]
+        checked_at:
+          type: string
+          format: date-time
+        reachable:
+          type: boolean
+        details:
+          type: object
+          additionalProperties:
+            type: string
+            enum: [UP, DEGRADED, DOWN]
+    RetryableError:
+      type: object
+      required: [code, message, retryable]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        retryable:
+          type: boolean
+        retry_after_seconds:
+          type: integer
+          minimum: 0

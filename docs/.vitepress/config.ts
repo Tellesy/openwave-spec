@@ -17,7 +17,7 @@ export default defineConfig({
   ],
 
   themeConfig: {
-    logo: { svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z"/></svg>' },
+    logo: { svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none"><defs><linearGradient id="ow-nav-g" x1="8" y1="10" x2="44" y2="36" gradientUnits="userSpaceOnUse"><stop stop-color="#7c3aed"/><stop offset=".52" stop-color="#a855f7"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs><rect x="3" y="3" width="42" height="42" rx="13" fill="#111114"/><path d="M10 29c6-13 12-19 19-19 5 0 8 5 12 9 4 5 8 9 15 2" stroke="url(#ow-nav-g)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" transform="translate(-4 1)"/><circle cx="25" cy="15" r="2.5" fill="#a855f7"/><circle cx="42" cy="24" r="2.5" fill="#06b6d4"/></svg>' },
     siteTitle: 'OpenWave',
 
     nav: [
@@ -34,6 +34,7 @@ export default defineConfig({
               { text: 'Payments v1', link: 'https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-payments-v1.yaml' },
               { text: 'Open Banking v1', link: 'https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-open-banking-v1.0.yaml' },
               { text: 'Identity v1', link: 'https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-identity-v1.0.yaml' },
+              { text: 'Gateway Interconnect v1', link: 'https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-gateway-interconnect-v1.yaml' },
             ]
           },
           {
@@ -74,7 +75,9 @@ export default defineConfig({
             { text: 'For Merchants', link: '/guide/merchants' },
             { text: 'For Banks', link: '/guide/banks' },
             { text: 'For TPPs (Open Banking)', link: '/guide/tpp' },
+            { text: 'Decentralized Open Banking', link: '/guide/decentralized-open-banking' },
             { text: 'Gateway Operators', link: '/guide/operators' },
+            { text: 'Gateway Interconnect', link: '/guide/gateway-interconnect' },
           ]
         },
         {

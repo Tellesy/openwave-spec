@@ -44,18 +44,20 @@ OpenWave is **bank-agnostic and gateway-agnostic by design**. Any institution or
 | **Open Banking — AISP** | 1.0.0 | ✅ Stable | Account info, balances, transactions |
 | **Open Banking — PISP** | 1.0.0 | ✅ Stable | TPP-initiated payment orders |
 | **Identity Registry** | 1.0.0 | ✅ Stable | Global NPT handle ownership, multi-bank accounts, alias resolution |
+| **Gateway Interconnect** | 1.0.0 | Draft | Gateway discovery, remote routing, and gateway-to-gateway settlement |
 
 ---
 
 ## Spec Files
 
-Both files are valid **OpenAPI 3.0.3** — load them directly into Swagger UI, Postman, Redocly, or any OpenAPI-compatible tooling.
+The specification files are valid OpenAPI documents — load them directly into Swagger UI, Postman, Redocly, or any OpenAPI-compatible tooling.
 
 | File | Covers |
 |:---|:---|
 | [`openwave-payments-v1.yaml`](./openwave-payments-v1.yaml) | Payments · Recurring · Alias · Webhooks |
 | [`openwave-open-banking-v1.0.yaml`](./openwave-open-banking-v1.0.yaml) | Open Banking AISP + PISP · OAuth 2.0 + PKCE |
 | [`openwave-identity-v1.0.yaml`](./openwave-identity-v1.0.yaml) | Identity Registry · NPT handle ownership · Multi-bank aliases · Governance |
+| [`openwave-gateway-interconnect-v1.yaml`](./openwave-gateway-interconnect-v1.yaml) | Gateway discovery · Remote alias resolution · Cross-gateway routing · Settlement |
 
 ---
 

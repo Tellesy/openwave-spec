@@ -4,9 +4,9 @@ layout: home
 hero:
   name: "OpenWave"
   text: "Open Payment & Open Banking Standard"
-  tagline: "Bank-agnostic. Interoperable. Built for emerging markets. One standard — any bank, any gateway, any fintech."
+  tagline: "Created by Neptune as an open, bank-agnostic standard for interoperable payments, Open Banking, identity, webhooks, and gateway-to-gateway switching."
   image:
-    svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none"><circle cx="60" cy="60" r="58" stroke="#7c3aed" stroke-width="3"/><circle cx="60" cy="60" r="42" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.4"/><circle cx="60" cy="60" r="25" stroke="#06b6d4" stroke-width="1.5" opacity="0.5"/><path d="M28 72 Q44 38 60 58 Q76 78 92 44" stroke="#7c3aed" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="60" cy="58" r="5" fill="#7c3aed"/><circle cx="28" cy="72" r="5" fill="#a78bfa"/><circle cx="92" cy="44" r="5" fill="#06b6d4"/><line x1="28" y1="72" x2="60" y2="58" stroke="#a78bfa" stroke-width="1" stroke-dasharray="3 2" opacity="0.6"/><line x1="60" y1="58" x2="92" y2="44" stroke="#06b6d4" stroke-width="1" stroke-dasharray="3 2" opacity="0.6"/></svg>'
+    svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 160" fill="none"><defs><linearGradient id="owg" x1="24" y1="28" x2="164" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#07315F"/><stop offset=".52" stop-color="#EB4E4D"/><stop offset="1" stop-color="#00A8AE"/></linearGradient><filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#07315F" flood-opacity=".18"/></filter></defs><g filter="url(#shadow)"><rect x="20" y="24" width="112" height="112" rx="32" fill="#07315F"/><path d="M40 92c13-29 27-43 42-43 11 0 18 10 27 20 10 11 20 21 39 3" stroke="url(#owg)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><circle cx="82" cy="49" r="5.5" fill="#EB4E4D"/><circle cx="148" cy="72" r="5.5" fill="#00A8AE"/></g><text x="158" y="86" fill="#07315F" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="48" font-weight="780">OpenWave</text><text x="161" y="116" fill="#6e6e73" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="17" font-weight="560">Neptune-built open standard</text></svg>'
     alt: OpenWave Logo
   actions:
     - theme: brand
@@ -67,7 +67,7 @@ features:
 ---
 
 <div class="ow-stats-bar">
-  <div class="ow-stat"><span class="ow-stat-num">3</span><span class="ow-stat-label">OpenAPI Spec Files</span></div>
+  <div class="ow-stat"><span class="ow-stat-num">4</span><span class="ow-stat-label">OpenAPI Spec Files</span></div>
   <div class="ow-stat-div"></div>
   <div class="ow-stat"><span class="ow-stat-num">60+</span><span class="ow-stat-label">API Endpoints</span></div>
   <div class="ow-stat-div"></div>
@@ -82,7 +82,7 @@ features:
 
 ## What is OpenWave?
 
-OpenWave is an **open API standard** for payments and open banking. It defines a unified contract so any bank, merchant, fintech, or gateway operator can plug into a single interoperable payment network — without bilateral agreements between every participant.
+OpenWave is an **open API standard** created and maintained by Neptune for payments, open banking, identity, settlement webhooks, and gateway interconnect. It defines a unified contract so any bank, merchant, fintech, or gateway operator can plug into a single interoperable network without bilateral agreements between every participant.
 
 **Libya's problem:** Customers are locked to their bank's app. Merchants integrate with each bank separately. There is no shared payment identity layer. Money can't move freely.
 

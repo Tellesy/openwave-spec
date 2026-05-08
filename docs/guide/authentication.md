@@ -10,7 +10,8 @@ OpenWave uses different authentication mechanisms depending on who is making the
 | Bank Partner | Static bank key | `X-OpenWave-Bank-Key: owbk_...` |
 | Customer (session) | Short-lived session token | `X-Session-Token: ost_...` |
 | TPP (Open Banking) | OAuth 2.0 access token | `Authorization: Bearer <token>` |
-| Bank core → gateway | Pre-shared internal secret | `X-OpenWave-Internal-Key: <secret>` |
+| Customer (Open Banking authorisation) | Short-lived hosted authorisation token | `X-OpenWave-Auth-Session: <token>` |
+| Gateway → bank core | Pre-shared internal secret | `X-OpenWave-Internal-Key: <secret>` |
 | Gateway admin | Admin key | `X-OpenWave-Admin-Key: <key>` |
 
 ## Merchant API Keys
@@ -49,6 +50,10 @@ X-Consent-Id: con_01HZGV...
 
 Both headers are required on every Open Banking data/payment call.
 
+Consent approval itself is not a TPP API. The customer must be redirected or embedded into the gateway-hosted authorisation surface, which issues a short-lived `X-OpenWave-Auth-Session` token for OTP/PUSH SCA. TPPs and merchants must not collect bank OTPs or invoke consent approval steps directly from their own backend.
+
+The hosted authorisation surface must show the requested scopes as customer-readable permissions before SCA. Raw OAuth scope strings are audit data, not sufficient customer disclosure.
+
 ### Token Properties
 
 | Property | Value |
@@ -65,15 +70,68 @@ Both headers are required on every Open Banking data/payment call.
 - `plain` method is rejected with `400 Bad Request`
 - Public clients (mobile, SPA) fully supported — no client secret required
 
+## Two-Tier Access Model
+
+OpenWave enforces a strict separation between merchant server-side operations and customer-facing checkout operations.
+
+### Tier 1 — Merchant API (server-to-server)
+
+These endpoints require a merchant API key (`Authorization: Bearer mk_...`):
+
+| Endpoint | Purpose |
+|:---|:---|
+| `POST /payments/sessions` | Create a checkout session |
+| `GET /payments/sessions/{id}` | Poll session status (no payer PII returned) |
+| `POST /payments/sessions/{id}/cancel` | Cancel a session |
+| `GET /payments/fee` | Query fee estimate |
+| `POST /recurring/mandates` | Create a recurring mandate |
+
+### Tier 2 — Checkout Flow (customer-facing, SDK only)
+
+These endpoints are **blocked for merchant API keys**. They must be called from the hosted checkout page or an official OpenWave SDK widget using `X-Session-Token`:
+
+| Endpoint | Purpose |
+|:---|:---|
+| `POST /payments/sessions/{id}/resolve-payer` | Look up payer by alias or IBAN |
+| `POST /payments/sessions/{id}/select-auth` | Trigger OTP or push notification |
+| `POST /payments/sessions/{id}/confirm` | Submit OTP code and execute payment |
+
+Attempting to call any checkout step endpoint with a merchant API key returns:
+
+```json
+HTTP 403 Forbidden
+{
+  "error": "CHECKOUT_STEP_FORBIDDEN",
+  "message": "Checkout session steps must be driven by the customer via the hosted checkout page or the official OpenWave SDK."
+}
+```
+
+### Why this matters
+
+- **Customer data isolation**: payer IBAN, phone number, and account list are returned to the customer's browser only — never to the merchant's server.
+- **Consent integrity**: the customer controls the payment flow; the merchant cannot auto-complete it on their behalf.
+- **Standard compliance**: aligns with PSD2 / Open Banking SCA principles.
+
+> **Future — Direct API access for large merchants**: A future `merchant-direct` tier may be available for certified large merchants (analogous to Visa/Mastercard direct integrations), subject to enhanced compliance and customer consent requirements.
+
+### Official SDK channels
+
+| Channel | Package | Use case |
+|:---|:---|:---|
+| JavaScript SDK | `@neptune.fintech/astro-sdk` | Server-side session create/poll |
+| React SDK | `@neptune.fintech/astro-react` | `usePaymentSession()` + `useCheckout()` |
+| Hosted checkout page | `astro-ui /pay/{sessionId}` | Full-page redirect checkout |
+| Web embed (coming soon) | `@neptune.fintech/astro-web-sdk` | Inline iframe checkout |
+
 ## Session Tokens
 
-When a customer authenticates during a payment flow, they receive a short-lived session token:
+When a customer authenticates during a payment flow, the checkout page receives a short-lived session token:
 
 ```http
 X-Session-Token: ost_01HZGV...
 ```
 
-These are managed by the gateway internally. Merchants don't handle session tokens directly — the checkout flow manages this transparently.
+Session tokens are scoped to a single payment session and expire when the session completes or times out. The gateway issues them automatically — merchants never see or handle them.
 
 ## Internal Key (Bank Core ↔ Gateway)
 
