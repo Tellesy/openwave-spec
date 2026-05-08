@@ -1,17 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <defs>
-    <linearGradient id="ow-coral" x1="12" y1="36" x2="54" y2="24" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#EB4E4D"/>
-      <stop offset="1" stop-color="#F0CE9D"/>
-    </linearGradient>
-    <linearGradient id="ow-teal" x1="12" y1="44" x2="54" y2="34" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#00A8AE"/>
-      <stop offset="1" stop-color="#3BC1EE"/>
-    </linearGradient>
-  </defs>
   <rect width="64" height="64" rx="18" fill="#07315F"/>
-  <path d="M13 38c8.4-18.2 17.8-27.2 28.3-27.2 7.5 0 11.8 6.4 17.1 12.1 4.4 4.8 8.8 8.8 16.2 5.4" stroke="url(#ow-coral)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" transform="translate(-10 4)"/>
-  <path d="M13 45c8.6-12.1 17.8-18.1 27.7-18.1 7.2 0 12 4.3 17.1 8 4.4 3.3 8.7 5.7 16.7 1.2" stroke="url(#ow-teal)" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" transform="translate(-10 4)"/>
-  <circle cx="32.5" cy="20" r="3.5" fill="#F0CE9D"/>
-  <circle cx="51" cy="36" r="3" fill="#3BC1EE"/>
+  <path d="M11 37c7.4-13.5 15.7-20.3 25-20.3 6.8 0 11.1 4.2 15.4 8.4 2.2 2.2 4.4 4.3 7.1 5.3" stroke="#EB4E4D" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M11 46c7.4-9.2 15.7-13.8 25-13.8 6.8 0 11.2 2.9 15.6 5.8 2.2 1.4 4.3 2.8 6.9 3.5" stroke="#00A8AE" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
