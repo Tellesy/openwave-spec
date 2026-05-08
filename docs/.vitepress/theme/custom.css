@@ -264,6 +264,162 @@ body {
   gap: 1rem;
 }
 
+.ow-architecture-board {
+  max-width: 1120px;
+  margin: 2.5rem auto;
+  padding: 1rem;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--vp-c-bg) 86%, var(--vp-c-bg-soft));
+  box-shadow: 0 24px 70px rgba(7, 49, 95, 0.09);
+}
+
+.ow-system-map {
+  position: relative;
+  min-height: 560px;
+  margin-top: 1.2rem;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 18px;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--vp-c-bg-soft) 74%, transparent) 0 33%, transparent 33% 66%, color-mix(in srgb, var(--vp-c-bg-soft) 74%, transparent) 66% 100%),
+    var(--vp-c-bg);
+}
+
+.ow-system-map::before,
+.ow-system-map::after {
+  content: "Gateway trust boundary";
+  position: absolute;
+  top: 1rem;
+  bottom: 1rem;
+  left: 34.5%;
+  width: 31%;
+  border: 1px dashed color-mix(in srgb, var(--vp-c-brand-1) 36%, var(--vp-c-border));
+  border-radius: 20px;
+  display: grid;
+  align-items: end;
+  justify-items: center;
+  padding-bottom: 0.75rem;
+  color: var(--vp-c-text-3);
+  font-size: 0.78rem;
+  font-weight: 760;
+  pointer-events: none;
+}
+
+.ow-system-map::after {
+  content: "Bank and settlement boundary";
+  left: 68%;
+  width: 29%;
+  border-color: color-mix(in srgb, var(--npt-coral) 34%, var(--vp-c-border));
+}
+
+.ow-map-node {
+  position: absolute;
+  z-index: 2;
+  width: min(230px, 22%);
+  min-height: 92px;
+  padding: 1rem;
+  display: grid;
+  align-content: center;
+  gap: 0.35rem;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 16px;
+  background: var(--vp-c-bg);
+  box-shadow: 0 16px 36px rgba(7, 49, 95, 0.08);
+}
+
+.ow-map-node b {
+  color: var(--vp-c-text-1);
+}
+
+.ow-map-node small {
+  color: var(--vp-c-text-2);
+  line-height: 1.35;
+}
+
+.ow-map-merchant { left: 4%; top: 12%; }
+.ow-map-customer { left: 4%; bottom: 13%; }
+.ow-map-gateway {
+  left: 39%;
+  top: 35%;
+  width: min(260px, 24%);
+  border-color: color-mix(in srgb, var(--vp-c-brand-1) 44%, var(--vp-c-border));
+  background: color-mix(in srgb, var(--vp-c-brand-1) 8%, var(--vp-c-bg));
+}
+.ow-map-identity { right: 5%; top: 10%; }
+.ow-map-bank { right: 5%; top: 38%; }
+.ow-map-rail { right: 5%; bottom: 10%; }
+
+.ow-data-line {
+  --x: 0%;
+  --y: 0%;
+  --w: 20%;
+  --r: 0deg;
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: 3px;
+  transform: rotate(var(--r));
+  transform-origin: left center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--vp-c-brand-1) 18%, var(--vp-c-border));
+  z-index: 1;
+}
+
+.ow-data-line i {
+  position: absolute;
+  inset-block: -4px;
+  left: 0;
+  width: 44px;
+  border-radius: 999px;
+  background: var(--npt-coral);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--npt-coral) 40%, transparent);
+  animation: owDataPulse 4.8s ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+}
+
+.ow-data-line em {
+  position: absolute;
+  left: 50%;
+  top: -30px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-style: normal;
+  color: var(--vp-c-text-2);
+  font-size: 0.75rem;
+  font-weight: 760;
+}
+
+.ow-data-session { --x: 22%; --y: 23%; --w: 19%; --r: 12deg; --d: 0s; }
+.ow-data-auth { --x: 22%; --y: 69%; --w: 20%; --r: -18deg; --d: -0.9s; }
+.ow-data-id { --x: 58%; --y: 37%; --w: 21%; --r: -28deg; --d: -1.8s; }
+.ow-data-bank { --x: 60%; --y: 51%; --w: 17%; --r: 4deg; --d: -2.6s; }
+.ow-data-settle { --x: 60%; --y: 61%; --w: 20%; --r: 28deg; --d: -3.4s; }
+.ow-data-webhook { --x: 40%; --y: 34%; --w: 21%; --r: 193deg; --d: -4s; }
+
+.ow-boundary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+}
+
+.ow-boundary-grid span {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 14px;
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-2);
+  line-height: 1.45;
+}
+
+.ow-boundary-grid b {
+  display: block;
+  color: var(--vp-c-text-1);
+  margin-bottom: 0.25rem;
+}
+
 .ow-flow-card {
   padding: 1.35rem;
   display: grid;
@@ -522,6 +678,12 @@ body {
   0% { transform: translateX(-110%); background: var(--npt-coral); }
   48% { transform: translateX(70%); background: var(--npt-teal); }
   100% { transform: translateX(250%); background: var(--npt-coral); }
+}
+
+@keyframes owDataPulse {
+  0%, 12% { left: 0; transform: scaleX(0.25); opacity: 0; }
+  20%, 80% { opacity: 1; }
+  100% { left: calc(100% - 44px); transform: scaleX(0.75); opacity: 0; }
 }
 
 .ow-network-graphic svg {
@@ -881,8 +1043,27 @@ body {
   .ow-consent-board,
   .ow-npt-board,
   .ow-switch-board,
-  .ow-npt-demo .ow-stage-row {
+  .ow-npt-demo .ow-stage-row,
+  .ow-boundary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .ow-system-map {
+    min-height: auto;
+    display: grid;
+    gap: 0.8rem;
+    padding: 0.8rem;
+  }
+
+  .ow-system-map::before,
+  .ow-system-map::after,
+  .ow-data-line {
+    display: none;
+  }
+
+  .ow-map-node {
+    position: static;
+    width: auto;
   }
 
   .ow-switch-foot {
@@ -895,7 +1076,8 @@ body {
   .ow-packet,
   .ow-stage-row span,
   .ow-lane::after,
-  .ow-switch-line span {
+  .ow-switch-line span,
+  .ow-data-line i {
     animation: none !important;
   }
   .ow-packet {

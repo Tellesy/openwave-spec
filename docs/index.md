@@ -87,6 +87,35 @@ features:
 
 ---
 
+<section class="ow-architecture-board" aria-label="Animated OpenWave architecture and data flow">
+  <div class="ow-suite-head">
+    <p class="ow-eyebrow">Architecture in motion</p>
+    <h2>OpenWave standardizes the contract between apps, gateways, identity, banks, and settlement rails.</h2>
+    <p>The moving paths are separated by purpose: session creation, customer authorization, alias resolution, bank execution, webhook confirmation, and gateway-to-gateway routing.</p>
+  </div>
+  <div class="ow-system-map" aria-hidden="true">
+    <div class="ow-map-node ow-map-merchant"><b>Merchant backend</b><small>Create sessions, verify webhooks</small></div>
+    <div class="ow-map-node ow-map-customer"><b>Customer app / SDK</b><small>Hosted checkout and consent</small></div>
+    <div class="ow-map-node ow-map-gateway"><b>OpenWave Gateway</b><small>Policy, routing, SCA orchestration</small></div>
+    <div class="ow-map-node ow-map-identity"><b>OW Identity</b><small>NPT source of truth</small></div>
+    <div class="ow-map-node ow-map-bank"><b>Bank middleware</b><small>OTP, push, CBS execution</small></div>
+    <div class="ow-map-node ow-map-rail"><b>Settlement rail</b><small>Same-bank, LyPay, or GIP</small></div>
+    <span class="ow-data-line ow-data-session"><i></i><em>session</em></span>
+    <span class="ow-data-line ow-data-auth"><i></i><em>customer SCA</em></span>
+    <span class="ow-data-line ow-data-id"><i></i><em>NPT resolve</em></span>
+    <span class="ow-data-line ow-data-bank"><i></i><em>bank callback</em></span>
+    <span class="ow-data-line ow-data-settle"><i></i><em>settle</em></span>
+    <span class="ow-data-line ow-data-webhook"><i></i><em>signed webhook</em></span>
+  </div>
+  <div class="ow-boundary-grid">
+    <span><b>Merchant boundary</b>No bank OTP collection, no direct CBS calls.</span>
+    <span><b>Gateway boundary</b>Short-lived hosted tokens and idempotent routing.</span>
+    <span><b>Bank boundary</b>Bank performs SCA and owns account execution.</span>
+  </div>
+</section>
+
+---
+
 <section class="ow-explainer-suite" aria-label="OpenWave workflow explainers">
   <div class="ow-suite-head">
     <p class="ow-eyebrow">How OpenWave works</p>

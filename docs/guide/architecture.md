@@ -34,6 +34,28 @@ This page covers the full OpenWave system topology — the participants, how the
   </div>
 </section>
 
+<section class="ow-architecture-board ow-doc-demo" aria-label="Animated OpenWave request classes">
+  <div class="ow-suite-head">
+    <p class="ow-eyebrow">Data-flow layers</p>
+    <h2>Each arrow carries one class of trust, never everything at once.</h2>
+    <p>Merchants create intent, customers authorize in hosted surfaces, identity resolves routing metadata, banks verify and execute, and webhooks close the merchant loop.</p>
+  </div>
+  <div class="ow-system-map" aria-hidden="true">
+    <div class="ow-map-node ow-map-merchant"><b>Merchant</b><small>intent + fulfilment</small></div>
+    <div class="ow-map-node ow-map-customer"><b>Hosted UI</b><small>customer decision</small></div>
+    <div class="ow-map-node ow-map-gateway"><b>Gateway</b><small>route + enforce</small></div>
+    <div class="ow-map-node ow-map-identity"><b>Identity</b><small>alias metadata</small></div>
+    <div class="ow-map-node ow-map-bank"><b>Bank</b><small>SCA + CBS</small></div>
+    <div class="ow-map-node ow-map-rail"><b>Rails</b><small>books / LyPay / GIP</small></div>
+    <span class="ow-data-line ow-data-session"><i></i><em>POST session</em></span>
+    <span class="ow-data-line ow-data-auth"><i></i><em>auth token</em></span>
+    <span class="ow-data-line ow-data-id"><i></i><em>resolve</em></span>
+    <span class="ow-data-line ow-data-bank"><i></i><em>callback</em></span>
+    <span class="ow-data-line ow-data-settle"><i></i><em>movement</em></span>
+    <span class="ow-data-line ow-data-webhook"><i></i><em>signed event</em></span>
+  </div>
+</section>
+
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                         OPENWAVE ECOSYSTEM                                    ║
