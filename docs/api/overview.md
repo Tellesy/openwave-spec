@@ -110,3 +110,24 @@ The exact base URL depends on your gateway operator. Example:
 ```
 https://astro.neptune.ly/api/v1
 ```
+
+## Which endpoint should I read first?
+
+| I am building... | Start here | Then read |
+|:---|:---|:---|
+| Merchant checkout | `POST /payments/sessions` | `GET /payments/sessions/{id}`, webhook events, idempotency |
+| Subscription billing | `POST /recurring/mandates` | hosted mandate consent, mandate charges, cancellation |
+| Bank connector | `/send-otp`, `/verify-otp`, `/execute-transaction`, `/notify-credit` | callback authentication and CBS idempotency |
+| Open Banking TPP app | `POST /ob/consents` | PKCE, scopes, token exchange, consent revocation |
+| NPT identity registry | `GET /v1/identity/resolve` | claim/link/default-account operations |
+| Gateway operator | `GET /gateway-info` | `POST /route-payment`, status, settlement batch |
+
+## Common headers
+
+| Header | Direction | Used by | Notes |
+|:---|:---|:---|:---|
+| `Authorization: Bearer mk_...` | Merchant → Gateway | Payment sessions, mandates, merchant webhooks | Keep server-side only |
+| `X-OpenWave-Internal-Key: ow_cbk_...` | Gateway → Bank | Bank callback interface | DB/configured per bank integration |
+| `X-OpenWave-Bank-Key: owbk_...` | Bank → Identity Registry | NPT claims and bank-owned account changes | Bank-scoped; not customer login |
+| `X-OpenWave-Gateway-Key: owgw_...` | Gateway → Gateway | OW-GIP interconnect calls | Production profiles must also use mTLS |
+| `Idempotency-Key` | Client → API | Payment/session/route/create operations | Required for retry-safe writes |

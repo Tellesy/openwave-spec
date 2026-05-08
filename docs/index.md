@@ -4,23 +4,23 @@ layout: home
 hero:
   name: "OpenWave"
   text: "Open Payment & Open Banking Standard"
-  tagline: "Created by Neptune as an open, bank-agnostic standard for interoperable payments, Open Banking, identity, webhooks, and gateway-to-gateway switching."
+  tagline: "Neptune-built, Apache 2.0 standard for interoperable payments, Open Banking, NPT identity, webhooks, and gateway-to-gateway switching."
   image:
     svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 160" fill="none"><defs><linearGradient id="owg" x1="24" y1="28" x2="164" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#07315F"/><stop offset=".52" stop-color="#EB4E4D"/><stop offset="1" stop-color="#00A8AE"/></linearGradient><filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#07315F" flood-opacity=".18"/></filter></defs><g filter="url(#shadow)"><rect x="20" y="24" width="112" height="112" rx="32" fill="#07315F"/><path d="M40 92c13-29 27-43 42-43 11 0 18 10 27 20 10 11 20 21 39 3" stroke="url(#owg)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><circle cx="82" cy="49" r="5.5" fill="#EB4E4D"/><circle cx="148" cy="72" r="5.5" fill="#00A8AE"/></g><text x="158" y="86" fill="#07315F" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="48" font-weight="780">OpenWave</text><text x="161" y="116" fill="#6e6e73" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="17" font-weight="560">Neptune-built open standard</text></svg>'
     alt: OpenWave Logo
   actions:
     - theme: brand
-      text: Get Started →
+      text: Start Building
       link: /guide/introduction
     - theme: alt
-      text: API Reference
+      text: Endpoint Map
       link: /api/overview
     - theme: alt
       text: Downloads
       link: /downloads
     - theme: alt
-      text: Architecture
-      link: /guide/architecture
+      text: Gateway Interconnect
+      link: /guide/gateway-interconnect
 
 features:
   - icon:
@@ -88,6 +88,20 @@ OpenWave is an **open API standard** created and maintained by Neptune for payme
 
 **OpenWave's solution:** One standard that every participant implements. A bank integrates once and every merchant on any compliant gateway can accept payments from its customers.
 
+</div>
+
+<div class="ow-developer-band">
+  <div>
+    <p class="ow-eyebrow">Developer path</p>
+    <h2>Read the standard by integration role</h2>
+    <p>OpenWave is split by who is calling whom. Merchant APIs use bearer merchant keys, banks expose gateway callbacks, TPPs use OAuth 2.0 + PKCE, and gateways use OW-GIP with gateway keys and mTLS.</p>
+  </div>
+  <div class="ow-path-grid">
+    <a href="/guide/merchants"><b>Merchant</b><span>Create sessions, receive webhooks, reconcile orders.</span><code>Authorization: Bearer mk_...</code></a>
+    <a href="/guide/banks"><b>Bank</b><span>Send OTP, verify SCA, execute debit/credit callbacks.</span><code>X-OpenWave-Internal-Key</code></a>
+    <a href="/guide/tpp"><b>TPP</b><span>Ask for scoped Open Banking access with PKCE consent.</span><code>/ob/consents → /ob/token</code></a>
+    <a href="/guide/gateway-interconnect"><b>Gateway</b><span>Discover peer gateways and route cross-gateway payments.</span><code>X-OpenWave-Gateway-Key</code></a>
+  </div>
 </div>
 
 <div class="ow-modules-grid">
@@ -166,6 +180,20 @@ Merchant           OpenWave Gateway        Debtor Bank (CBS)     CBL LyPay     M
 </div>
 
 ---
+
+<div class="ow-section">
+
+## Security model in one minute
+
+| Surface | Caller | Authentication | Customer protection |
+|:---|:---|:---|:---|
+| Payments | Merchant backend → Gateway | `Authorization: Bearer mk_...` | Hosted checkout or SDK session token, bank OTP or push SCA |
+| Bank callbacks | Gateway → Bank middleware | `X-OpenWave-Internal-Key: ow_cbk_...` | Bank performs OTP/push verification before debit |
+| Open Banking | TPP → Gateway | OAuth 2.0 Authorization Code + PKCE | Hosted consent screen, explicit scopes, revocation |
+| Identity | Bank → Registry | `X-OpenWave-Bank-Key: owbk_...` | Bank can only manage accounts it vouched for |
+| Gateway interconnect | Gateway → Gateway | `X-OpenWave-Gateway-Key: owgw_...` + production mTLS | Idempotent routes, signed settlement batches |
+
+</div>
 
 <div class="ow-downloads-section">
 

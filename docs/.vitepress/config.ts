@@ -2,22 +2,22 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: 'OpenWave',
-  description: 'Open Payment & Open Banking Standard — Bank-agnostic, Interoperable, Built for Emerging Markets',
+  description: 'Neptune-built open standard for bank-agnostic payments, Open Banking, NPT identity, webhooks, and gateway interconnect.',
   base: '/openwave-spec/',
 
   lastUpdated: true,
 
   head: [
     ['link', { rel: 'icon', href: '/openwave-spec/favicon.svg', type: 'image/svg+xml' }],
-    ['meta', { name: 'theme-color', content: '#7c3aed' }],
-    ['meta', { property: 'og:title', content: 'OpenWave — Open Payment Standard' }],
-    ['meta', { property: 'og:description', content: 'Bank-agnostic payment & open banking standard built for emerging markets.' }],
+    ['meta', { name: 'theme-color', content: '#07315F' }],
+    ['meta', { property: 'og:title', content: 'OpenWave — Open Payments and Open Banking Standard' }],
+    ['meta', { property: 'og:description', content: 'Developer-first standard for payments, Open Banking, NPT identity, webhooks, and gateway-to-gateway switching.' }],
     ['meta', { property: 'og:image', content: 'https://Tellesy.github.io/openwave-spec/og-preview.png' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
   ],
 
   themeConfig: {
-    logo: { svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none"><defs><linearGradient id="ow-nav-g" x1="8" y1="10" x2="44" y2="36" gradientUnits="userSpaceOnUse"><stop stop-color="#7c3aed"/><stop offset=".52" stop-color="#a855f7"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs><rect x="3" y="3" width="42" height="42" rx="13" fill="#111114"/><path d="M10 29c6-13 12-19 19-19 5 0 8 5 12 9 4 5 8 9 15 2" stroke="url(#ow-nav-g)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" transform="translate(-4 1)"/><circle cx="25" cy="15" r="2.5" fill="#a855f7"/><circle cx="42" cy="24" r="2.5" fill="#06b6d4"/></svg>' },
+    logo: { svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none"><rect x="3" y="3" width="42" height="42" rx="13" fill="#07315F"/><path d="M11 29c6-13 12-19 19-19 5 0 8 5 12 9 4 5 8 9 15 2" stroke="#EB4E4D" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" transform="translate(-5 1)"/><path d="M11 31c6-8 12-12 18-12 5 0 8 3 12 6 4 4 8 7 15 1" stroke="#00A8AE" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".92" transform="translate(-5 1)"/><circle cx="25" cy="15" r="2.5" fill="#F0CE9D"/><circle cx="42" cy="24" r="2.5" fill="#3BC1EE"/></svg>' },
     siteTitle: 'OpenWave',
 
     nav: [

@@ -39,6 +39,16 @@ body {
   font-family: "SF Compact Rounded", "SF Pro Rounded", "Beiruti", var(--vp-font-family-base);
 }
 
+.VPNavBarTitle .title {
+  letter-spacing: 0;
+  font-weight: 760;
+}
+
+.VPHomeHero .text,
+.VPHomeHero .tagline {
+  letter-spacing: 0;
+}
+
 /* ── Feature cards ─────────────────────────────────────────────────────────── */
 .VPFeature {
   border-radius: 14px !important;
@@ -46,7 +56,7 @@ body {
 }
 .VPFeature:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 40px rgba(124, 58, 237, 0.15);
+  box-shadow: 0 12px 40px rgba(7, 49, 95, 0.14);
 }
 
 /* ── Code blocks ───────────────────────────────────────────────────────────── */
@@ -144,8 +154,74 @@ body {
 }
 .ow-module-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 36px rgba(124, 58, 237, 0.12);
+  box-shadow: 0 10px 36px rgba(7, 49, 95, 0.12);
   border-color: var(--vp-c-brand-1);
+}
+
+.ow-developer-band {
+  max-width: 1060px;
+  margin: 2.5rem auto;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: minmax(240px, 0.8fr) minmax(320px, 1.4fr);
+  gap: 1.25rem;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(7, 49, 95, 0.08), rgba(0, 168, 174, 0.08)),
+    var(--vp-c-bg-soft);
+}
+.ow-developer-band h2 {
+  margin: 0.15rem 0 0.65rem;
+  font-size: 1.75rem;
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+.ow-developer-band p {
+  margin: 0;
+  color: var(--vp-c-text-2);
+  line-height: 1.7;
+}
+.ow-eyebrow {
+  color: var(--vp-c-brand-1) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  font-weight: 760;
+}
+.ow-path-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+.ow-path-grid a {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--vp-c-border);
+  background: color-mix(in srgb, var(--vp-c-bg) 84%, transparent);
+  color: inherit;
+  text-decoration: none !important;
+}
+.ow-path-grid a:hover {
+  border-color: var(--vp-c-brand-1);
+}
+.ow-path-grid b {
+  color: var(--vp-c-text-1);
+}
+.ow-path-grid span {
+  color: var(--vp-c-text-2);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.ow-path-grid code {
+  width: fit-content;
+  margin-top: 0.15rem;
+  color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+  border-radius: 6px;
+  padding: 0.18rem 0.42rem;
 }
 .ow-module-icon {
   width: 2rem;
@@ -284,6 +360,18 @@ body {
   .ow-stats-bar { gap: 0.5rem; }
   .ow-modules-grid { grid-template-columns: 1fr; }
   .ow-download-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 760px) {
+  .ow-developer-band {
+    grid-template-columns: 1fr;
+    padding: 1.25rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+  .ow-path-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Custom tip/warning blocks ───────────────────────────────────────────────── */
