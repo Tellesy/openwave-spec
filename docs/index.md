@@ -3,10 +3,10 @@ layout: home
 
 hero:
   name: "OpenWave"
-  text: "Open Payment & Open Banking Standard"
-  tagline: "Neptune-built, Apache 2.0 standard for interoperable payments, Open Banking, NPT identity, webhooks, and gateway-to-gateway switching."
+  text: "Open payments. Open banking. One interoperable standard."
+  tagline: "An Apache 2.0 standard by Neptune for bank payments, NPT identity, Open Banking consent, webhooks, settlement, and gateway-to-gateway switching."
   image:
-    svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 160" fill="none"><defs><linearGradient id="owg" x1="24" y1="28" x2="164" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#07315F"/><stop offset=".52" stop-color="#EB4E4D"/><stop offset="1" stop-color="#00A8AE"/></linearGradient><filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#07315F" flood-opacity=".18"/></filter></defs><g filter="url(#shadow)"><rect x="20" y="24" width="112" height="112" rx="32" fill="#07315F"/><path d="M40 92c13-29 27-43 42-43 11 0 18 10 27 20 10 11 20 21 39 3" stroke="url(#owg)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><circle cx="82" cy="49" r="5.5" fill="#EB4E4D"/><circle cx="148" cy="72" r="5.5" fill="#00A8AE"/></g><text x="158" y="86" fill="#07315F" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="48" font-weight="780">OpenWave</text><text x="161" y="116" fill="#6e6e73" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif" font-size="17" font-weight="560">Neptune-built open standard</text></svg>'
+    src: /hero-openwave.svg
     alt: OpenWave Logo
   actions:
     - theme: brand
@@ -78,15 +78,23 @@ features:
 
 ---
 
+<div class="neptune-brand-strip" aria-label="Neptune brand">
+  <div class="neptune-wordmark">Neptune<span>.</span></div>
+  <p>OpenWave is designed and maintained as open infrastructure: product-neutral, bank-agnostic, and built for a multi-gateway ecosystem.</p>
+  <a href="/guide/architecture">Read the architecture</a>
+</div>
+
+---
+
 <div class="ow-section">
 
 ## What is OpenWave?
 
-OpenWave is an **open API standard** created and maintained by Neptune for payments, open banking, identity, settlement webhooks, and gateway interconnect. It defines a unified contract so any bank, merchant, fintech, or gateway operator can plug into a single interoperable network without bilateral agreements between every participant.
+OpenWave is an **open API standard** created and maintained by Neptune for payments, Open Banking, identity, settlement webhooks, and gateway interconnect. It defines a unified contract so any bank, merchant, fintech, or gateway operator can plug into a single interoperable network without bilateral agreements between every participant.
 
 **Libya's problem:** Customers are locked to their bank's app. Merchants integrate with each bank separately. There is no shared payment identity layer. Money can't move freely.
 
-**OpenWave's solution:** One standard that every participant implements. A bank integrates once and every merchant on any compliant gateway can accept payments from its customers.
+**OpenWave's solution:** one standard that every participant implements. A bank integrates once, and every merchant on any compliant gateway can accept payments from its customers.
 
 </div>
 
@@ -109,7 +117,7 @@ OpenWave is an **open API standard** created and maintained by Neptune for payme
 <div class="ow-module-card">
   <div class="ow-module-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
   <div class="ow-module-title">Payments Module</div>
-  <div class="ow-module-spec"><a href="https://github.com/Tellesy/openwave-spec/blob/main/openwave-payments-v1.yaml">openwave-payments-v1.yaml</a></div>
+  <div class="ow-module-spec"><a href="https://github.com/neptune/openwave-spec/blob/main/openwave-payments-v1.yaml">openwave-payments-v1.yaml</a></div>
   <ul>
     <li>Payment sessions (IBAN + NPT alias)</li>
     <li>OTP &amp; push notification auth</li>
@@ -122,7 +130,7 @@ OpenWave is an **open API standard** created and maintained by Neptune for payme
 <div class="ow-module-card">
   <div class="ow-module-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
   <div class="ow-module-title">Open Banking Module</div>
-  <div class="ow-module-spec"><a href="https://github.com/Tellesy/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml">openwave-open-banking-v1.0.yaml</a></div>
+  <div class="ow-module-spec"><a href="https://github.com/neptune/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml">openwave-open-banking-v1.0.yaml</a></div>
   <ul>
     <li>OAuth 2.0 + PKCE consent flow</li>
     <li>AISP: accounts, balances, transactions</li>
@@ -135,7 +143,7 @@ OpenWave is an **open API standard** created and maintained by Neptune for payme
 <div class="ow-module-card">
   <div class="ow-module-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="14" x="3" y="5" rx="2"/><path d="M8 10h.01M8 14h.01M12 10h4M12 14h4"/><circle cx="8" cy="10" r="1" fill="currentColor"/><circle cx="8" cy="14" r="1" fill="currentColor"/></svg></div>
   <div class="ow-module-title">Identity Registry</div>
-  <div class="ow-module-spec"><a href="https://github.com/Tellesy/openwave-spec/blob/main/openwave-identity-v1.0.yaml">openwave-identity-v1.0.yaml</a></div>
+  <div class="ow-module-spec"><a href="https://github.com/neptune/openwave-spec/blob/main/openwave-identity-v1.0.yaml">openwave-identity-v1.0.yaml</a></div>
   <ul>
     <li>NPT handle ownership &amp; governance</li>
     <li>Multi-bank account linking</li>
@@ -206,8 +214,8 @@ Merchant           OpenWave Gateway        Debtor Bank (CBS)     CBL LyPay     M
   <div class="ow-dl-title">Payments OpenAPI</div>
   <div class="ow-dl-sub">openwave-payments-v1.yaml</div>
   <div class="ow-dl-links">
-    <a class="ow-dl-btn" href="https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-payments-v1.yaml" download>Download YAML</a>
-    <a class="ow-dl-btn-ghost" href="https://github.com/Tellesy/openwave-spec/blob/main/openwave-payments-v1.yaml">View on GitHub</a>
+    <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml" download>Download YAML</a>
+    <a class="ow-dl-btn-ghost" href="https://github.com/neptune/openwave-spec/blob/main/openwave-payments-v1.yaml">View on GitHub</a>
   </div>
 </div>
 
@@ -216,8 +224,8 @@ Merchant           OpenWave Gateway        Debtor Bank (CBS)     CBL LyPay     M
   <div class="ow-dl-title">Open Banking OpenAPI</div>
   <div class="ow-dl-sub">openwave-open-banking-v1.0.yaml</div>
   <div class="ow-dl-links">
-    <a class="ow-dl-btn" href="https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-open-banking-v1.0.yaml" download>Download YAML</a>
-    <a class="ow-dl-btn-ghost" href="https://github.com/Tellesy/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml">View on GitHub</a>
+    <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-open-banking-v1.0.yaml" download>Download YAML</a>
+    <a class="ow-dl-btn-ghost" href="https://github.com/neptune/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml">View on GitHub</a>
   </div>
 </div>
 
@@ -226,8 +234,8 @@ Merchant           OpenWave Gateway        Debtor Bank (CBS)     CBL LyPay     M
   <div class="ow-dl-title">Identity Registry OpenAPI</div>
   <div class="ow-dl-sub">openwave-identity-v1.0.yaml</div>
   <div class="ow-dl-links">
-    <a class="ow-dl-btn" href="https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-identity-v1.0.yaml" download>Download YAML</a>
-    <a class="ow-dl-btn-ghost" href="https://github.com/Tellesy/openwave-spec/blob/main/openwave-identity-v1.0.yaml">View on GitHub</a>
+    <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-identity-v1.0.yaml" download>Download YAML</a>
+    <a class="ow-dl-btn-ghost" href="https://github.com/neptune/openwave-spec/blob/main/openwave-identity-v1.0.yaml">View on GitHub</a>
   </div>
 </div>
 

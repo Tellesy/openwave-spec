@@ -10,19 +10,19 @@ const activeSpec = ref('payments')
 const specs = {
   payments: {
     label: 'Payments & Alias',
-    url: 'https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-payments-v1.yaml',
+    url: 'https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml',
   },
   openbanking: {
     label: 'Open Banking',
-    url: 'https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-open-banking-v1.0.yaml',
+    url: 'https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-open-banking-v1.0.yaml',
   },
   identity: {
     label: 'Identity Registry',
-    url: 'https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-identity-v1.0.yaml',
+    url: 'https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-identity-v1.0.yaml',
   },
   interconnect: {
     label: 'Gateway Interconnect',
-    url: 'https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-gateway-interconnect-v1.yaml',
+    url: 'https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-gateway-interconnect-v1.yaml',
   },
 }
 
@@ -86,8 +86,8 @@ function switchSpec(key) {
 Load the spec files directly in [Swagger Editor](https://editor.swagger.io) or import them into [Postman](https://postman.com).
 
 **Raw spec URLs:**
-- [Payments](https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-payments-v1.yaml)
-- [Open Banking](https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-open-banking-v1.0.yaml)
-- [Identity Registry](https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-identity-v1.0.yaml)
-- [Gateway Interconnect](https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-gateway-interconnect-v1.yaml)
+- [Payments](https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml)
+- [Open Banking](https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-open-banking-v1.0.yaml)
+- [Identity Registry](https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-identity-v1.0.yaml)
+- [Gateway Interconnect](https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-gateway-interconnect-v1.yaml)
 :::

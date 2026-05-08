@@ -8,35 +8,35 @@ Four OpenAPI 3.0.3 files define the complete OpenWave standard. All are machine-
 
 ```bash
 # Load in Swagger UI
-curl https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-payments-v1.yaml
+curl https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml
 
 # Import to Postman
 # File → Import → Link → paste URL above
 ```
 
-→ [View on GitHub](https://github.com/Tellesy/openwave-spec/blob/main/openwave-payments-v1.yaml)  
-→ [Raw YAML](https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-payments-v1.yaml)
+→ [View on GitHub](https://github.com/neptune/openwave-spec/blob/main/openwave-payments-v1.yaml)<br>
+→ [Raw YAML](https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml)
 
 ## openwave-open-banking-v1.0.yaml
 
 **Covers:** OAuth 2.0 + PKCE consent flow, AISP (accounts, balances, transactions), PISP (payment initiation), SCA, bank capabilities
 
-→ [View on GitHub](https://github.com/Tellesy/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml)  
-→ [Raw YAML](https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-open-banking-v1.0.yaml)
+→ [View on GitHub](https://github.com/neptune/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml)<br>
+→ [Raw YAML](https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-open-banking-v1.0.yaml)
 
 ## openwave-identity-v1.0.yaml
 
 **Covers:** NPT handle ownership, multi-bank account linking, public alias resolution, bank phonebook, governance endpoints
 
-→ [View on GitHub](https://github.com/Tellesy/openwave-spec/blob/main/openwave-identity-v1.0.yaml)  
-→ [Raw YAML](https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-identity-v1.0.yaml)
+→ [View on GitHub](https://github.com/neptune/openwave-spec/blob/main/openwave-identity-v1.0.yaml)<br>
+→ [Raw YAML](https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-identity-v1.0.yaml)
 
 ## openwave-gateway-interconnect-v1.yaml
 
 **Covers:** Gateway discovery, remote alias resolution, cross-gateway routing, route status, gateway-to-gateway settlement, health checks
 
-→ [View on GitHub](https://github.com/Tellesy/openwave-spec/blob/main/openwave-gateway-interconnect-v1.yaml)  
-→ [Raw YAML](https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-gateway-interconnect-v1.yaml)
+→ [View on GitHub](https://github.com/neptune/openwave-spec/blob/main/openwave-gateway-interconnect-v1.yaml)<br>
+→ [Raw YAML](https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-gateway-interconnect-v1.yaml)
 
 ---
 
@@ -45,7 +45,7 @@ curl https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-payme
 ### Swagger UI
 
 ```html
-<SwaggerUI url="https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-payments-v1.yaml" />
+<SwaggerUI url="https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml" />
 ```
 
 ### Swagger Editor
@@ -64,7 +64,7 @@ Visit [editor.swagger.io](https://editor.swagger.io) and paste the raw URL via *
 ```bash
 # Generate a TypeScript SDK
 npx @openapitools/openapi-generator-cli generate \
-  -i https://raw.githubusercontent.com/Tellesy/openwave-spec/main/openwave-payments-v1.yaml \
+  -i https://raw.githubusercontent.com/neptune/openwave-spec/main/openwave-payments-v1.yaml \
   -g typescript-fetch \
   -o ./generated-client
 
@@ -89,4 +89,4 @@ OpenWave follows **Semantic Versioning**:
 
 The `api_version` field in webhook envelopes and the `info.version` in each spec always reflect the module version.
 
-All changes are documented in [CHANGELOG.md](https://github.com/Tellesy/openwave-spec/blob/main/CHANGELOG.md).
+All changes are documented in [CHANGELOG.md](https://github.com/neptune/openwave-spec/blob/main/CHANGELOG.md).
