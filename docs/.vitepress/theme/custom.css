@@ -65,17 +65,6 @@ body {
   line-height: 1.7;
 }
 
-.VPHomeHero .name,
-.VPHomeHero .text,
-.VPHomeHero .tagline,
-.VPHomeHero .actions {
-  animation: owFadeLift var(--ow-motion-page) var(--ow-motion-ease) both;
-}
-
-.VPHomeHero .text { animation-delay: 70ms; }
-.VPHomeHero .tagline { animation-delay: 140ms; }
-.VPHomeHero .actions { animation-delay: 210ms; }
-
 .VPNavBarTitle .title {
   letter-spacing: 0;
   font-weight: 760;
@@ -290,7 +279,6 @@ body {
   border-radius: 22px;
   background: color-mix(in srgb, var(--vp-c-bg) 86%, var(--vp-c-bg-soft));
   box-shadow: 0 24px 70px rgba(7, 49, 95, 0.09);
-  animation: owFadeLift 620ms var(--ow-motion-ease) both;
 }
 
 .ow-system-map {
@@ -345,7 +333,6 @@ body {
   border-radius: 16px;
   background: var(--vp-c-bg);
   box-shadow: 0 16px 36px rgba(7, 49, 95, 0.08);
-  animation: owNodeEnter 560ms var(--ow-motion-ease) both;
   transition:
     transform var(--ow-motion-quick) var(--ow-motion-ease),
     border-color var(--ow-motion-quick) var(--ow-motion-ease),
@@ -368,18 +355,17 @@ body {
 }
 
 .ow-map-merchant { left: 4%; top: 12%; }
-.ow-map-customer { left: 4%; bottom: 13%; animation-delay: 70ms; }
+.ow-map-customer { left: 4%; bottom: 13%; }
 .ow-map-gateway {
   left: 39%;
   top: 35%;
   width: min(260px, 24%);
   border-color: color-mix(in srgb, var(--vp-c-brand-1) 44%, var(--vp-c-border));
   background: color-mix(in srgb, var(--vp-c-brand-1) 8%, var(--vp-c-bg));
-  animation-delay: 140ms;
 }
-.ow-map-identity { right: 5%; top: 10%; animation-delay: 210ms; }
-.ow-map-bank { right: 5%; top: 38%; animation-delay: 280ms; }
-.ow-map-rail { right: 5%; bottom: 10%; animation-delay: 350ms; }
+.ow-map-identity { right: 5%; top: 10%; }
+.ow-map-bank { right: 5%; top: 38%; }
+.ow-map-rail { right: 5%; bottom: 10%; }
 
 .ow-data-line {
   --x: 0%;
@@ -459,15 +445,11 @@ body {
   border-radius: 18px;
   background: color-mix(in srgb, var(--vp-c-bg) 82%, var(--vp-c-bg-soft));
   box-shadow: 0 22px 62px rgba(7, 49, 95, 0.08);
-  animation: owCardEnter 540ms var(--ow-motion-ease) both;
   transition:
     transform var(--ow-motion-quick) var(--ow-motion-ease),
     box-shadow var(--ow-motion-quick) var(--ow-motion-ease),
     border-color var(--ow-motion-quick) var(--ow-motion-ease);
 }
-
-.ow-explainer-grid .ow-flow-card:nth-child(2) { animation-delay: 90ms; }
-.ow-explainer-grid .ow-flow-card:nth-child(3) { animation-delay: 180ms; }
 
 .ow-flow-card:hover {
   transform: translateY(-3px);
@@ -510,12 +492,14 @@ body {
   color: var(--vp-c-text-2);
   background: var(--vp-c-bg-soft);
   line-height: 1.25;
-  animation: owStepFocus 10s var(--ow-motion-ease) infinite;
-  animation-delay: calc(var(--i) * -2s);
   transition:
     transform var(--ow-motion-quick) var(--ow-motion-ease),
-    opacity var(--ow-motion-quick) var(--ow-motion-ease),
     border-color var(--ow-motion-quick) var(--ow-motion-ease);
+}
+
+.ow-stage-row span:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--vp-c-brand-1) 38%, var(--vp-c-border));
 }
 
 .ow-stage-row b {
@@ -565,13 +549,7 @@ body {
   border-radius: 999px;
   background: color-mix(in srgb, var(--vp-c-brand-1) 20%, var(--vp-c-border));
   transform-origin: left;
-  animation: owLaneFill 10s infinite;
 }
-
-.ow-lane:nth-child(2)::after { animation-delay: -2s; }
-.ow-lane:nth-child(3)::after { animation-delay: -4s; }
-.ow-lane:nth-child(4)::after { animation-delay: -6s; }
-.ow-lane:nth-child(5)::after { animation-delay: -8s; }
 
 .ow-lane b,
 .ow-gateway-pill,
@@ -657,7 +635,6 @@ body {
   height: 100%;
   border-radius: inherit;
   background: var(--npt-coral);
-  animation: owSwitchPulse 4s ease-in-out infinite;
 }
 
 .ow-switch-foot {
@@ -781,16 +758,9 @@ body {
   stroke: color-mix(in srgb, var(--vp-c-brand-1) 72%, var(--vp-c-border));
   stroke-width: 3;
   stroke-linecap: round;
-  stroke-dasharray: 10 14;
+  stroke-dasharray: 0;
   marker-end: url(#ow-arrow);
-  animation: owDash 4.8s linear infinite;
 }
-
-.ow-flow-b,
-.ow-flow-d { animation-delay: -1.2s; }
-.ow-flow-c,
-.ow-flow-e { animation-delay: -2.1s; }
-.ow-flow-f { animation-delay: -3s; }
 
 .ow-node rect {
   fill: var(--vp-c-bg);
@@ -817,25 +787,21 @@ body {
 }
 
 .ow-packet {
-  fill: var(--npt-coral);
-  filter: drop-shadow(0 0 10px rgba(235, 78, 77, 0.38));
+  display: none;
 }
 
 .ow-packet-a {
   offset-path: path("M160 155 C290 105 330 105 460 155 C595 105 635 105 760 155");
-  animation: owPacket 5.6s ease-in-out infinite;
 }
 
 .ow-packet-b {
   fill: var(--npt-teal);
   offset-path: path("M160 365 C290 415 330 415 460 365 C595 415 635 415 760 365");
-  animation: owPacket 6.2s ease-in-out infinite -1.4s;
 }
 
 .ow-packet-c {
   fill: var(--npt-navy);
   offset-path: path("M760 260 C645 260 560 260 460 260 C365 260 260 260 160 260");
-  animation: owPacket 5.8s ease-in-out infinite -2.6s;
 }
 
 @keyframes owDash {
