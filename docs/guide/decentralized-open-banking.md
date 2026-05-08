@@ -4,6 +4,35 @@ OpenWave Open Banking supports more than one gateway operator. A customer may us
 
 ## Core Model
 
+<section class="ow-flow-card ow-ob-demo ow-doc-demo" aria-label="Animated decentralized Open Banking consent explainer">
+  <div>
+    <p class="ow-flow-kicker">Decentralized consent</p>
+    <h3>A consent is scoped to a customer, bank, TPP, gateway, and expiry.</h3>
+  </div>
+  <div class="ow-stage-row">
+    <span style="--i:0"><b>1</b>TPP requests scopes</span>
+    <span style="--i:1"><b>2</b>Gateway finds bank</span>
+    <span style="--i:2"><b>3</b>Customer authorises</span>
+    <span style="--i:3"><b>4</b>Remote gateway serves data</span>
+    <span style="--i:4"><b>5</b>Revocation propagates</span>
+  </div>
+  <div class="ow-consent-board" aria-hidden="true">
+    <div class="ow-consent-phone">
+      <strong>Consent artifact</strong>
+      <span>TPP client</span>
+      <span>Bank + account</span>
+      <span>Scopes + expiry</span>
+      <button>Bank SCA required</button>
+    </div>
+    <div class="ow-token-panel">
+      <b>Federated rule</b>
+      <code>consent_id</code>
+      <code>correlation_id</code>
+      <small>The servicing bank remains final authority for account data and PISP execution.</small>
+    </div>
+  </div>
+</section>
+
 Open Banking consent is customer-specific, bank-specific, TPP-specific, and scope-specific.
 
 A consent is not global permission to read a customer everywhere. It binds:

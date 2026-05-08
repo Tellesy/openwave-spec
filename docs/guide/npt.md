@@ -35,6 +35,27 @@ A person **owns** a username and can **link accounts from multiple banks** to it
 
 ## How Resolution Works
 
+<section class="ow-flow-card ow-npt-demo" aria-label="Animated NPT resolution explainer">
+  <div>
+    <p class="ow-flow-kicker">NPT resolution</p>
+    <h3>The registry maps a human handle to the right bank route.</h3>
+  </div>
+  <div class="ow-stage-row">
+    <span style="--i:0"><b>1</b>Sender enters handle</span>
+    <span style="--i:1"><b>2</b>Registry resolves default</span>
+    <span style="--i:2"><b>3</b>Bank-scoped account returned</span>
+    <span style="--i:3"><b>4</b>Gateway routes payment</span>
+  </div>
+  <div class="ow-npt-board" aria-hidden="true">
+    <div class="ow-handle-card"><small>Customer-owned handle</small><strong>tellesy</strong></div>
+    <div class="ow-account-stack">
+      <span class="ow-account-active">tellesy@andalus <b>default</b></span>
+      <span>tellesy@nub <b>linked</b></span>
+    </div>
+    <div class="ow-boundary-note">Banks can update only the accounts they vouched for. They cannot rename the global handle.</div>
+  </div>
+</section>
+
 Sending money to an NPT alias:
 
 ```

@@ -87,61 +87,81 @@ features:
 
 ---
 
-<section class="ow-architecture-motion" aria-label="Animated OpenWave architecture">
-  <div class="ow-motion-copy">
-    <p class="ow-eyebrow">Architecture in motion</p>
-    <h2>One standard connects every participant.</h2>
-    <p>Merchants, banks, identity, Open Banking providers, settlement rails, and gateway operators all speak the same OpenWave contract. The animation shows the route without pretending one operator owns the whole network.</p>
+<section class="ow-explainer-suite" aria-label="OpenWave workflow explainers">
+  <div class="ow-suite-head">
+    <p class="ow-eyebrow">How OpenWave works</p>
+    <h2>Three different flows. One standard contract.</h2>
+    <p>Each flow below cycles through the real responsibility split: who starts it, where customer authorization happens, who moves money or data, and what the receiving system can trust.</p>
   </div>
-  <div class="ow-network-graphic" aria-hidden="true">
-    <svg viewBox="0 0 920 520" role="img">
-      <defs>
-        <marker id="ow-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
-        </marker>
-      </defs>
-      <g class="ow-lines">
-        <path class="ow-flow ow-flow-a" d="M160 155 C290 105 330 105 460 155"></path>
-        <path class="ow-flow ow-flow-b" d="M160 365 C290 415 330 415 460 365"></path>
-        <path class="ow-flow ow-flow-c" d="M460 155 C595 105 635 105 760 155"></path>
-        <path class="ow-flow ow-flow-d" d="M460 365 C595 415 635 415 760 365"></path>
-        <path class="ow-flow ow-flow-e" d="M460 260 C560 260 645 260 760 260"></path>
-        <path class="ow-flow ow-flow-f" d="M460 260 C365 260 260 260 160 260"></path>
-      </g>
-      <g class="ow-node ow-node-merchant" transform="translate(64 116)">
-        <rect width="192" height="78" rx="20"></rect>
-        <text x="96" y="34">Merchant</text>
-        <text class="ow-node-sub" x="96" y="56">sessions + webhooks</text>
-      </g>
-      <g class="ow-node ow-node-tpp" transform="translate(64 326)">
-        <rect width="192" height="78" rx="20"></rect>
-        <text x="96" y="34">TPP / App</text>
-        <text class="ow-node-sub" x="96" y="56">OAuth + PKCE</text>
-      </g>
-      <g class="ow-node ow-node-gateway" transform="translate(328 205)">
-        <rect width="264" height="110" rx="28"></rect>
-        <text x="132" y="45">OpenWave Gateway</text>
-        <text class="ow-node-sub" x="132" y="72">payments, OB, routing</text>
-      </g>
-      <g class="ow-node ow-node-bank" transform="translate(664 116)">
-        <rect width="192" height="78" rx="20"></rect>
-        <text x="96" y="34">Bank CBS</text>
-        <text class="ow-node-sub" x="96" y="56">OTP / push + debit</text>
-      </g>
-      <g class="ow-node ow-node-identity" transform="translate(664 221)">
-        <rect width="192" height="78" rx="20"></rect>
-        <text x="96" y="34">OW Identity</text>
-        <text class="ow-node-sub" x="96" y="56">NPT resolution</text>
-      </g>
-      <g class="ow-node ow-node-rail" transform="translate(664 326)">
-        <rect width="192" height="78" rx="20"></rect>
-        <text x="96" y="34">Settlement Rail</text>
-        <text class="ow-node-sub" x="96" y="56">same-bank or LyPay</text>
-      </g>
-      <circle class="ow-packet ow-packet-a" r="7"></circle>
-      <circle class="ow-packet ow-packet-b" r="7"></circle>
-      <circle class="ow-packet ow-packet-c" r="7"></circle>
-    </svg>
+
+  <div class="ow-explainer-grid">
+    <article class="ow-flow-card ow-payment-demo">
+      <div>
+        <p class="ow-flow-kicker">Payment routing</p>
+        <h3>Merchant integrates once. The gateway chooses the route.</h3>
+      </div>
+      <div class="ow-stage-row">
+        <span style="--i:0"><b>1</b>Session</span>
+        <span style="--i:1"><b>2</b>NPT / IBAN resolve</span>
+        <span style="--i:2"><b>3</b>Bank SCA</span>
+        <span style="--i:3"><b>4</b>Same-bank or LyPay</span>
+        <span style="--i:4"><b>5</b>Signed webhook</span>
+      </div>
+      <div class="ow-route-board" aria-hidden="true">
+        <div class="ow-lane ow-lane-merchant"><b>Merchant</b><small>Creates payment session</small></div>
+        <div class="ow-lane ow-lane-gateway"><b>Gateway</b><small>Resolves bank and route</small></div>
+        <div class="ow-lane ow-lane-bank"><b>Debtor bank</b><small>OTP / push + debit</small></div>
+        <div class="ow-lane ow-lane-rail"><b>Settlement</b><small>Internal books or LyPay</small></div>
+        <div class="ow-lane ow-lane-webhook"><b>Merchant server</b><small>Fulfils after signature check</small></div>
+      </div>
+    </article>
+    <article class="ow-flow-card ow-ob-demo">
+      <div>
+        <p class="ow-flow-kicker">Open Banking</p>
+        <h3>Consent is scoped, visible, and bound to one TPP and bank.</h3>
+      </div>
+      <div class="ow-stage-row">
+        <span style="--i:0"><b>1</b>TPP requests scopes</span>
+        <span style="--i:1"><b>2</b>Customer sees consent</span>
+        <span style="--i:2"><b>3</b>Bank verifies SCA</span>
+        <span style="--i:3"><b>4</b>Token issued</span>
+        <span style="--i:4"><b>5</b>Accounts API</span>
+      </div>
+      <div class="ow-consent-board" aria-hidden="true">
+        <div class="ow-consent-phone">
+          <strong>Consent request</strong>
+          <span>Account names</span>
+          <span>Balances</span>
+          <span>Transactions</span>
+          <button>Approve with bank</button>
+        </div>
+        <div class="ow-token-panel">
+          <b>Access token</b>
+          <code>accounts:read</code>
+          <code>balances:read</code>
+          <small>No broad access. No merchant-owned OTP collection.</small>
+        </div>
+      </div>
+    </article>
+    <article class="ow-flow-card ow-gip-demo">
+      <div>
+        <p class="ow-flow-kicker">Gateway interconnect</p>
+        <h3>Two gateways can route one payment without becoming one system.</h3>
+      </div>
+      <div class="ow-stage-row">
+        <span style="--i:0"><b>1</b>Discover</span>
+        <span style="--i:1"><b>2</b>Remote alias</span>
+        <span style="--i:2"><b>3</b>Route payment</span>
+        <span style="--i:3"><b>4</b>Status</span>
+        <span style="--i:4"><b>5</b>Net settlement</span>
+      </div>
+      <div class="ow-switch-board" aria-hidden="true">
+        <div class="ow-gateway-pill">Gateway A<br><small>merchant side</small></div>
+        <div class="ow-switch-line"><span></span></div>
+        <div class="ow-gateway-pill">Gateway B<br><small>customer bank side</small></div>
+        <div class="ow-switch-foot">Authenticated with owgw_..., mTLS, idempotency, and settlement batch IDs.</div>
+      </div>
+    </article>
   </div>
 </section>
 

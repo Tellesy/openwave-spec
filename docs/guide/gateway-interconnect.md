@@ -42,6 +42,26 @@ Gateway keys identify the sending gateway. mTLS binds the transport channel to a
 
 ## Discovery
 
+<section class="ow-flow-card ow-gip-demo ow-doc-demo" aria-label="Animated OW-GIP discovery and routing explainer">
+  <div>
+    <p class="ow-flow-kicker">OW-GIP lifecycle</p>
+    <h3>Interconnect is a protocol between operators, not a hidden central gateway.</h3>
+  </div>
+  <div class="ow-stage-row">
+    <span style="--i:0"><b>1</b>Advertise banks</span>
+    <span style="--i:1"><b>2</b>Resolve remote alias</span>
+    <span style="--i:2"><b>3</b>Route payment</span>
+    <span style="--i:3"><b>4</b>Poll status</span>
+    <span style="--i:4"><b>5</b>Reconcile batch</span>
+  </div>
+  <div class="ow-switch-board" aria-hidden="true">
+    <div class="ow-gateway-pill">Gateway A<br><small>merchant + TPPs</small></div>
+    <div class="ow-switch-line"><span></span></div>
+    <div class="ow-gateway-pill">Gateway B<br><small>banks + identity hints</small></div>
+    <div class="ow-switch-foot">Route IDs, idempotency keys, gateway IDs, fees, and settlement batch IDs survive every retry.</div>
+  </div>
+</section>
+
 Gateways expose `GET /gateway-info` to advertise:
 
 - supported countries and currencies
