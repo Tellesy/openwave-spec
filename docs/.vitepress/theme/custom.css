@@ -26,6 +26,9 @@
   --ow-cyan: #00A8AE;
   --ow-purple: #07315F;
   --ow-purple-soft: rgba(7, 49, 95, 0.12);
+  --ow-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ow-motion-quick: 180ms;
+  --ow-motion-page: 520ms;
 }
 
 .dark {
@@ -62,6 +65,17 @@ body {
   line-height: 1.7;
 }
 
+.VPHomeHero .name,
+.VPHomeHero .text,
+.VPHomeHero .tagline,
+.VPHomeHero .actions {
+  animation: owFadeLift var(--ow-motion-page) var(--ow-motion-ease) both;
+}
+
+.VPHomeHero .text { animation-delay: 70ms; }
+.VPHomeHero .tagline { animation-delay: 140ms; }
+.VPHomeHero .actions { animation-delay: 210ms; }
+
 .VPNavBarTitle .title {
   letter-spacing: 0;
   font-weight: 760;
@@ -77,10 +91,14 @@ body {
   border-radius: 12px !important;
   border-color: color-mix(in srgb, var(--vp-c-border) 82%, transparent) !important;
   background: color-mix(in srgb, var(--vp-c-bg-soft) 92%, transparent) !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform var(--ow-motion-quick) var(--ow-motion-ease),
+    box-shadow var(--ow-motion-quick) var(--ow-motion-ease),
+    border-color var(--ow-motion-quick) var(--ow-motion-ease),
+    background-color var(--ow-motion-quick) var(--ow-motion-ease);
 }
 .VPFeature:hover {
-  transform: translateY(-3px);
+  transform: translateY(-3px) scale(1.01);
   border-color: color-mix(in srgb, var(--vp-c-brand-1) 44%, var(--vp-c-border)) !important;
   box-shadow: 0 18px 48px rgba(7, 49, 95, 0.12);
 }
@@ -272,6 +290,7 @@ body {
   border-radius: 22px;
   background: color-mix(in srgb, var(--vp-c-bg) 86%, var(--vp-c-bg-soft));
   box-shadow: 0 24px 70px rgba(7, 49, 95, 0.09);
+  animation: owFadeLift 620ms var(--ow-motion-ease) both;
 }
 
 .ow-system-map {
@@ -326,6 +345,17 @@ body {
   border-radius: 16px;
   background: var(--vp-c-bg);
   box-shadow: 0 16px 36px rgba(7, 49, 95, 0.08);
+  animation: owNodeEnter 560ms var(--ow-motion-ease) both;
+  transition:
+    transform var(--ow-motion-quick) var(--ow-motion-ease),
+    border-color var(--ow-motion-quick) var(--ow-motion-ease),
+    box-shadow var(--ow-motion-quick) var(--ow-motion-ease);
+}
+
+.ow-map-node:hover {
+  transform: translateY(-3px) scale(1.015);
+  border-color: color-mix(in srgb, var(--vp-c-brand-1) 46%, var(--vp-c-border));
+  box-shadow: 0 22px 46px rgba(7, 49, 95, 0.13);
 }
 
 .ow-map-node b {
@@ -338,17 +368,18 @@ body {
 }
 
 .ow-map-merchant { left: 4%; top: 12%; }
-.ow-map-customer { left: 4%; bottom: 13%; }
+.ow-map-customer { left: 4%; bottom: 13%; animation-delay: 70ms; }
 .ow-map-gateway {
   left: 39%;
   top: 35%;
   width: min(260px, 24%);
   border-color: color-mix(in srgb, var(--vp-c-brand-1) 44%, var(--vp-c-border));
   background: color-mix(in srgb, var(--vp-c-brand-1) 8%, var(--vp-c-bg));
+  animation-delay: 140ms;
 }
-.ow-map-identity { right: 5%; top: 10%; }
-.ow-map-bank { right: 5%; top: 38%; }
-.ow-map-rail { right: 5%; bottom: 10%; }
+.ow-map-identity { right: 5%; top: 10%; animation-delay: 210ms; }
+.ow-map-bank { right: 5%; top: 38%; animation-delay: 280ms; }
+.ow-map-rail { right: 5%; bottom: 10%; animation-delay: 350ms; }
 
 .ow-data-line {
   --x: 0%;
@@ -428,6 +459,20 @@ body {
   border-radius: 18px;
   background: color-mix(in srgb, var(--vp-c-bg) 82%, var(--vp-c-bg-soft));
   box-shadow: 0 22px 62px rgba(7, 49, 95, 0.08);
+  animation: owCardEnter 540ms var(--ow-motion-ease) both;
+  transition:
+    transform var(--ow-motion-quick) var(--ow-motion-ease),
+    box-shadow var(--ow-motion-quick) var(--ow-motion-ease),
+    border-color var(--ow-motion-quick) var(--ow-motion-ease);
+}
+
+.ow-explainer-grid .ow-flow-card:nth-child(2) { animation-delay: 90ms; }
+.ow-explainer-grid .ow-flow-card:nth-child(3) { animation-delay: 180ms; }
+
+.ow-flow-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--vp-c-brand-1) 36%, var(--vp-c-border));
+  box-shadow: 0 26px 76px rgba(7, 49, 95, 0.12);
 }
 
 .ow-flow-card h3 {
@@ -465,8 +510,12 @@ body {
   color: var(--vp-c-text-2);
   background: var(--vp-c-bg-soft);
   line-height: 1.25;
-  animation: owStepFocus 10s infinite;
+  animation: owStepFocus 10s var(--ow-motion-ease) infinite;
   animation-delay: calc(var(--i) * -2s);
+  transition:
+    transform var(--ow-motion-quick) var(--ow-motion-ease),
+    opacity var(--ow-motion-quick) var(--ow-motion-ease),
+    border-color var(--ow-motion-quick) var(--ow-motion-ease);
 }
 
 .ow-stage-row b {
@@ -662,9 +711,11 @@ body {
     color: var(--vp-c-text-1);
     border-color: color-mix(in srgb, var(--npt-coral) 58%, var(--vp-c-border));
     background: color-mix(in srgb, var(--npt-coral) 10%, var(--vp-c-bg));
-    transform: translateY(-2px);
+    opacity: 1;
+    transform: translateY(-2px) scale(1.018);
   }
   25%, 100% {
+    opacity: 0.78;
     transform: none;
   }
 }
@@ -684,6 +735,39 @@ body {
   0%, 12% { left: 0; transform: scaleX(0.25); opacity: 0; }
   20%, 80% { opacity: 1; }
   100% { left: calc(100% - 44px); transform: scaleX(0.75); opacity: 0; }
+}
+
+@keyframes owFadeLift {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes owCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.975);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes owNodeEnter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .ow-network-graphic svg {
@@ -1074,6 +1158,13 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .ow-flow,
   .ow-packet,
+  .VPHomeHero .name,
+  .VPHomeHero .text,
+  .VPHomeHero .tagline,
+  .VPHomeHero .actions,
+  .ow-architecture-board,
+  .ow-flow-card,
+  .ow-map-node,
   .ow-stage-row span,
   .ow-lane::after,
   .ow-switch-line span,
