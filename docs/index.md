@@ -4,7 +4,7 @@ layout: home
 hero:
   name: "OpenWave"
   text: "Open payments. Open banking. One interoperable standard."
-  tagline: "An Apache 2.0 standard by Neptune for bank payments, NPT identity, Open Banking consent, webhooks, settlement, and gateway-to-gateway switching."
+  tagline: "An Apache 2.0 standard developed by Neptune. Fintech for bank payments, NPT identity, Open Banking consent, webhooks, settlement, and gateway-to-gateway switching."
   image:
     src: /hero-openwave.svg
     alt: OpenWave Logo
@@ -79,8 +79,8 @@ features:
 ---
 
 <div class="neptune-brand-strip" aria-label="Neptune brand">
-  <div class="neptune-wordmark">Neptune<span>.</span></div>
-  <p>OpenWave is designed and maintained as open infrastructure: product-neutral, bank-agnostic, and built for a multi-gateway ecosystem.</p>
+  <div class="neptune-wordmark">Neptune<span>.</span> Fintech</div>
+  <p>OpenWave is developed and maintained by Neptune. Fintech as open infrastructure: product-neutral, bank-agnostic, and built for a multi-gateway ecosystem.</p>
   <a href="/guide/architecture">Read the architecture</a>
 </div>
 
@@ -90,7 +90,7 @@ features:
 
 ## What is OpenWave?
 
-OpenWave is an **open API standard** created and maintained by Neptune for payments, Open Banking, identity, settlement webhooks, and gateway interconnect. It defines a unified contract so any bank, merchant, fintech, or gateway operator can plug into a single interoperable network without bilateral agreements between every participant.
+OpenWave is an **open API standard** created and maintained by Neptune. Fintech for payments, Open Banking, identity, settlement webhooks, and gateway interconnect. It defines a unified contract so any bank, merchant, fintech, or gateway operator can plug into a single interoperable network without bilateral agreements between every participant.
 
 **Libya's problem:** Customers are locked to their bank's app. Merchants integrate with each bank separately. There is no shared payment identity layer. Money can't move freely.
 

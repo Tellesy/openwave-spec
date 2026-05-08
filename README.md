@@ -11,7 +11,7 @@
 [![Status](https://img.shields.io/badge/Payments%20API-v1.0%20Stable-brightgreen.svg)]()
 [![Status](https://img.shields.io/badge/Open%20Banking%20API-v1.0%20Stable-brightgreen.svg)]()
 
-*Developed by [Neptune Fintech](https://www.neptune.ly)*
+*Developed by [Neptune. Fintech](https://www.neptune.ly)*
 
 </div>
 
@@ -299,6 +299,6 @@ See [LICENSE](./LICENSE) for the full text.
 
 <div align="center">
 
-Developed and maintained by **[Neptune Fintech](https://www.neptune.ly)**
+Developed and maintained by **[Neptune. Fintech](https://www.neptune.ly)**
 
 </div>

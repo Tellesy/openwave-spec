@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: 'OpenWave',
-  description: 'Open standard by Neptune for bank-agnostic payments, Open Banking, NPT identity, webhooks, and gateway interconnect.',
+  description: 'Open standard developed by Neptune. Fintech for bank-agnostic payments, Open Banking, NPT identity, webhooks, and gateway interconnect.',
   base: '/openwave-spec/',
 
   lastUpdated: true,
@@ -128,7 +128,7 @@ export default defineConfig({
 
     footer: {
       message: 'Released under the <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache 2.0 License</a>.',
-      copyright: 'Developed and maintained by <a href="https://neptune.ly" target="_blank">Neptune Fintech Solutions</a>'
+      copyright: 'Developed and maintained by <a href="https://neptune.ly" target="_blank">Neptune. Fintech</a>'
     },
 
     search: { provider: 'local' },
