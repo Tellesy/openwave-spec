@@ -63,6 +63,7 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: 'What is OpenWave?', link: '/guide/introduction' },
+            { text: 'Implementation Playbooks', link: '/guide/implementation-playbooks' },
             { text: 'Core Concepts', link: '/guide/concepts' },
             { text: 'NPT — National Payment Tag', link: '/guide/npt' },
             { text: 'Architecture & Infrastructure', link: '/guide/architecture' },
@@ -111,6 +112,7 @@ export default defineConfig({
             { text: 'Alias (NPT)', link: '/api/alias' },
             { text: 'Open Banking', link: '/api/open-banking' },
             { text: 'Identity Registry', link: '/api/identity' },
+            { text: 'Gateway Interconnect', link: '/api/gateway-interconnect' },
             { text: 'Webhooks', link: '/api/webhooks' },
           ]
         }
@@ -129,6 +131,13 @@ export default defineConfig({
     footer: {
       message: 'Released under the <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache 2.0 License</a>.',
       copyright: 'Developed and maintained by <a href="https://neptune.ly" target="_blank">Neptune. Fintech</a>'
+    },
+
+    notFound: {
+      title: 'OpenWave page not found',
+      quote: 'This documentation page moved or does not exist. Use the OpenWave home page, API reference, or downloads page to continue.',
+      linkLabel: 'Go to OpenWave home',
+      linkText: 'Take me home'
     },
 
     search: { provider: 'local' },

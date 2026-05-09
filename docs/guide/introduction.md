@@ -69,6 +69,6 @@ Merchant B ──→ [ Gateway 2 ] ──┘
 
 ## Next Steps
 
-- [Core Concepts →](/guide/concepts)
-- [NPT explained →](/guide/npt)
-- [Merchant integration guide →](/guide/merchants)
+- [Core Concepts →](./concepts.md)
+- [NPT explained →](./npt.md)
+- [Merchant integration guide →](./merchants.md)

@@ -15,7 +15,7 @@ You expose a **bank core callback API** that the gateway calls. The spec defines
 
 ## Step 1 — Register with a Gateway
 
-Contact the gateway operator (or run your own — see [Gateway Operators](/guide/operators)).
+Contact the gateway operator (or run your own — see [Gateway Operators](./operators.md)).
 
 You'll need to provide:
 - Bank handle (e.g. `andalus`) — globally unique short identifier

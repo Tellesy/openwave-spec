@@ -408,9 +408,9 @@ Multiple independent gateways can **interoperate** because the standard defines 
 
 ## How to Implement
 
-→ [Merchant Integration Guide](/guide/merchants)  
-→ [Bank Integration Guide](/guide/banks)  
-→ [TPP / Open Banking Guide](/guide/tpp)  
-→ [Gateway Operators Guide](/guide/operators)  
-→ [Settlement & CBL Infrastructure](/guide/settlement)  
-→ [Downloads — Spec files, Postman, code gen](/downloads)
+→ [Merchant Integration Guide](./merchants.md)  
+→ [Bank Integration Guide](./banks.md)  
+→ [TPP / Open Banking Guide](./tpp.md)  
+→ [Gateway Operators Guide](./operators.md)  
+→ [Settlement & CBL Infrastructure](./settlement.md)  
+→ [Downloads — Spec files, Postman, code gen](../downloads.md)

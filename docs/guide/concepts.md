@@ -33,7 +33,7 @@ SETTLEMENT_PENDING      Cross-bank only: LyPay routing in progress
 ```
 
 ::: info SETTLEMENT_PENDING only for cross-bank payments
-Same-bank payments skip `SETTLEMENT_PENDING` and go directly to `COMPLETED` since debit and credit happen atomically within the same CBS. See [Settlement & CBL Infrastructure](/guide/settlement) for full details.
+Same-bank payments skip `SETTLEMENT_PENDING` and go directly to `COMPLETED` since debit and credit happen atomically within the same CBS. See [Settlement & CBL Infrastructure](./settlement.md) for full details.
 :::
 
 Sessions expire after a configurable TTL (default 15 minutes). Expired sessions fire a `payment.expired` webhook.
@@ -49,7 +49,7 @@ OpenWave cross-bank payments run over Libya's Central Bank (CBL) infrastructure,
 
 When a payment destination is an alias (NPT handle), the gateway first calls NAD to resolve it to an IBAN, then routes the debit instruction via LyPay to the creditor's bank.
 
-> See [Settlement & CBL Infrastructure](/guide/settlement) for the full flow diagram and timing details.
+> See [Settlement & CBL Infrastructure](./settlement.md) for the full flow diagram and timing details.
 
 ## Authentication Contexts
 

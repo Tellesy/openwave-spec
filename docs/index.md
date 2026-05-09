@@ -61,7 +61,7 @@ features:
   - icon:
       svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
     title: Ready to Use
-    details: Three OpenAPI 3.0 spec files, Postman collections, and code generation templates. Import to Swagger, Postman, or Redocly in seconds.
+    details: Four OpenAPI 3.0 spec files, Postman collections, and code generation templates. Import to Swagger, Postman, Redocly, Insomnia, or generated clients in seconds.
     link: /downloads
     linkText: Download Specs & Collections
 ---
@@ -82,7 +82,7 @@ features:
   <img class="neptune-logo neptune-logo-default" src="/neptune-logo.png" alt="Neptune. Financial Technology And Solutions">
   <img class="neptune-logo neptune-logo-dark" src="/neptune-logo-light.png" alt="Neptune. Financial Technology And Solutions">
   <p>OpenWave is developed and maintained by Neptune. Fintech as open infrastructure: product-neutral, bank-agnostic, and built for a multi-gateway ecosystem.</p>
-  <a href="/guide/architecture">Read the architecture</a>
+  <a href="./guide/architecture.html">Read the architecture</a>
 </div>
 
 ---
@@ -215,10 +215,10 @@ OpenWave is an **open API standard** created and maintained by Neptune. Fintech 
     <p>OpenWave is split by who is calling whom. Merchant APIs use bearer merchant keys, banks expose gateway callbacks, TPPs use OAuth 2.0 + PKCE, and gateways use OW-GIP with gateway keys and mTLS.</p>
   </div>
   <div class="ow-path-grid">
-    <a href="/guide/merchants"><b>Merchant</b><span>Create sessions, receive webhooks, reconcile orders.</span><code>Authorization: Bearer mk_...</code></a>
-    <a href="/guide/banks"><b>Bank</b><span>Send OTP, verify SCA, execute debit/credit callbacks.</span><code>X-OpenWave-Internal-Key</code></a>
-    <a href="/guide/tpp"><b>TPP</b><span>Ask for scoped Open Banking access with PKCE consent.</span><code>/ob/consents → /ob/token</code></a>
-    <a href="/guide/gateway-interconnect"><b>Gateway</b><span>Discover peer gateways and route cross-gateway payments.</span><code>X-OpenWave-Gateway-Key</code></a>
+    <a href="./guide/merchants.html"><b>Merchant</b><span>Create sessions, receive webhooks, reconcile orders.</span><code>Authorization: Bearer mk_...</code></a>
+    <a href="./guide/banks.html"><b>Bank</b><span>Send OTP, verify SCA, execute debit/credit callbacks.</span><code>X-OpenWave-Internal-Key</code></a>
+    <a href="./guide/tpp.html"><b>TPP</b><span>Ask for scoped Open Banking access with PKCE consent.</span><code>/ob/consents -> /ob/token</code></a>
+    <a href="./guide/gateway-interconnect.html"><b>Gateway</b><span>Discover peer gateways and route cross-gateway payments.</span><code>X-OpenWave-Gateway-Key</code></a>
   </div>
 </div>
 
@@ -293,7 +293,7 @@ Merchant           OpenWave Gateway        Debtor Bank (CBS)     CBL LyPay     M
    │    webhook            │                       │                  │               │
 ```
 
-→ [Full settlement docs](/guide/settlement) | [Architecture overview](/guide/architecture)
+→ [Full settlement docs](./guide/settlement.md) | [Architecture overview](./guide/architecture.md)
 
 </div>
 
@@ -353,7 +353,7 @@ Merchant           OpenWave Gateway        Debtor Bank (CBS)     CBL LyPay     M
 
 <div style="text-align:center;margin-top:1.5rem">
 
-[→ Full downloads page with Postman collections, code generation, and Swagger links](/downloads)
+[→ Full downloads page with Postman collections, code generation, and Swagger links](./downloads.md)
 
 </div>
 

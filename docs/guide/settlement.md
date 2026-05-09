@@ -232,13 +232,13 @@ To be a compliant OpenWave bank, you need to:
 1. **Enroll in CBL NAD** — register your customers' accounts so they can receive payments by alias
 2. **Connect to CBL LyPay** — both outbound (debit + send) and inbound (receive + credit)
 3. **Implement the credit callback** — when LyPay credits an account at your bank, confirm to the gateway so `payment.completed` can fire
-4. **Expose the standard bank callback interface** — as defined in the [Banks guide](/guide/banks)
+4. **Expose the standard bank callback interface** — as defined in the [Banks guide](./banks.md)
 
 ---
 
 ## For Gateway Operators
 
-When implementing a compliant gateway (see [Operators guide](/guide/operators)):
+When implementing a compliant gateway (see [Operators guide](./operators.md)):
 
 - Register your LyPay callback endpoint with CBL
 - On receiving a LyPay `credit_notice`: update payment session to `COMPLETED`, fire the merchant `payment.completed` webhook

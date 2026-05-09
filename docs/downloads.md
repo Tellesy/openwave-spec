@@ -77,6 +77,31 @@ Covers NPT handle ownership, multi-bank account linking, public alias resolution
 
 ---
 
+### Gateway Interconnect API — `openwave-gateway-interconnect-v1.yaml`
+
+Covers gateway discovery, remote alias resolution, cross-gateway routing, health checks, settlement batches, and gateway-to-gateway authentication.
+
+<div class="ow-dl-row">
+  <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-gateway-interconnect-v1.yaml" download>Download YAML</a>
+  <a class="ow-dl-btn-ghost" href="https://github.com/neptune-ly/openwave-spec/blob/main/openwave-gateway-interconnect-v1.yaml">View on GitHub</a>
+  <a class="ow-dl-btn-ghost" href="https://editor.swagger.io/?url=https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-gateway-interconnect-v1.yaml" target="_blank">Open in Swagger Editor ↗</a>
+</div>
+
+**Key endpoints:**
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/gateway-info` | Read gateway capabilities, banks, rails, regions, and fees |
+| `POST` | `/gateway-register` | Register or update gateway metadata |
+| `GET` | `/gateway-health` | Check peer gateway health and degraded modes |
+| `POST` | `/resolve-alias-remote` | Resolve an alias through a remote gateway |
+| `POST` | `/route-payment` | Route a cross-gateway payment |
+| `POST` | `/route-status` | Read cross-gateway route status |
+| `POST` | `/settlement-batch` | Submit settlement batch details |
+| `GET` | `/settlement-status` | Read settlement batch state |
+
+---
+
 ## Postman Collections
 
 Import any spec file directly into Postman to get a pre-built collection with all endpoints, example payloads, and environment variables.
@@ -96,6 +121,9 @@ https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-open-ba
 
 # Identity Registry
 https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-identity-v1.0.yaml
+
+# Gateway Interconnect
+https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-gateway-interconnect-v1.yaml
 ```
 
 4. Postman generates the full collection automatically. Set your environment variables:
@@ -105,11 +133,24 @@ GATEWAY_URL    = https://your-gateway.example.com
 MERCHANT_KEY   = your-merchant-api-key
 BANK_KEY       = your-bank-api-key
 ADMIN_KEY      = your-admin-api-key
+GATEWAY_KEY    = your-peer-gateway-key
 ```
 
 ### Method 2 — Download YAML then import as file
 
 Download the YAML above → in Postman click **Import** → **File** → select the downloaded file.
+
+### Suggested Postman environments
+
+| Variable | Used by | Example |
+|---|---|---|
+| `GATEWAY_URL` | Payments, Open Banking | `https://sandbox.gateway.example.com` |
+| `IDENTITY_URL` | Identity Registry | `https://identity.example.com` |
+| `MERCHANT_KEY` | Merchant payment APIs | `mk_test_...` |
+| `BANK_KEY` | Bank-to-registry APIs | `owbk_...` |
+| `INTERNAL_KEY` | Gateway-to-bank callbacks | `ow_cbk_...` |
+| `GATEWAY_KEY` | Gateway interconnect | `owgw_...` |
+| `WEBHOOK_SECRET` | Signature verification tests | `whsec_...` |
 
 ---
 
@@ -134,6 +175,18 @@ Open `http://localhost:8080` — full interactive docs with live try-it-out (poi
 ```bash
 npx @redocly/cli preview-docs openwave-payments-v1.yaml
 ```
+
+### Insomnia
+
+Use **Create → Import from URL** and paste any raw OpenAPI URL from this page. Create separate environments for sandbox and production so merchant, bank, and gateway credentials do not mix.
+
+### Hoppscotch
+
+Use **Collections → Import → OpenAPI** for quick browser-based exploration. Keep production credentials out of shared browser sessions.
+
+### Stoplight Elements
+
+Teams that want an internal branded API portal can render the same YAML files with Stoplight Elements or any OpenAPI 3.0 compatible documentation renderer.
 
 ---
 
@@ -185,7 +238,43 @@ npx @openapitools/openapi-generator-cli generate \
   -o ./openwave-client-java
 ```
 
+```bash [C# / .NET]
+npx @openapitools/openapi-generator-cli generate \
+  -i https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml \
+  -g csharp \
+  -o ./openwave-client-dotnet
+```
+
 :::
+
+### TypeScript schema-first clients
+
+For frontend and backend teams that prefer lightweight generated types:
+
+```bash
+npx openapi-typescript \
+  https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml \
+  -o ./src/openwave-payments.d.ts
+```
+
+For typed fetch clients:
+
+```bash
+npx openapi-fetch \
+  https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml \
+  -o ./src/openwave-payments-client.ts
+```
+
+### Microsoft Kiota
+
+Kiota can generate clients for .NET, Java, Go, PHP, Python, Ruby, and TypeScript:
+
+```bash
+kiota generate \
+  --openapi https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-open-banking-v1.0.yaml \
+  --language typescript \
+  --output ./openwave-ob-kiota
+```
 
 ::: tip Native SDKs
 OpenWave-compatible gateway operators may publish hand-crafted SDKs for their own products. For the standard itself, generated clients from the OpenAPI files remain the portable baseline.
@@ -205,6 +294,7 @@ cd openwave-spec
 npx @redocly/cli lint openwave-payments-v1.yaml
 npx @redocly/cli lint openwave-open-banking-v1.0.yaml
 npx @redocly/cli lint openwave-identity-v1.0.yaml
+npx @redocly/cli lint openwave-gateway-interconnect-v1.yaml
 ```
 
 ---

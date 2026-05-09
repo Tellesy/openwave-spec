@@ -13,7 +13,7 @@ OpenWave is defined by four OpenAPI 3.0.3 specification files. All are ready to 
 
 ## Interactive Explorer
 
-[▶ Open API Explorer →](/api/explorer)
+[▶ Open API Explorer →](./explorer.md)
 
 Browse and test the full API surface in your browser.
 

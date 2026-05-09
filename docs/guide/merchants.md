@@ -49,7 +49,7 @@ Content-Type: application/json
 ```
 
 ::: info Amount is in minor units
-`50000` = **500.00 LYD**. See [Amount Convention](/guide/concepts#amount-convention).
+`50000` = **500.00 LYD**. See [Amount Convention](./concepts.md#amount-convention).
 :::
 
 Response:
