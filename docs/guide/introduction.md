@@ -18,6 +18,7 @@ OpenWave solves this with three coordinated specifications:
 | Module | What it does |
 |:---|:---|
 | **Payments API** | Standard payment sessions, IBAN/NPT alias routing, recurring mandates, webhooks |
+| **Presented Payments API** | QR and NFC presentments that create secure one-time payment or mandate approval flows |
 | **Open Banking API** | Consent-based account access (AISP) and payment initiation (PISP) for TPPs |
 | **Identity Registry** | Global NPT handle ownership, multi-bank linking, public alias resolution |
 
@@ -32,6 +33,8 @@ Any server that **implements this specification** is an **OpenWave Gateway**. A 
 - Issues and validates NPT aliases
 
 Any bank, fintech, processor, or national switch operator can run an OpenWave-compliant gateway. The specification is not tied to a single product or operator.
+
+OpenWave also defines **presented payments as a channel capability**, not a product lock-in. A gateway, bank, or wallet can implement QR or NFC presented flows directly as long as it preserves OpenWave authorization, status, and consent rules.
 
 ## Deployment Models
 
@@ -60,6 +63,7 @@ Merchant B ──→ [ Gateway 2 ] ──┘
 | Module | Version | Status |
 |:---|:---:|:---:|
 | Payments | 1.0.0 | ✅ Stable |
+| Presented Payments | 1.0.0 | Draft |
 | Recurring Payments | 1.0.0 | ✅ Stable |
 | Alias (NPT) | 1.0.0 | ✅ Stable |
 | Webhooks | 1.0.0 | ✅ Stable |
@@ -71,4 +75,5 @@ Merchant B ──→ [ Gateway 2 ] ──┘
 
 - [Core Concepts →](./concepts.md)
 - [NPT explained →](./npt.md)
+- [Presented payments →](./presented-payments.md)
 - [Merchant integration guide →](./merchants.md)

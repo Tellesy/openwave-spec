@@ -4,8 +4,9 @@
   "description": "OpenWave API standard for payments, Open Banking, NPT identity, webhooks, and gateway interconnect.",
   "main": "index.js",
   "scripts": {
+    "public:check": "bash ./scripts/check-public-surface.sh",
     "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
+    "docs:build": "npm run public:check && vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
   "repository": {

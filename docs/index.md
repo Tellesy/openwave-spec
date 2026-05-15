@@ -19,6 +19,9 @@ hero:
       text: Downloads
       link: /downloads
     - theme: alt
+      text: Presented Payments
+      link: /guide/presented-payments
+    - theme: alt
       text: Gateway Interconnect
       link: /guide/gateway-interconnect
 
@@ -45,6 +48,13 @@ features:
     linkText: Open Banking (TPP) Guide
 
   - icon:
+      svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/><path d="M4 12a8 8 0 0 0 8 8"/><path d="M20 12a8 8 0 0 0-8-8"/></svg>'
+    title: Presented Payments
+    details: Merchant-presented and customer-presented QR or NFC flows that still keep bank authorization inside hosted or official SDK surfaces. Banks and wallets can implement the channel directly when enabled.
+    link: /guide/presented-payments
+    linkText: Presented Payment Guide
+
+  - icon:
       svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>'
     title: NPT — National Payment Tag
     details: "`mtellesy@andalus` — one username, any bank. Pay by alias without knowing an IBAN. The universal payment identity layer for Libya and beyond."
@@ -68,6 +78,8 @@ features:
 
 <div class="ow-stats-bar">
   <div class="ow-stat"><span class="ow-stat-num">4</span><span class="ow-stat-label">OpenAPI Spec Files</span></div>
+  <div class="ow-stat-div"></div>
+  <div class="ow-stat"><span class="ow-stat-num">QR + NFC</span><span class="ow-stat-label">Presented Channels</span></div>
   <div class="ow-stat-div"></div>
   <div class="ow-stat"><span class="ow-stat-num">60+</span><span class="ow-stat-label">API Endpoints</span></div>
   <div class="ow-stat-div"></div>
@@ -142,6 +154,25 @@ features:
         <div class="ow-lane ow-lane-bank"><b>Debtor bank</b><small>OTP / push + debit</small></div>
         <div class="ow-lane ow-lane-rail"><b>Settlement</b><small>Internal books or LyPay</small></div>
         <div class="ow-lane ow-lane-webhook"><b>Merchant server</b><small>Fulfils after signature check</small></div>
+      </div>
+    </article>
+    <article class="ow-flow-card ow-payment-demo">
+      <div>
+        <p class="ow-flow-kicker">Presented payments</p>
+        <h3>Scan or tap starts the flow. Secure bank authorization still happens in the trusted surface.</h3>
+      </div>
+      <div class="ow-stage-row">
+        <span style="--i:0"><b>1</b>Create presentment</span>
+        <span style="--i:1"><b>2</b>Scan or tap</span>
+        <span style="--i:2"><b>3</b>Claim session</span>
+        <span style="--i:3"><b>4</b>Bank SCA</span>
+        <span style="--i:4"><b>5</b>Reuse payment or mandate lifecycle</span>
+      </div>
+      <div class="ow-switch-board" aria-hidden="true">
+        <div class="ow-gateway-pill">Merchant / wallet<br><small>QR or NFC presenter</small></div>
+        <div class="ow-switch-line"><span></span></div>
+        <div class="ow-gateway-pill">Gateway / bank / wallet<br><small>capability-controlled channel</small></div>
+        <div class="ow-switch-foot">Operator enables QR, NFC, merchant-presented, customer-presented, and direct bank or wallet support through capabilities.</div>
       </div>
     </article>
     <article class="ow-flow-card ow-ob-demo">

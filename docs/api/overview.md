@@ -1,12 +1,13 @@
 # API Overview
 
-OpenWave is defined by four OpenAPI 3.0.3 specification files. All are ready to load into Swagger UI, Postman, Redocly, or any OpenAPI-compatible tool.
+OpenWave is defined by five OpenAPI 3.0.3 specification files. All are ready to load into Swagger UI, Postman, Redocly, or any OpenAPI-compatible tool.
 
 ## Spec Files
 
 | File | Covers | Download |
 |:---|:---|:---|
 | `openwave-payments-v1.yaml` | Payments · Recurring · Alias · Webhooks | [View](https://github.com/neptune-ly/openwave-spec/blob/main/openwave-payments-v1.yaml) |
+| `openwave-presented-payments-v1.yaml` | QR · NFC · presentment claim · channel capabilities | [View](https://github.com/neptune-ly/openwave-spec/blob/main/openwave-presented-payments-v1.yaml) |
 | `openwave-open-banking-v1.0.yaml` | AISP · PISP · OAuth 2.0 + PKCE Consent | [View](https://github.com/neptune-ly/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml) |
 | `openwave-identity-v1.0.yaml` | NPT Identity · Multi-bank Alias · Bank Phonebook | [View](https://github.com/neptune-ly/openwave-spec/blob/main/openwave-identity-v1.0.yaml) |
 | `openwave-gateway-interconnect-v1.yaml` | Gateway Discovery · Remote Routing · Interconnect Settlement | [View](https://github.com/neptune-ly/openwave-spec/blob/main/openwave-gateway-interconnect-v1.yaml) |
@@ -27,6 +28,17 @@ Browse and test the full API surface in your browser.
 | `GET` | `/payments/sessions/{id}` | Get session status |
 | `GET` | `/payments/sessions` | List sessions |
 | `POST` | `/payments/sessions/{id}/cancel` | Cancel a pending session |
+
+### Presented Payments (`openwave-presented-payments-v1.yaml`)
+
+| Method | Path | Description |
+|:---|:---|:---|
+| `GET` | `/capabilities` | Read supported QR/NFC, modes, intents, and operator role |
+| `POST` | `/presentments` | Create a merchant-presented or customer-presented request |
+| `GET` | `/presentments/{presentment_id}` | Read a presentment |
+| `POST` | `/presentments/{presentment_id}/claim` | Claim a presentment and create the underlying session |
+| `POST` | `/presentments/{presentment_id}/cancel` | Cancel a pending presentment |
+| `GET` | `/presentments/{presentment_id}/status` | Poll current state |
 
 ### Recurring Payments
 
@@ -116,6 +128,7 @@ https://astro.neptune.ly/api/v1
 | I am building... | Start here | Then read |
 |:---|:---|:---|
 | Merchant checkout | `POST /payments/sessions` | `GET /payments/sessions/{id}`, webhook events, idempotency |
+| Merchant QR / NFC checkout | `POST /presentments` | claim flow, capability discovery, hosted SCA |
 | Subscription billing | `POST /recurring/mandates` | hosted mandate consent, mandate charges, cancellation |
 | Bank connector | `/send-otp`, `/verify-otp`, `/execute-transaction`, `/notify-credit` | callback authentication and CBS idempotency |
 | Open Banking TPP app | `POST /ob/consents` | PKCE, scopes, token exchange, consent revocation |

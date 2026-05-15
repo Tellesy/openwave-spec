@@ -32,6 +32,7 @@ export default defineConfig({
             text: 'OpenAPI Files',
             items: [
               { text: 'Payments v1', link: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml' },
+              { text: 'Presented Payments v1', link: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-presented-payments-v1.yaml' },
               { text: 'Open Banking v1', link: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-open-banking-v1.0.yaml' },
               { text: 'Identity v1', link: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-identity-v1.0.yaml' },
               { text: 'Gateway Interconnect v1', link: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-gateway-interconnect-v1.yaml' },
@@ -67,6 +68,7 @@ export default defineConfig({
             { text: 'Core Concepts', link: '/guide/concepts' },
             { text: 'NPT — National Payment Tag', link: '/guide/npt' },
             { text: 'Architecture & Infrastructure', link: '/guide/architecture' },
+            { text: 'Presented Payments', link: '/guide/presented-payments' },
           ]
         },
         {
@@ -77,6 +79,10 @@ export default defineConfig({
             { text: 'For Banks', link: '/guide/banks' },
             { text: 'For TPPs (Open Banking)', link: '/guide/tpp' },
             { text: 'Decentralized Open Banking', link: '/guide/decentralized-open-banking' },
+            { text: 'QR Payloads', link: '/guide/presented-qr' },
+            { text: 'NFC Handoff', link: '/guide/presented-nfc' },
+            { text: 'Direct Bank & Wallet', link: '/guide/presented-direct' },
+            { text: 'Channel Governance', link: '/guide/presented-governance' },
             { text: 'Gateway Operators', link: '/guide/operators' },
             { text: 'Gateway Interconnect', link: '/guide/gateway-interconnect' },
           ]
@@ -109,6 +115,7 @@ export default defineConfig({
             { text: 'Overview', link: '/api/overview' },
             { text: 'Interactive Explorer', link: '/api/explorer' },
             { text: 'Payments', link: '/api/payments' },
+            { text: 'Presented Payments', link: '/api/presented-payments' },
             { text: 'Alias (NPT)', link: '/api/alias' },
             { text: 'Open Banking', link: '/api/open-banking' },
             { text: 'Identity Registry', link: '/api/identity' },

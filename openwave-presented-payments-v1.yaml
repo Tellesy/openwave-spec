@@ -1,0 +1,450 @@
+openapi: 3.0.3
+info:
+  title: OpenWave Presented Payments API
+  version: 1.0.0-draft
+  description: |
+    OpenWave Presented Payments standard for merchant-presented and customer-presented
+    QR and NFC payment initiation. The presentment channel may be implemented by
+    a gateway, bank, or wallet. Channel enablement is operator-controlled.
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: https://gateway.bank.ly
+    description: Example operator endpoint
+tags:
+  - name: Capabilities
+    description: Discover presented-payment support and enablement flags.
+  - name: Presentments
+    description: Create, claim, cancel, and monitor QR or NFC presentments.
+security:
+  - BearerMerchantKey: []
+paths:
+  /capabilities:
+    get:
+      tags: [Capabilities]
+      summary: Read presented-payment channel capabilities
+      operationId: getPresentedPaymentCapabilities
+      responses:
+        '200':
+          description: Presented-payment capabilities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresentedPaymentCapabilities'
+              examples:
+                bank:
+                  value:
+                    operator_id: andalus-direct
+                    deployment_role: BANK
+                    presented_payments:
+                      enabled: true
+                      channels_supported: [QR, NFC]
+                      modes_supported: [MERCHANT_PRESENTED, CUSTOMER_PRESENTED]
+                      intents_supported: [ONE_TIME_PAYMENT, MANDATE_APPROVAL]
+                      enablement:
+                        merchant_presented_qr: true
+                        merchant_presented_nfc: true
+                        customer_presented_qr: false
+                        customer_presented_nfc: true
+                        direct_bank_presentment: true
+                        direct_wallet_presentment: false
+                        mandate_approval_presentment: true
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+  /presentments:
+    post:
+      tags: [Presentments]
+      summary: Create a presentment
+      operationId: createPresentment
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PresentedPaymentCreateRequest'
+      responses:
+        '201':
+          description: Presentment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresentedPaymentResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+  /presentments/{presentment_id}:
+    get:
+      tags: [Presentments]
+      summary: Get a presentment
+      operationId: getPresentment
+      parameters:
+        - $ref: '#/components/parameters/PresentmentId'
+      responses:
+        '200':
+          description: Presentment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresentedPaymentResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+  /presentments/{presentment_id}/claim:
+    post:
+      tags: [Presentments]
+      summary: Claim a presentment and create the underlying secure flow
+      operationId: claimPresentment
+      parameters:
+        - $ref: '#/components/parameters/PresentmentId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClaimPresentmentRequest'
+      responses:
+        '200':
+          description: Presentment claimed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresentmentClaimResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+  /presentments/{presentment_id}/cancel:
+    post:
+      tags: [Presentments]
+      summary: Cancel a pending presentment
+      operationId: cancelPresentment
+      parameters:
+        - $ref: '#/components/parameters/PresentmentId'
+      responses:
+        '200':
+          description: Presentment cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresentmentStatusResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+  /presentments/{presentment_id}/status:
+    get:
+      tags: [Presentments]
+      summary: Read presentment status
+      operationId: getPresentmentStatus
+      parameters:
+        - $ref: '#/components/parameters/PresentmentId'
+      responses:
+        '200':
+          description: Presentment status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresentmentStatusResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+components:
+  parameters:
+    PresentmentId:
+      name: presentment_id
+      in: path
+      required: true
+      schema:
+        type: string
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+  responses:
+    ErrorResponse:
+      description: Error response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+  securitySchemes:
+    BearerMerchantKey:
+      type: http
+      scheme: bearer
+      bearerFormat: mk_...
+    OpenWaveGatewayKey:
+      type: apiKey
+      in: header
+      name: X-OpenWave-Gateway-Key
+      description: |
+        Used for operator-to-operator presentment calls when a gateway or wallet talks to
+        another operator. Production profiles must also use mutual TLS.
+  schemas:
+    PresentedPaymentCapabilities:
+      type: object
+      required: [operator_id, deployment_role, presented_payments]
+      properties:
+        operator_id:
+          type: string
+        deployment_role:
+          type: string
+          enum: [GATEWAY, BANK, WALLET]
+        presented_payments:
+          type: object
+          required: [enabled, channels_supported, modes_supported, intents_supported, enablement]
+          properties:
+            enabled:
+              type: boolean
+            channels_supported:
+              type: array
+              items:
+                type: string
+                enum: [QR, NFC]
+            modes_supported:
+              type: array
+              items:
+                type: string
+                enum: [MERCHANT_PRESENTED, CUSTOMER_PRESENTED]
+            intents_supported:
+              type: array
+              items:
+                type: string
+                enum: [ONE_TIME_PAYMENT, MANDATE_APPROVAL]
+            enablement:
+              $ref: '#/components/schemas/PresentmentEnablement'
+    PresentmentEnablement:
+      type: object
+      properties:
+        merchant_presented_qr:
+          type: boolean
+        merchant_presented_nfc:
+          type: boolean
+        customer_presented_qr:
+          type: boolean
+        customer_presented_nfc:
+          type: boolean
+        direct_bank_presentment:
+          type: boolean
+        direct_wallet_presentment:
+          type: boolean
+        mandate_approval_presentment:
+          type: boolean
+    PresentedPaymentCreateRequest:
+      type: object
+      required:
+        - mode
+        - intent
+        - amount_mode
+        - currency
+        - expires_at
+        - auth_required
+        - merchant
+      properties:
+        mode:
+          type: string
+          enum: [MERCHANT_PRESENTED, CUSTOMER_PRESENTED]
+        intent:
+          type: string
+          enum: [ONE_TIME_PAYMENT, MANDATE_APPROVAL]
+        amount_mode:
+          type: string
+          enum: [FIXED, OPEN]
+        amount:
+          type: integer
+          minimum: 0
+          description: Required for FIXED amount mode. Minor units only.
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        description:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        auth_required:
+          type: boolean
+          description: Must remain true for payment or mandate authorization flows.
+        preferred_channel:
+          type: string
+          enum: [QR, NFC]
+        merchant:
+          $ref: '#/components/schemas/MerchantIdentity'
+        recurrence:
+          $ref: '#/components/schemas/RecurrenceRules'
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+    MerchantIdentity:
+      type: object
+      required: [merchant_id, display_name]
+      properties:
+        merchant_id:
+          type: string
+        display_name:
+          type: string
+        reference:
+          type: string
+    RecurrenceRules:
+      type: object
+      properties:
+        frequency:
+          type: string
+          enum: [DAILY, WEEKLY, MONTHLY, YEARLY]
+        max_amount:
+          type: integer
+        end_date:
+          type: string
+          format: date
+    PresentedPaymentResponse:
+      type: object
+      required:
+        - presentment_id
+        - status
+        - mode
+        - intent
+        - expires_at
+        - presentment_payload
+      properties:
+        presentment_id:
+          type: string
+        status:
+          type: string
+          enum: [PENDING_CLAIM, CLAIMED, EXPIRED, CANCELLED]
+        mode:
+          type: string
+          enum: [MERCHANT_PRESENTED, CUSTOMER_PRESENTED]
+        intent:
+          type: string
+          enum: [ONE_TIME_PAYMENT, MANDATE_APPROVAL]
+        expires_at:
+          type: string
+          format: date-time
+        payment_id:
+          type: string
+        mandate_id:
+          type: string
+        session_id:
+          type: string
+        presentment_payload:
+          $ref: '#/components/schemas/PresentmentPayload'
+        qr_payload:
+          $ref: '#/components/schemas/QrPayload'
+        nfc_payload:
+          $ref: '#/components/schemas/NfcPayload'
+    PresentmentPayload:
+      type: object
+      required: [uri, reference, channel]
+      properties:
+        uri:
+          type: string
+        reference:
+          type: string
+        channel:
+          type: string
+          enum: [QR, NFC]
+    QrPayload:
+      type: object
+      properties:
+        format:
+          type: string
+          enum: [OPENWAVE_URI]
+        render_hint:
+          type: string
+          enum: [SVG_OR_PNG]
+        value:
+          type: string
+    NfcPayload:
+      type: object
+      properties:
+        format:
+          type: string
+          enum: [NDEF_URI]
+        value:
+          type: string
+    ClaimPresentmentRequest:
+      type: object
+      required: [channel, claimer_type]
+      properties:
+        channel:
+          type: string
+          enum: [QR, NFC]
+        claimer_type:
+          type: string
+          enum: [CUSTOMER_APP, MERCHANT_POS, BANK_APP, WALLET_APP]
+        payer_alias:
+          type: string
+        payer_iban:
+          type: string
+        customer_presented_token:
+          type: string
+        return_url:
+          type: string
+          format: uri
+    PresentmentClaimResponse:
+      type: object
+      required: [presentment_id, status, auth_required]
+      properties:
+        presentment_id:
+          type: string
+        status:
+          type: string
+          enum: [CLAIMED, AUTH_REQUIRED, PROCESSING]
+        payment_id:
+          type: string
+        mandate_id:
+          type: string
+        session_id:
+          type: string
+        auth_required:
+          type: boolean
+        auth_surface:
+          $ref: '#/components/schemas/AuthSurface'
+    AuthSurface:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [HOSTED_CHECKOUT, SECURE_SDK_SHEET, BANK_APP]
+        url:
+          type: string
+          format: uri
+    PresentmentStatusResponse:
+      type: object
+      required: [presentment_id, status]
+      properties:
+        presentment_id:
+          type: string
+        status:
+          type: string
+          enum: [PENDING_CLAIM, CLAIMED, AUTH_REQUIRED, PROCESSING, EXPIRED, CANCELLED, COMPLETED, FAILED]
+        payment_id:
+          type: string
+        mandate_id:
+          type: string
+        session_id:
+          type: string
+        next_action:
+          type: string
+        correlation_id:
+          type: string
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, retryable, correlation_id]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            retryable:
+              type: boolean
+            correlation_id:
+              type: string

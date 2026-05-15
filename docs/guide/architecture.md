@@ -2,6 +2,8 @@
 
 This page covers the full OpenWave system topology — the participants, how they connect, and how money and data flow.
 
+Presented payments fit into the same topology as a **channel layer**. QR and NFC never bypass hosted or bank-controlled authorization. They only change how the payment or mandate session is initiated.
+
 ---
 
 ## System Overview

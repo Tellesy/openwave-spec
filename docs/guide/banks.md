@@ -2,6 +2,8 @@
 
 Join the OpenWave network as a payment partner. Once registered, your customers can pay and receive payments from any merchant or user in the ecosystem.
 
+Banks can also implement the **presented-payments channel directly** when enabled by operator policy. In that model, the bank still follows the same OpenWave security rules and final payment or mandate lifecycle, but the bank owns the presenting app surface and capability advertisement.
+
 ## What a Bank Needs to Provide
 
 OpenWave is a **routing layer** — it doesn't replace your core banking system. The gateway calls your core to:
@@ -181,6 +183,8 @@ X-OpenWave-Bank-Key: owbk_andalus_...
   "max_consent_expiry_days": 365
 }
 ```
+
+If you implement QR or NFC presented flows directly, advertise them through the presented-payments capability object. Supported channels, modes, intents, and enablement flags must be discoverable so merchants and wallets do not assume unavailable flows.
 
 ## Step 5 — Handle Settlements
 

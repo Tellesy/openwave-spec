@@ -2,6 +2,8 @@
 
 Accept payments from any participating bank with a single integration. No per-bank setup.
 
+Presented QR and NFC flows are available when your operator enables them. You still create a payment or mandate intent on your backend, but instead of redirecting immediately, you can request a presentment for scan or tap. Read [Presented Payments](./presented-payments.md) and [QR Payloads](./presented-qr.md).
+
 ## Overview
 
 ```
@@ -188,6 +190,18 @@ Once active, you charge via:
 POST /recurring/mandates/{mandate_id}/charge
 { "amount": 5000, "reference": "sub_may_2026" }
 ```
+
+## Presented Payments
+
+Use presented flows when the customer starts from a merchant screen, a POS, or a wallet handoff:
+
+| Mode | Use when | What you send |
+|---|---|---|
+| `MERCHANT_PRESENTED` + `ONE_TIME_PAYMENT` | Storefront, POS, bill-pay page | Fixed or open-amount presentment |
+| `MERCHANT_PRESENTED` + `MANDATE_APPROVAL` | Subscription signup, instalment approval | Mandate approval presentment |
+| `CUSTOMER_PRESENTED` + `ONE_TIME_PAYMENT` | Customer wallet token shown to merchant | Customer-presented token claim |
+
+Merchants must not collect OTP, PIN, or push approval results in their own UI. The QR or NFC payload only hands the customer into the trusted hosted or official SDK surface.
 
 ## API Key Security
 

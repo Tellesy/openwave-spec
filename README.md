@@ -40,6 +40,7 @@ OpenWave is **bank-agnostic and gateway-agnostic by design**. Any institution or
 | Module | Version | Status | Description |
 |:---|:---:|:---:|:---|
 | **Payments** | 1.0.0 | ✅ Stable | Online payment sessions via IBAN or NPT alias |
+| **Presented Payments** | 1.0.0 | Draft | QR and NFC presentment for one-time payments and mandate approval |
 | **Recurring Payments** | 1.0.0 | ✅ Stable | Mandate-based recurring charges |
 | **Alias (NPT — National Payment Tag)** | 1.0.0 | ✅ Stable | Universal payment identity enrollment & resolution |
 | **Webhooks** | 1.0.0 | ✅ Stable | Real-time event notifications with HMAC signature |
@@ -57,6 +58,7 @@ The specification files are valid OpenAPI documents — load them directly into 
 | File | Covers |
 |:---|:---|
 | [`openwave-payments-v1.yaml`](./openwave-payments-v1.yaml) | Payments · Recurring · Alias · Webhooks |
+| [`openwave-presented-payments-v1.yaml`](./openwave-presented-payments-v1.yaml) | QR presentments · NFC handoff · Customer-presented tokens · capability discovery |
 | [`openwave-open-banking-v1.0.yaml`](./openwave-open-banking-v1.0.yaml) | Open Banking AISP + PISP · OAuth 2.0 + PKCE |
 | [`openwave-identity-v1.0.yaml`](./openwave-identity-v1.0.yaml) | Identity Registry · NPT handle ownership · Multi-bank aliases · Governance |
 | [`openwave-gateway-interconnect-v1.yaml`](./openwave-gateway-interconnect-v1.yaml) | Gateway discovery · Remote alias resolution · Cross-gateway routing · Settlement |
@@ -142,6 +144,7 @@ Always pair `amount` with a `currency` field (ISO 4217).
 | Customer session | Short-lived session token | `X-Session-Token: <token>` |
 | TPP (Open Banking) | OAuth 2.0 + PKCE access token | `Authorization: Bearer <token>` |
 | Bank core → gateway | Pre-shared internal key | `X-OpenWave-Internal-Key: <secret>` |
+| Gateway / bank / wallet presentment operator | Presented-payment capability policy | `GET /capabilities` + operator policy |
 
 ---
 

@@ -1,6 +1,6 @@
 # Spec Files
 
-Four OpenAPI 3.0.3 files define the complete OpenWave standard. All are machine-readable and compatible with any OpenAPI tooling.
+Five OpenAPI 3.0.3 files define the complete OpenWave standard. All are machine-readable and compatible with any OpenAPI tooling.
 
 ## openwave-payments-v1.yaml
 
@@ -16,6 +16,13 @@ curl https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-pa
 
 → [View on GitHub](https://github.com/neptune-ly/openwave-spec/blob/main/openwave-payments-v1.yaml)<br>
 → [Raw YAML](https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml)
+
+## openwave-presented-payments-v1.yaml
+
+**Covers:** Merchant-presented and customer-presented QR/NFC, presentment creation and claim, direct bank and wallet implementation patterns, and capability discovery
+
+→ [View on GitHub](https://github.com/neptune-ly/openwave-spec/blob/main/openwave-presented-payments-v1.yaml)<br>
+→ [Raw YAML](https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-presented-payments-v1.yaml)
 
 ## openwave-open-banking-v1.0.yaml
 

@@ -32,6 +32,29 @@ Covers payment sessions, NPT alias routing, recurring mandates, webhooks, and ba
 
 ---
 
+### Presented Payments API — `openwave-presented-payments-v1.yaml`
+
+Covers merchant-presented and customer-presented QR and NFC flows, direct bank or wallet implementation patterns, and channel capability discovery.
+
+<div class="ow-dl-row">
+  <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-presented-payments-v1.yaml" download>Download YAML</a>
+  <a class="ow-dl-btn-ghost" href="https://github.com/neptune-ly/openwave-spec/blob/main/openwave-presented-payments-v1.yaml">View on GitHub</a>
+  <a class="ow-dl-btn-ghost" href="https://editor.swagger.io/?url=https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-presented-payments-v1.yaml" target="_blank">Open in Swagger Editor ↗</a>
+</div>
+
+**Key endpoints:**
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/capabilities` | Read supported channels, modes, intents, and deployment role |
+| `POST` | `/presentments` | Create presentment for one-time payment or mandate approval |
+| `GET` | `/presentments/{presentment_id}` | Read presentment metadata |
+| `POST` | `/presentments/{presentment_id}/claim` | Claim presentment and open hosted or SDK authorization |
+| `POST` | `/presentments/{presentment_id}/cancel` | Cancel a pending presentment |
+| `GET` | `/presentments/{presentment_id}/status` | Poll presentment state |
+
+---
+
 ### Open Banking API — `openwave-open-banking-v1.0.yaml`
 
 Covers OAuth 2.0 + PKCE consent, AISP (account data), PISP (payment initiation), and SCA.
@@ -116,6 +139,9 @@ Import any spec file directly into Postman to get a pre-built collection with al
 # Payments
 https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml
 
+# Presented Payments
+https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-presented-payments-v1.yaml
+
 # Open Banking
 https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-open-banking-v1.0.yaml
 
@@ -145,6 +171,7 @@ Download the YAML above → in Postman click **Import** → **File** → select 
 | Variable | Used by | Example |
 |---|---|---|
 | `GATEWAY_URL` | Payments, Open Banking | `https://sandbox.gateway.example.com` |
+| `PRESENTMENT_URL` | Presented payments | `https://sandbox.gateway.example.com` |
 | `IDENTITY_URL` | Identity Registry | `https://identity.example.com` |
 | `MERCHANT_KEY` | Merchant payment APIs | `mk_test_...` |
 | `BANK_KEY` | Bank-to-registry APIs | `owbk_...` |

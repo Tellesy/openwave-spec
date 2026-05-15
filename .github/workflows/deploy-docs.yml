@@ -29,6 +29,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Check public surface
+        run: npm run public:check
+
       - name: Build docs
         run: npm run docs:build
 
