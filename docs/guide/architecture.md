@@ -4,6 +4,8 @@ This page covers the full OpenWave system topology — the participants, how the
 
 Presented payments fit into the same topology as a **channel layer**. QR and NFC never bypass hosted or bank-controlled authorization. They only change how the payment or mandate session is initiated.
 
+Credit & Finance fits as a **finance lifecycle layer**. It consumes customer-permissioned Open Banking data, creates assessment and offer records, then reuses the normal Payments and mandate rails for merchant settlement and customer repayment.
+
 ## Where presented payments fit
 
 ```mermaid
@@ -25,13 +27,30 @@ The key architectural rule is that the **presentment layer stays thin**:
 
 ---
 
+## Where Credit & Finance fits
+
+```mermaid
+flowchart LR
+  Customer[Customer] --> Consent[Credit-specific OB consent]
+  Consent --> Assessment[Credit assessment]
+  Assessment --> Offer[Finance offer]
+  Offer --> Acceptance[Hosted / SDK acceptance]
+  Acceptance --> Payment[OpenWave payment to merchant]
+  Acceptance --> Repayment[Mandate or scheduled repayments]
+  Payment --> Webhook[Merchant payment.completed]
+```
+
+Credit & Finance is not a new settlement rail and not a credit bureau. It standardizes how a finance provider requests consented inputs, returns safe assessment output, creates offers, records acceptance, and publishes repayment schedules.
+
+---
+
 ## System Overview
 
 <section class="ow-architecture-motion ow-architecture-motion-doc" aria-label="Animated OpenWave architecture overview">
   <div class="ow-motion-copy">
     <p class="ow-eyebrow">Live topology</p>
-    <h2>OpenWave separates identity, gateway routing, bank SCA, and settlement.</h2>
-    <p>The gateway coordinates. The bank authenticates and moves money. Identity resolves NPT handles. Settlement completes through same-bank books or national rails.</p>
+    <h2>OpenWave separates identity, gateway routing, customer consent, bank SCA, finance lifecycle, and settlement.</h2>
+    <p>The gateway coordinates. The bank authenticates and moves money. Identity resolves NPT handles. Finance providers make provider-owned decisions from consented data. Settlement completes through same-bank books or national rails.</p>
   </div>
   <div class="ow-network-graphic" aria-hidden="true">
     <svg viewBox="0 0 920 520" role="img">
@@ -124,6 +143,9 @@ Customers authenticate using their bank's existing credentials (OTP or push noti
 
 ### Third-Party Providers (TPPs)
 Fintechs and apps that use **Open Banking** to read account data or initiate payments on behalf of customers, under explicit OAuth 2.0 + PKCE consent.
+
+### Finance Providers
+Banks, fintechs, or regulated lenders that use customer-approved Open Banking data to assess affordability, create BNPL or revolving offers, disclose Murabaha terms, and service repayment schedules. OpenWave standardizes the lifecycle; the provider owns the credit policy, model, regulatory responsibility, and customer contract.
 
 ### Gateway Operators
 Any entity running a compliant OpenWave gateway instance. Operators register banks and merchants, configure settlement strategies, and maintain the CBL connections.

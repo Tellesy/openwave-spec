@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: 'OpenWave',
-  description: 'Open standard developed by Neptune. Fintech for bank-agnostic payments, Open Banking, NPT identity, webhooks, and gateway interconnect.',
+  description: 'Open standard developed by Neptune. Fintech for bank-agnostic payments, Open Banking, NPT identity, credit and finance, webhooks, and gateway interconnect.',
   base: '/openwave-spec/',
 
   lastUpdated: true,
@@ -11,7 +11,7 @@ export default defineConfig({
     ['link', { rel: 'icon', href: '/openwave-spec/favicon.svg', type: 'image/svg+xml' }],
     ['meta', { name: 'theme-color', content: '#07315F' }],
     ['meta', { property: 'og:title', content: 'OpenWave — Open Payments and Open Banking Standard' }],
-    ['meta', { property: 'og:description', content: 'Developer-first standard for payments, Open Banking, NPT identity, webhooks, and gateway-to-gateway switching.' }],
+    ['meta', { property: 'og:description', content: 'Developer-first standard for payments, Open Banking, NPT identity, credit and finance, webhooks, and gateway-to-gateway switching.' }],
     ['meta', { property: 'og:image', content: 'https://neptune-ly.github.io/openwave-spec/og-preview.png' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
   ],
@@ -34,6 +34,7 @@ export default defineConfig({
               { text: 'Payments v1', link: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml' },
               { text: 'Presented Payments v1', link: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-presented-payments-v1.yaml' },
               { text: 'Open Banking v1', link: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-open-banking-v1.0.yaml' },
+              { text: 'Credit & Finance v1', link: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-credit-finance-v1.yaml' },
               { text: 'Identity v1', link: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-identity-v1.0.yaml' },
               { text: 'Gateway Interconnect v1', link: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-gateway-interconnect-v1.yaml' },
             ]
@@ -69,6 +70,7 @@ export default defineConfig({
             { text: 'NPT — National Payment Tag', link: '/guide/npt' },
             { text: 'Architecture & Infrastructure', link: '/guide/architecture' },
             { text: 'Presented Payments', link: '/guide/presented-payments' },
+            { text: 'Credit & Finance', link: '/guide/credit-finance' },
             { text: 'Public Docs Policy', link: '/guide/maintainers' },
           ]
         },
@@ -84,6 +86,11 @@ export default defineConfig({
             { text: 'NFC Handoff', link: '/guide/presented-nfc' },
             { text: 'Direct Bank & Wallet', link: '/guide/presented-direct' },
             { text: 'Channel Governance', link: '/guide/presented-governance' },
+            { text: 'Credit-Assessment Consent', link: '/guide/credit-assessment-consent' },
+            { text: 'BNPL Flow', link: '/guide/bnpl' },
+            { text: 'Revolving Credit Flow', link: '/guide/revolving-credit' },
+            { text: 'Murabaha Flow', link: '/guide/murabaha' },
+            { text: 'Financed-Payment Lifecycle', link: '/guide/financed-payment-lifecycle' },
             { text: 'Gateway Operators', link: '/guide/operators' },
             { text: 'Gateway Interconnect', link: '/guide/gateway-interconnect' },
           ]
@@ -96,6 +103,7 @@ export default defineConfig({
             { text: 'Webhooks', link: '/guide/webhooks' },
             { text: 'Error Codes', link: '/guide/errors' },
             { text: 'Amount Convention', link: '/guide/amounts' },
+            { text: 'Risk, Privacy & Explainability', link: '/guide/risk-privacy-explainability' },
             { text: 'Settlement & CBL Infrastructure', link: '/guide/settlement' },
           ]
         },
@@ -117,6 +125,7 @@ export default defineConfig({
             { text: 'Interactive Explorer', link: '/api/explorer' },
             { text: 'Payments', link: '/api/payments' },
             { text: 'Presented Payments', link: '/api/presented-payments' },
+            { text: 'Credit & Finance', link: '/api/credit-finance' },
             { text: 'Alias (NPT)', link: '/api/alias' },
             { text: 'Open Banking', link: '/api/open-banking' },
             { text: 'Identity Registry', link: '/api/identity' },

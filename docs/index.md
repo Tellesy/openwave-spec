@@ -4,7 +4,7 @@ layout: home
 hero:
   name: "OpenWave"
   text: "Open payments. Open banking. One interoperable standard."
-  tagline: "An Apache 2.0 standard developed by Neptune. Fintech for bank payments, NPT identity, Open Banking consent, webhooks, settlement, and gateway-to-gateway switching."
+  tagline: "An Apache 2.0 standard developed by Neptune. Fintech for bank payments, NPT identity, Open Banking consent, Credit & Finance, webhooks, settlement, and gateway-to-gateway switching."
   image:
     src: /hero-openwave.svg
     alt: OpenWave Logo
@@ -21,6 +21,9 @@ hero:
     - theme: alt
       text: Presented Payments
       link: /guide/presented-payments
+    - theme: alt
+      text: Credit & Finance
+      link: /guide/credit-finance
     - theme: alt
       text: Gateway Interconnect
       link: /guide/gateway-interconnect
@@ -48,6 +51,13 @@ features:
     linkText: Open Banking (TPP) Guide
 
   - icon:
+      svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/><path d="M19 19l2 2"/><path d="M19 21l2-2"/></svg>'
+    title: Credit & Finance
+    details: Standardize consented affordability packages, BNPL offers, revolving-credit drawdowns, Murabaha disclosures, repayment schedules, and finance webhooks without forcing one scoring model.
+    link: /guide/credit-finance
+    linkText: Credit & Finance Guide
+
+  - icon:
       svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/><path d="M4 12a8 8 0 0 0 8 8"/><path d="M20 12a8 8 0 0 0-8-8"/></svg>'
     title: Presented Payments
     details: Merchant-presented and customer-presented QR or NFC flows that still keep bank authorization inside hosted or official SDK surfaces. Banks and wallets can implement the channel directly when enabled.
@@ -71,19 +81,19 @@ features:
   - icon:
       svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
     title: Ready to Use
-    details: Four OpenAPI 3.0 spec files, Postman collections, and code generation templates. Import to Swagger, Postman, Redocly, Insomnia, or generated clients in seconds.
+    details: Six OpenAPI 3.0 spec files, Postman collections, and code generation templates. Import to Swagger, Postman, Redocly, Insomnia, or generated clients in seconds.
     link: /downloads
     linkText: Download Specs & Collections
 ---
 
 <div class="ow-stats-bar">
-  <div class="ow-stat"><span class="ow-stat-num">4</span><span class="ow-stat-label">OpenAPI Spec Files</span></div>
+  <div class="ow-stat"><span class="ow-stat-num">6</span><span class="ow-stat-label">OpenAPI Spec Files</span></div>
   <div class="ow-stat-div"></div>
   <div class="ow-stat"><span class="ow-stat-num">QR + NFC</span><span class="ow-stat-label">Presented Channels</span></div>
   <div class="ow-stat-div"></div>
-  <div class="ow-stat"><span class="ow-stat-num">60+</span><span class="ow-stat-label">API Endpoints</span></div>
+  <div class="ow-stat"><span class="ow-stat-num">70+</span><span class="ow-stat-label">API Endpoints</span></div>
   <div class="ow-stat-div"></div>
-  <div class="ow-stat"><span class="ow-stat-num">4</span><span class="ow-stat-label">Integration Roles</span></div>
+  <div class="ow-stat"><span class="ow-stat-num">5</span><span class="ow-stat-label">Integration Roles</span></div>
   <div class="ow-stat-div"></div>
   <div class="ow-stat"><span class="ow-stat-num">Apache 2.0</span><span class="ow-stat-label">Open License</span></div>
 </div>
@@ -102,8 +112,8 @@ features:
 <section class="ow-architecture-board" aria-label="Animated OpenWave architecture and data flow">
   <div class="ow-suite-head">
     <p class="ow-eyebrow">Architecture in motion</p>
-    <h2>OpenWave standardizes the contract between apps, gateways, identity, banks, and settlement rails.</h2>
-    <p>The moving paths are separated by purpose: session creation, customer authorization, alias resolution, bank execution, webhook confirmation, and gateway-to-gateway routing.</p>
+    <h2>OpenWave standardizes the contract between apps, gateways, identity, banks, finance providers, and settlement rails.</h2>
+    <p>The moving paths are separated by purpose: session creation, customer authorization, alias resolution, finance assessment, bank execution, webhook confirmation, and gateway-to-gateway routing.</p>
   </div>
   <div class="ow-system-map" aria-hidden="true">
     <div class="ow-map-node ow-map-merchant"><b>Merchant backend</b><small>Create sessions, verify webhooks</small></div>
@@ -231,7 +241,7 @@ features:
 
 ## What is OpenWave?
 
-OpenWave is an **open API standard** created and maintained by Neptune. Fintech for payments, Open Banking, identity, settlement webhooks, and gateway interconnect. It defines a unified contract so any bank, merchant, fintech, or gateway operator can plug into a single interoperable network without bilateral agreements between every participant.
+OpenWave is an **open API standard** created and maintained by Neptune. Fintech for payments, Open Banking, identity, Credit & Finance, settlement webhooks, and gateway interconnect. It defines a unified contract so any bank, merchant, fintech, finance provider, or gateway operator can plug into a single interoperable network without bilateral agreements between every participant.
 
 **Libya's problem:** Customers are locked to their bank's app. Merchants integrate with each bank separately. There is no shared payment identity layer. Money can't move freely.
 
@@ -249,6 +259,7 @@ OpenWave is an **open API standard** created and maintained by Neptune. Fintech 
     <a href="./guide/merchants.html"><b>Merchant</b><span>Create sessions, receive webhooks, reconcile orders.</span><code>Authorization: Bearer mk_...</code></a>
     <a href="./guide/banks.html"><b>Bank</b><span>Send OTP, verify SCA, execute debit/credit callbacks.</span><code>X-OpenWave-Internal-Key</code></a>
     <a href="./guide/tpp.html"><b>TPP</b><span>Ask for scoped Open Banking access with PKCE consent.</span><code>/ob/consents -> /ob/token</code></a>
+    <a href="./guide/credit-finance.html"><b>Finance provider</b><span>Assess affordability, create offers, publish repayment schedules.</span><code>/credit + /finance</code></a>
     <a href="./guide/gateway-interconnect.html"><b>Gateway</b><span>Discover peer gateways and route cross-gateway payments.</span><code>X-OpenWave-Gateway-Key</code></a>
   </div>
 </div>
@@ -278,6 +289,19 @@ OpenWave is an **open API standard** created and maintained by Neptune. Fintech 
     <li>PISP: payment initiation by TPPs</li>
     <li>SCA (Strong Customer Authentication)</li>
     <li>Bank capability advertisement</li>
+  </ul>
+</div>
+
+<div class="ow-module-card">
+  <div class="ow-module-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+  <div class="ow-module-title">Credit &amp; Finance Module</div>
+  <div class="ow-module-spec"><a href="https://github.com/neptune-ly/openwave-spec/blob/main/openwave-credit-finance-v1.yaml">openwave-credit-finance-v1.yaml</a></div>
+  <ul>
+    <li>Credit-assessment consent output</li>
+    <li>Affordability and risk reason codes</li>
+    <li>BNPL and revolving-credit offers</li>
+    <li>Murabaha disclosures and acceptance</li>
+    <li>Contracts, repayment schedules, and finance webhooks</li>
   </ul>
 </div>
 
@@ -339,6 +363,7 @@ Merchant           OpenWave Gateway        Debtor Bank (CBS)     CBL LyPay     M
 | Payments | Merchant backend → Gateway | `Authorization: Bearer mk_...` | Hosted checkout or SDK session token, bank OTP or push SCA |
 | Bank callbacks | Gateway → Bank middleware | `X-OpenWave-Internal-Key: ow_cbk_...` | Bank performs OTP/push verification before debit |
 | Open Banking | TPP → Gateway | OAuth 2.0 Authorization Code + PKCE | Hosted consent screen, explicit scopes, revocation |
+| Credit & Finance | Finance provider → Gateway | Provider/participant bearer key + consent ID | Customer sees finance purpose, amount, tenor, disclosures, and repayment schedule before acceptance |
 | Identity | Bank → Registry | `X-OpenWave-Bank-Key: owbk_...` | Bank can only manage accounts it vouched for |
 | Gateway interconnect | Gateway → Gateway | `X-OpenWave-Gateway-Key: owgw_...` + production mTLS | Idempotent routes, signed settlement batches |
 
@@ -367,6 +392,16 @@ Merchant           OpenWave Gateway        Debtor Bank (CBS)     CBL LyPay     M
   <div class="ow-dl-links">
     <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-open-banking-v1.0.yaml" download>Download YAML</a>
     <a class="ow-dl-btn-ghost" href="https://github.com/neptune-ly/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml">View on GitHub</a>
+  </div>
+</div>
+
+<div class="ow-download-card">
+  <div class="ow-dl-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+  <div class="ow-dl-title">Credit &amp; Finance OpenAPI</div>
+  <div class="ow-dl-sub">openwave-credit-finance-v1.yaml</div>
+  <div class="ow-dl-links">
+    <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-credit-finance-v1.yaml" download>Download YAML</a>
+    <a class="ow-dl-btn-ghost" href="https://github.com/neptune-ly/openwave-spec/blob/main/openwave-credit-finance-v1.yaml">View on GitHub</a>
   </div>
 </div>
 

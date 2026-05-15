@@ -1,7 +1,7 @@
 {
   "name": "openwave-spec",
   "version": "1.0.0",
-  "description": "OpenWave API standard for payments, Open Banking, NPT identity, webhooks, and gateway interconnect.",
+  "description": "OpenWave API standard for payments, Open Banking, Credit & Finance, NPT identity, webhooks, and gateway interconnect.",
   "main": "index.js",
   "scripts": {
     "public:check": "bash ./scripts/check-public-surface.sh",

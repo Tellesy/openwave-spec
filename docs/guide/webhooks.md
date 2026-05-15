@@ -123,6 +123,18 @@ await redis.set(key, '1', 'EX', 86400)
 | `payment_order.pending_sca` | Bank requires SCA — redirect to `sca_url` |
 | `payment_order.rejected` | Bank declined the payment order |
 
+### Credit & Finance Events
+
+| Event | Trigger |
+|:---|:---|
+| `credit_assessment.completed` | Assessment output is ready |
+| `finance_offer.created` | Offer is ready for customer review |
+| `finance_offer.accepted` | Customer accepted the offer in a hosted or official SDK surface |
+| `finance_contract.active` | Contract is active after financed-payment confirmation |
+| `finance_contract.cancelled` | Contract was cancelled |
+| `repayment.completed` | Scheduled repayment collected |
+| `repayment.failed` | Scheduled repayment failed |
+
 ## Configuring Webhook Endpoints
 
 ```http

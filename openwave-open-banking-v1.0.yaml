@@ -110,6 +110,10 @@ info:
     | `transactions:read` | Read transaction history |
     | `payments:write` | Initiate single payment orders |
     | `mandates:write` | Create standing payment mandates (future) |
+    | `credit_assessment:read` | Permit a purpose-bound credit or finance assessment |
+    | `income:read` | Derive income summaries from consented account data |
+    | `liabilities:read` | Derive recurring obligations and debt-service indicators |
+    | `affordability:read` | Derive affordability results for a declared finance purpose |
 
     Scopes are requested by the TPP and granted at consent time. A token can
     only access scopes included in its consent. The hosted authorisation surface
@@ -175,14 +179,14 @@ info:
   version: "1.0.0"
   contact:
     name: OpenWave Standard
-    url: https://github.com/Tellesy/openwave-spec
+    url: https://github.com/neptune-ly/openwave-spec
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
 
 externalDocs:
   description: OpenWave Standard Repository
-  url: https://github.com/Tellesy/openwave-spec
+  url: https://github.com/neptune-ly/openwave-spec
 
 servers:
   - url: https://{gateway_host}/api/v1
@@ -254,6 +258,10 @@ paths:
                   - balances:read
                   - transactions:read
                   - payments:write
+                  - credit_assessment:read
+                  - income:read
+                  - liabilities:read
+                  - affordability:read
                 sca_exemption_limit: 5000
                 max_consent_expiry_days: 365
         '404':
@@ -1204,6 +1212,10 @@ components:
             - transactions:read
             - payments:write
             - mandates:write
+            - credit_assessment:read
+            - income:read
+            - liabilities:read
+            - affordability:read
         title:
           type: string
           example: See your balances
@@ -1340,7 +1352,7 @@ components:
           items:
             type: string
           description: Which OB scopes this bank's adapter implements
-          example: ["accounts:read", "balances:read", "transactions:read", "payments:write"]
+          example: ["accounts:read", "balances:read", "transactions:read", "payments:write", "credit_assessment:read", "income:read", "liabilities:read", "affordability:read"]
         sca_exemption_limit:
           type: integer
           format: int64
@@ -1392,7 +1404,7 @@ components:
           items:
             type: string
           description: Scopes this TPP is permitted to request in consents
-          example: ["accounts:read", "balances:read", "transactions:read", "payments:write"]
+          example: ["accounts:read", "balances:read", "transactions:read", "payments:write", "credit_assessment:read", "income:read", "liabilities:read", "affordability:read"]
         logo_url:
           type: string
           format: uri
@@ -1468,6 +1480,10 @@ components:
               - transactions:read
               - payments:write
               - mandates:write
+              - credit_assessment:read
+              - income:read
+              - liabilities:read
+              - affordability:read
           example: ["accounts:read", "balances:read", "transactions:read"]
         bank_handle:
           type: string

@@ -12,9 +12,17 @@ const specs = {
     label: 'Payments & Alias',
     url: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml',
   },
+  presented: {
+    label: 'Presented Payments',
+    url: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-presented-payments-v1.yaml',
+  },
   openbanking: {
     label: 'Open Banking',
     url: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-open-banking-v1.0.yaml',
+  },
+  creditfinance: {
+    label: 'Credit & Finance',
+    url: 'https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-credit-finance-v1.yaml',
   },
   identity: {
     label: 'Identity Registry',
@@ -87,7 +95,9 @@ Load the spec files directly in [Swagger Editor](https://editor.swagger.io) or i
 
 **Raw spec URLs:**
 - [Payments](https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-payments-v1.yaml)
+- [Presented Payments](https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-presented-payments-v1.yaml)
 - [Open Banking](https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-open-banking-v1.0.yaml)
+- [Credit & Finance](https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-credit-finance-v1.yaml)
 - [Identity Registry](https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-identity-v1.0.yaml)
 - [Gateway Interconnect](https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-gateway-interconnect-v1.yaml)
 :::

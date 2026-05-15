@@ -15,6 +15,7 @@ Merchants integrate with a gateway, not directly with banks.
 | 5 | Reconciliation | Merchant can match order reference, payment ID, amount, fee, and settlement status. |
 | 6 | Recurring mandates | Customer sees amount/frequency/expiry and approves before future charges. |
 | 7 | Open Banking, if needed | Customer sees scopes and bank before consent; backend exchanges authorization code with PKCE. |
+| 8 | Financed checkout, if offered | Merchant waits for final financed-payment confirmation and receives only merchant-safe finance status. |
 
 Minimum production evidence:
 
@@ -71,6 +72,29 @@ Minimum production evidence:
 - Consent revocation invalidates access.
 - Customer portal shows active and revoked consents.
 
+## Finance provider playbook
+
+Finance providers turn customer-permissioned data into offers and repayment schedules.
+
+| Phase | Build | Done when |
+|---|---|---|
+| 1 | Product capability | Provider advertises BNPL, revolving-credit, and/or Murabaha support. |
+| 2 | Finance consent | Customer sees finance purpose, amount, tenor, data window, selected accounts, and credit scopes. |
+| 3 | Assessment | Provider creates purpose-bound affordability output and safe reason codes. |
+| 4 | Offer | Provider creates offer with disclosures, repayment preview, and hosted acceptance URL. |
+| 5 | Acceptance | Customer accepts terms and repayment schedule in hosted or official SDK surface. |
+| 6 | Settlement | Financier pays merchant through the normal OpenWave payment lifecycle. |
+| 7 | Servicing | Customer can see contract, repayments, failures, cancellations, and revocation state. |
+
+Minimum production evidence:
+
+- Rejected consent creates no assessment.
+- Revoked consent blocks assessment refresh.
+- Merchant does not receive raw transaction data.
+- BNPL offer acceptance creates contract and payment.
+- Murabaha offer shows cash price, profit, total sale price, and installment schedule before acceptance.
+- Declines return safe reason codes and correlation IDs.
+
 ## Gateway operator playbook
 
 Gateway operators implement policy, routing, merchant APIs, hosted customer surfaces, webhooks, and interconnect.
@@ -122,6 +146,7 @@ The registry is the source of truth for NPT handles and bank-scoped account link
 
 - [Payments API](../api/payments.md)
 - [Open Banking API](../api/open-banking.md)
+- [Credit & Finance API](../api/credit-finance.md)
 - [Identity Registry API](../api/identity.md)
 - [Gateway Interconnect API](../api/gateway-interconnect.md)
 - [Downloads and client tools](../downloads.md)

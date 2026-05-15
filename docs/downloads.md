@@ -78,6 +78,30 @@ Covers OAuth 2.0 + PKCE consent, AISP (account data), PISP (payment initiation),
 
 ---
 
+### Credit & Finance API — `openwave-credit-finance-v1.yaml`
+
+Covers credit-assessment output, affordability packages, BNPL offers, revolving-credit drawdowns, Murabaha disclosures, contracts, repayment schedules, and finance webhooks.
+
+<div class="ow-dl-row">
+  <a class="ow-dl-btn" href="https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-credit-finance-v1.yaml" download>Download YAML</a>
+  <a class="ow-dl-btn-ghost" href="https://github.com/neptune-ly/openwave-spec/blob/main/openwave-credit-finance-v1.yaml">View on GitHub</a>
+  <a class="ow-dl-btn-ghost" href="https://editor.swagger.io/?url=https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-credit-finance-v1.yaml" target="_blank">Open in Swagger Editor ↗</a>
+</div>
+
+**Key endpoints:**
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/finance/capabilities` | Discover supported finance products and required Open Banking scopes |
+| `POST` | `/credit/assessments` | Create purpose-bound affordability and risk assessment |
+| `GET` | `/credit/assessments/{assessment_id}` | Read assessment output |
+| `POST` | `/finance/offers` | Create BNPL, revolving-credit, or Murabaha offer |
+| `POST` | `/finance/offers/{offer_id}/accept` | Customer accepts offer in hosted or official SDK surface |
+| `GET` | `/finance/contracts/{contract_id}` | Read finance contract |
+| `GET` | `/finance/contracts/{contract_id}/repayment-schedule` | Read repayment schedule |
+
+---
+
 ### Identity Registry API — `openwave-identity-v1.0.yaml`
 
 Covers NPT handle ownership, multi-bank account linking, public alias resolution, and bank directory.
@@ -145,6 +169,9 @@ https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-present
 # Open Banking
 https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-open-banking-v1.0.yaml
 
+# Credit & Finance
+https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-credit-finance-v1.yaml
+
 # Identity Registry
 https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-identity-v1.0.yaml
 
@@ -160,6 +187,7 @@ MERCHANT_KEY   = your-merchant-api-key
 BANK_KEY       = your-bank-api-key
 ADMIN_KEY      = your-admin-api-key
 GATEWAY_KEY    = your-peer-gateway-key
+FINANCE_KEY    = your-finance-provider-key
 ```
 
 ### Method 2 — Download YAML then import as file
@@ -177,6 +205,7 @@ Download the YAML above → in Postman click **Import** → **File** → select 
 | `BANK_KEY` | Bank-to-registry APIs | `owbk_...` |
 | `INTERNAL_KEY` | Gateway-to-bank callbacks | `ow_cbk_...` |
 | `GATEWAY_KEY` | Gateway interconnect | `owgw_...` |
+| `FINANCE_KEY` | Credit & Finance provider APIs | `fp_test_...` |
 | `WEBHOOK_SECRET` | Signature verification tests | `whsec_...` |
 
 ---
@@ -320,6 +349,7 @@ cd openwave-spec
 # Validate specs with Redocly CLI
 npx @redocly/cli lint openwave-payments-v1.yaml
 npx @redocly/cli lint openwave-open-banking-v1.0.yaml
+npx @redocly/cli lint openwave-credit-finance-v1.yaml
 npx @redocly/cli lint openwave-identity-v1.0.yaml
 npx @redocly/cli lint openwave-gateway-interconnect-v1.yaml
 ```

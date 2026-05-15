@@ -72,7 +72,11 @@ The Open Banking API defines consent-based account access and payment initiation
 | `balances:read` | Current and available balances. |
 | `transactions:read` | Transaction history for approved accounts and date ranges. |
 | `standing-orders:read` | Standing order and scheduled payment data. |
-| `payments:initiate` | PISP payment order creation. |
+| `payments:write` | PISP payment order creation. |
+| `credit_assessment:read` | Permit a declared credit or finance assessment. |
+| `income:read` | Permit derived income summaries. |
+| `liabilities:read` | Permit derived obligations and debt-service indicators. |
+| `affordability:read` | Permit affordability output for a requested amount and tenor. |
 
 ## AISP endpoints
 
@@ -103,4 +107,6 @@ The Open Banking API defines consent-based account access and payment initiation
 
 - [TPP guide](../guide/tpp.md)
 - [Decentralized Open Banking](../guide/decentralized-open-banking.md)
+- [Credit-assessment consent](../guide/credit-assessment-consent.md)
+- [Credit & Finance API](./credit-finance.md)
 - [Authentication](../guide/authentication.md)

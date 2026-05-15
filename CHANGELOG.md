@@ -9,6 +9,12 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added — Credit & Finance API
+- New `openwave-credit-finance-v1.yaml` draft module for credit assessment, affordability summaries, BNPL installment offers, revolving-credit drawdowns, Murabaha installment disclosures, finance contracts, repayment schedules, and finance lifecycle webhooks.
+- New Open Banking scopes for finance use cases: `credit_assessment:read`, `income:read`, `liabilities:read`, and `affordability:read`.
+- New docs pages for Credit & Finance overview, credit-assessment consent, BNPL, revolving credit, Murabaha, financed-payment lifecycle, and risk/privacy/explainability.
+- API reference and downloads pages now include Credit & Finance OpenAPI links for Swagger Editor, Postman import, and Redocly validation.
+
 ### Added — Identity API
 - `GET /admin/customers/lookup/nid/{national_id}` — KYC-based cross-bank identity deduplication. Banks can check if a customer is already enrolled in the network by national ID, receiving their existing NPT handle. This ensures one person has one global payment identity regardless of how many banks they enroll with.
 - `NidLookupResponse` schema documenting the response shape.

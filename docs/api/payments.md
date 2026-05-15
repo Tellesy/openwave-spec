@@ -4,6 +4,8 @@ The Payments API is the merchant-facing payment contract. It covers one-time che
 
 If your flow starts with a QR code, NFC handoff, or customer-presented token, read [Presented Payments](./presented-payments.md) first. That spec creates or claims the session, then hands control back to the same payment and mandate lifecycle described on this page.
 
+If your flow is financed checkout, read [Credit & Finance](./credit-finance.md) first. BNPL, revolving-credit, and Murabaha offers use their own assessment, offer, contract, and repayment lifecycle, then settle merchant funds through the same final payment states and signed webhook rules described here.
+
 ## OpenAPI
 
 <div class="ow-dl-row">
@@ -145,6 +147,7 @@ Recurring mandates use the same security model as payments: the customer must ap
 
 - [Merchant integration](../guide/merchants.md)
 - [Presented payments](../guide/presented-payments.md)
+- [Credit & Finance](../guide/credit-finance.md)
 - [Authentication](../guide/authentication.md)
 - [Webhooks](../guide/webhooks.md)
 - [Settlement](../guide/settlement.md)

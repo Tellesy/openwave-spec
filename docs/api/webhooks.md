@@ -58,6 +58,18 @@ X-OpenWave-Signature: v1=8b55c2...
 | `consent.revoked` | Consent was revoked by customer, bank, TPP, or policy. |
 | `payment_order.completed` | PISP order reached a final successful state. |
 
+## Credit & Finance events
+
+| Event | Meaning |
+|---|---|
+| `credit_assessment.completed` | Assessment output is ready. |
+| `finance_offer.created` | Offer is ready for customer review. |
+| `finance_offer.accepted` | Customer accepted terms and repayment schedule. |
+| `finance_contract.active` | Finance contract became active. |
+| `finance_contract.cancelled` | Finance contract was cancelled. |
+| `repayment.completed` | Repayment collected successfully. |
+| `repayment.failed` | Repayment failed or was rejected. |
+
 ## Receiver checklist
 
 1. Read the raw request body before JSON parsing.

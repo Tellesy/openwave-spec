@@ -25,7 +25,7 @@ GET /banks/{handle}/capabilities
 {
   "bank_handle": "andalus",
   "ob_enabled": true,
-  "ob_scopes_supported": ["accounts:read", "balances:read", "transactions:read", "payments:write"],
+  "ob_scopes_supported": ["accounts:read", "balances:read", "transactions:read", "payments:write", "credit_assessment:read", "income:read", "liabilities:read", "affordability:read"],
   "sca_exemption_limit": 5000,
   "max_consent_expiry_days": 365
 }
@@ -219,6 +219,18 @@ Customers can also revoke directly at their bank app.
 | `balances:read` | Account balances |
 | `transactions:read` | Transaction history (with date filtering) |
 | `payments:write` | Initiate payment orders |
+| `credit_assessment:read` | Use consented account data for a declared finance eligibility purpose |
+| `income:read` | Derive income summaries |
+| `liabilities:read` | Derive obligations and debt-service indicators |
+| `affordability:read` | Derive affordability output for a requested amount and tenor |
+
+## Credit and finance consents
+
+Credit-related scopes are high sensitivity. When a TPP or finance provider requests them, the customer approval screen must clearly say that the data will be used for finance eligibility, affordability, or a financed checkout offer.
+
+Do not request credit scopes for ordinary account aggregation. A finance assessment must include purpose, requested amount, currency, tenor, data window, and selected accounts.
+
+Read [Credit & Finance](./credit-finance.md) for BNPL, revolving-credit, and Murabaha flows.
 
 ## Webhook Events
 

@@ -178,13 +178,15 @@ X-OpenWave-Bank-Key: owbk_andalus_...
 
 {
   "ob_enabled": true,
-  "ob_scopes_supported": ["accounts:read", "balances:read", "transactions:read", "payments:write"],
+  "ob_scopes_supported": ["accounts:read", "balances:read", "transactions:read", "payments:write", "credit_assessment:read", "income:read", "liabilities:read", "affordability:read"],
   "sca_exemption_limit": 5000,
   "max_consent_expiry_days": 365
 }
 ```
 
 If you implement QR or NFC presented flows directly, advertise them through the presented-payments capability object. Supported channels, modes, intents, and enablement flags must be discoverable so merchants and wallets do not assume unavailable flows.
+
+If you support Credit & Finance assessment data, expose credit-related Open Banking scopes only when your consent, audit, revocation, and data-minimization controls are ready. Banks may implement assessment support directly, or allow a gateway/finance provider to consume bank data under customer consent. Either way, the customer must see that the data is used for finance eligibility.
 
 ## Step 5 — Handle Settlements
 

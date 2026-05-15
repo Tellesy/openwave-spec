@@ -73,6 +73,21 @@ Include `request_id` when contacting support — it traces the request through a
 | `SCA_REQUIRED` | 428 | SCA needed; redirect to `sca_url` |
 | `PAYMENT_ORDER_REJECTED` | 422 | Bank declined the payment order |
 
+### Credit & Finance
+
+| Code | HTTP | Cause |
+|:---|:---:|:---|
+| `ASSESSMENT_NOT_FOUND` | 404 | Unknown `assessment_id` |
+| `ASSESSMENT_NOT_READY` | 409 | Assessment is still processing |
+| `ASSESSMENT_EXPIRED` | 409 | Assessment can no longer be used for new offers |
+| `PRODUCT_NOT_SUPPORTED` | 400 | Operator does not support requested finance product |
+| `INSUFFICIENT_DATA` | 422 | Consented data is not enough to produce an assessment |
+| `PROVIDER_DECISION_DECLINED` | 422 | Provider declined under policy; return safe reason codes |
+| `OFFER_EXPIRED` | 409 | Customer tried to accept an expired offer |
+| `OFFER_ALREADY_ACCEPTED` | 409 | Offer has already created a contract |
+| `CONTRACT_NOT_CANCELLABLE` | 409 | Contract cannot be cancelled in its current state |
+| `PAYMENT_SETTLEMENT_FAILED` | 502 | Financier-to-merchant settlement failed |
+
 ### Identity Registry
 
 | Code | HTTP | Cause |

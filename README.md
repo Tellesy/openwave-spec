@@ -46,6 +46,7 @@ OpenWave is **bank-agnostic and gateway-agnostic by design**. Any institution or
 | **Webhooks** | 1.0.0 | ✅ Stable | Real-time event notifications with HMAC signature |
 | **Open Banking — AISP** | 1.0.0 | ✅ Stable | Account info, balances, transactions |
 | **Open Banking — PISP** | 1.0.0 | ✅ Stable | TPP-initiated payment orders |
+| **Credit & Finance** | 1.0.0 | Draft | Credit assessments, BNPL, revolving credit, Murabaha, repayments |
 | **Identity Registry** | 1.0.0 | ✅ Stable | Global NPT handle ownership, multi-bank accounts, alias resolution |
 | **Gateway Interconnect** | 1.0.0 | Draft | Gateway discovery, remote routing, and gateway-to-gateway settlement |
 
@@ -60,6 +61,7 @@ The specification files are valid OpenAPI documents — load them directly into 
 | [`openwave-payments-v1.yaml`](./openwave-payments-v1.yaml) | Payments · Recurring · Alias · Webhooks |
 | [`openwave-presented-payments-v1.yaml`](./openwave-presented-payments-v1.yaml) | QR presentments · NFC handoff · Customer-presented tokens · capability discovery |
 | [`openwave-open-banking-v1.0.yaml`](./openwave-open-banking-v1.0.yaml) | Open Banking AISP + PISP · OAuth 2.0 + PKCE |
+| [`openwave-credit-finance-v1.yaml`](./openwave-credit-finance-v1.yaml) | Credit assessment · BNPL · Revolving credit · Murabaha · repayment schedules |
 | [`openwave-identity-v1.0.yaml`](./openwave-identity-v1.0.yaml) | Identity Registry · NPT handle ownership · Multi-bank aliases · Governance |
 | [`openwave-gateway-interconnect-v1.yaml`](./openwave-gateway-interconnect-v1.yaml) | Gateway discovery · Remote alias resolution · Cross-gateway routing · Settlement |
 
@@ -143,6 +145,7 @@ Always pair `amount` with a `currency` field (ISO 4217).
 | Bank Partner | Static bank key | `X-OpenWave-Bank-Key: <key>` |
 | Customer session | Short-lived session token | `X-Session-Token: <token>` |
 | TPP (Open Banking) | OAuth 2.0 + PKCE access token | `Authorization: Bearer <token>` |
+| Finance provider | Provider/participant bearer key + consent ID | `Authorization: Bearer <finance key>` |
 | Bank core → gateway | Pre-shared internal key | `X-OpenWave-Internal-Key: <secret>` |
 | Gateway / bank / wallet presentment operator | Presented-payment capability policy | `GET /capabilities` + operator policy |
 
@@ -182,6 +185,10 @@ OpenWave's Open Banking module is inspired by **PSD2** and **UK Open Banking**, 
 | `balances:read` | Account balances |
 | `transactions:read` | Transaction history (with date filtering) |
 | `payments:write` | Initiate payment orders |
+| `credit_assessment:read` | Permit a declared finance eligibility assessment |
+| `income:read` | Derive income summaries |
+| `liabilities:read` | Derive obligations and debt-service indicators |
+| `affordability:read` | Derive affordability output for a requested amount and tenor |
 
 ### Token Design
 
@@ -193,6 +200,22 @@ OpenWave's Open Banking module is inspired by **PSD2** and **UK Open Banking**, 
 | `refresh_token` TTL | 90 days, single-use rotation |
 | Revocation | Instant — `DELETE /ob/consents/{id}` invalidates all tokens |
 | Token revoke | `POST /ob/token/revoke` (RFC 7009 compliant) |
+
+---
+
+## Credit & Finance
+
+Credit & Finance connects consented Open Banking data with financed-payment products. It is not a credit bureau and does not define one universal score. It standardizes the assessment package, safe reason codes, finance offers, customer acceptance, contracts, repayment schedules, and finance webhooks.
+
+Supported v1 products:
+
+| Product | Description |
+|:---|:---|
+| `BNPL_INSTALLMENT` | Merchant checkout paid by financier and repaid by the customer in installments |
+| `REVOLVING_CREDIT_DRAW` | Drawdown against an existing approved facility |
+| `MURABAHA_INSTALLMENT` | Islamic-finance asset sale with cash price, profit, total sale price, and installment schedule |
+
+Financed checkout reuses normal OpenWave payment settlement: the financier pays the merchant, the merchant fulfils after final `payment.completed`, and customer repayments use mandates or scheduled payment orders.
 
 ### Security
 
@@ -213,7 +236,7 @@ GET /banks/{handle}/capabilities
 {
   "bank_handle": "andalus",
   "ob_enabled": true,
-  "ob_scopes_supported": ["accounts:read", "balances:read", "transactions:read", "payments:write"],
+  "ob_scopes_supported": ["accounts:read", "balances:read", "transactions:read", "payments:write", "credit_assessment:read", "income:read", "liabilities:read", "affordability:read"],
   "sca_exemption_limit": 5000,
   "max_consent_expiry_days": 365
 }

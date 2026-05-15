@@ -1,6 +1,6 @@
 # Spec Files
 
-Five OpenAPI 3.0.3 files define the complete OpenWave standard. All are machine-readable and compatible with any OpenAPI tooling.
+Six OpenAPI 3.0.3 files define the complete OpenWave standard. All are machine-readable and compatible with any OpenAPI tooling.
 
 ## openwave-payments-v1.yaml
 
@@ -30,6 +30,13 @@ curl https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-pa
 
 → [View on GitHub](https://github.com/neptune-ly/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml)<br>
 → [Raw YAML](https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-open-banking-v1.0.yaml)
+
+## openwave-credit-finance-v1.yaml
+
+**Covers:** Credit-assessment consent output, affordability packages, BNPL offers, revolving-credit drawdowns, Murabaha disclosures, contracts, repayment schedules, and finance webhooks
+
+→ [View on GitHub](https://github.com/neptune-ly/openwave-spec/blob/main/openwave-credit-finance-v1.yaml)<br>
+→ [Raw YAML](https://raw.githubusercontent.com/neptune-ly/openwave-spec/main/openwave-credit-finance-v1.yaml)
 
 ## openwave-identity-v1.0.yaml
 

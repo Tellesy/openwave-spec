@@ -9,7 +9,10 @@ info:
     modules of the OpenWave standard.
 
     For the **Open Banking** module (account data, TPP payment initiation), see
-    `openwave-open-banking-v1.0.yaml`.
+    `openwave-open-banking-v1.0.yaml`. For financed checkout, BNPL,
+    revolving-credit drawdowns, and Murabaha-style installments, see
+    `openwave-credit-finance-v1.yaml`; accepted finance offers settle by reusing
+    the normal OpenWave payment lifecycle.
 
     ## Key Concepts
     - **NPT (National Payment Tag)**: Universal payment identity `username@bank-handle` (e.g. `mtellesy@andalus`)
@@ -40,14 +43,14 @@ info:
   version: "1.0.0"
   contact:
     name: OpenWave Standard
-    url: https://github.com/Tellesy/openwave-spec
+    url: https://github.com/neptune-ly/openwave-spec
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
 
 externalDocs:
   description: OpenWave Standard GitHub Repository
-  url: https://github.com/Tellesy/openwave-spec
+  url: https://github.com/neptune-ly/openwave-spec
 
 x-settlement:
   description: >

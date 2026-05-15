@@ -1,6 +1,6 @@
 # API Overview
 
-OpenWave is defined by five OpenAPI 3.0.3 specification files. All are ready to load into Swagger UI, Postman, Redocly, or any OpenAPI-compatible tool.
+OpenWave is defined by six OpenAPI 3.0.3 specification files. All are ready to load into Swagger UI, Postman, Redocly, or any OpenAPI-compatible tool.
 
 ## Spec Files
 
@@ -9,6 +9,7 @@ OpenWave is defined by five OpenAPI 3.0.3 specification files. All are ready to 
 | `openwave-payments-v1.yaml` | Payments · Recurring · Alias · Webhooks | [View](https://github.com/neptune-ly/openwave-spec/blob/main/openwave-payments-v1.yaml) |
 | `openwave-presented-payments-v1.yaml` | QR · NFC · presentment claim · channel capabilities | [View](https://github.com/neptune-ly/openwave-spec/blob/main/openwave-presented-payments-v1.yaml) |
 | `openwave-open-banking-v1.0.yaml` | AISP · PISP · OAuth 2.0 + PKCE Consent | [View](https://github.com/neptune-ly/openwave-spec/blob/main/openwave-open-banking-v1.0.yaml) |
+| `openwave-credit-finance-v1.yaml` | Credit assessment · BNPL · Revolving credit · Murabaha · Repayment schedules | [View](https://github.com/neptune-ly/openwave-spec/blob/main/openwave-credit-finance-v1.yaml) |
 | `openwave-identity-v1.0.yaml` | NPT Identity · Multi-bank Alias · Bank Phonebook | [View](https://github.com/neptune-ly/openwave-spec/blob/main/openwave-identity-v1.0.yaml) |
 | `openwave-gateway-interconnect-v1.yaml` | Gateway Discovery · Remote Routing · Interconnect Settlement | [View](https://github.com/neptune-ly/openwave-spec/blob/main/openwave-gateway-interconnect-v1.yaml) |
 
@@ -83,6 +84,22 @@ Browse and test the full API surface in your browser.
 | `GET` | `/ob/payment-orders/{id}` | Get payment order status |
 | `GET` | `/banks/{handle}/capabilities` | Bank OB capabilities |
 
+### Credit & Finance (`openwave-credit-finance-v1.yaml`)
+
+| Method | Path | Description |
+|:---|:---|:---|
+| `GET` | `/finance/capabilities` | Discover supported finance products and required scopes |
+| `POST` | `/credit/assessments` | Create a credit and affordability assessment |
+| `GET` | `/credit/assessments/{assessment_id}` | Read assessment status and output |
+| `POST` | `/credit/assessments/{assessment_id}/refresh` | Refresh an assessment while consent remains active |
+| `DELETE` | `/credit/assessments/{assessment_id}` | Revoke or delete retained assessment output |
+| `POST` | `/finance/offers` | Create BNPL, revolving-credit, or Murabaha offer |
+| `GET` | `/finance/offers/{offer_id}` | Read finance offer details |
+| `POST` | `/finance/offers/{offer_id}/accept` | Customer accepts offer in hosted or official SDK surface |
+| `GET` | `/finance/contracts/{contract_id}` | Read finance contract |
+| `GET` | `/finance/contracts/{contract_id}/repayment-schedule` | Read repayment schedule |
+| `POST` | `/finance/contracts/{contract_id}/cancel` | Cancel a cancellable contract |
+
 ### Identity Registry (`openwave-identity-v1.0.yaml`)
 
 | Method | Path | Description |
@@ -129,6 +146,7 @@ https://astro.neptune.ly/api/v1
 |:---|:---|:---|
 | Merchant checkout | `POST /payments/sessions` | `GET /payments/sessions/{id}`, webhook events, idempotency |
 | Merchant QR / NFC checkout | `POST /presentments` | claim flow, capability discovery, hosted SCA |
+| Financed checkout / BNPL | `POST /credit/assessments` | finance offers, hosted acceptance, repayment schedule |
 | Subscription billing | `POST /recurring/mandates` | hosted mandate consent, mandate charges, cancellation |
 | Bank connector | `/send-otp`, `/verify-otp`, `/execute-transaction`, `/notify-credit` | callback authentication and CBS idempotency |
 | Open Banking TPP app | `POST /ob/consents` | PKCE, scopes, token exchange, consent revocation |

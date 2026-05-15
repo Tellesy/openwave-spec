@@ -4,6 +4,8 @@ Accept payments from any participating bank with a single integration. No per-ba
 
 Presented QR and NFC flows are available when your operator enables them. You still create a payment or mandate intent on your backend, but instead of redirecting immediately, you can request a presentment for scan or tap. Read [Presented Payments](./presented-payments.md) and [QR Payloads](./presented-qr.md).
 
+Financed checkout is available through the [Credit & Finance](./credit-finance.md) module when a finance provider or lender is configured. Merchants request offer options and receive merchant-safe statuses, but they do not receive raw customer transaction data unless the customer explicitly consented to share it with that merchant or TPP.
+
 ## Overview
 
 ```
@@ -202,6 +204,19 @@ Use presented flows when the customer starts from a merchant screen, a POS, or a
 | `CUSTOMER_PRESENTED` + `ONE_TIME_PAYMENT` | Customer wallet token shown to merchant | Customer-presented token claim |
 
 Merchants must not collect OTP, PIN, or push approval results in their own UI. The QR or NFC payload only hands the customer into the trusted hosted or official SDK surface.
+
+## Financed Checkout
+
+Use Credit & Finance when the customer wants BNPL, revolving-credit drawdown, or Murabaha installment finance:
+
+| Step | Merchant action | Finance provider action |
+|---|---|---|
+| 1 | Send order amount, currency, and merchant reference. | Request finance-specific consent where needed. |
+| 2 | Show available offer option or hosted acceptance URL. | Complete assessment and create offer. |
+| 3 | Wait for final OpenWave payment confirmation. | Customer accepts terms and financier pays merchant. |
+| 4 | Fulfil after signed `payment.completed`. | Service repayment schedule and contract lifecycle. |
+
+Assessment output and decline details must remain privacy-safe. The merchant can receive offer status, final payment status, safe reason categories, and correlation IDs.
 
 ## API Key Security
 

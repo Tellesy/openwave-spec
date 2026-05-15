@@ -13,13 +13,14 @@ Libya's banking sector has historically lacked interoperability:
 
 ## The Solution
 
-OpenWave solves this with three coordinated specifications:
+OpenWave solves this with coordinated specifications:
 
 | Module | What it does |
 |:---|:---|
 | **Payments API** | Standard payment sessions, IBAN/NPT alias routing, recurring mandates, webhooks |
 | **Presented Payments API** | QR and NFC presentments that create secure one-time payment or mandate approval flows |
 | **Open Banking API** | Consent-based account access (AISP) and payment initiation (PISP) for TPPs |
+| **Credit & Finance API** | Consented affordability packages, BNPL, revolving-credit, Murabaha, contracts, repayments |
 | **Identity Registry** | Global NPT handle ownership, multi-bank linking, public alias resolution |
 
 ## Who Runs a Gateway?
@@ -35,6 +36,8 @@ Any server that **implements this specification** is an **OpenWave Gateway**. A 
 Any bank, fintech, processor, or national switch operator can run an OpenWave-compliant gateway. The specification is not tied to a single product or operator.
 
 OpenWave also defines **presented payments as a channel capability**, not a product lock-in. A gateway, bank, or wallet can implement QR or NFC presented flows directly as long as it preserves OpenWave authorization, status, and consent rules.
+
+OpenWave defines **Credit & Finance** as a separate lifecycle module for financed payments. It links customer-approved Open Banking data to BNPL, revolving-credit, and Murabaha-style offers while keeping scoring models, lending policy, and regulatory responsibility with the finance provider.
 
 ## Deployment Models
 
@@ -69,6 +72,7 @@ Merchant B ──→ [ Gateway 2 ] ──┘
 | Webhooks | 1.0.0 | ✅ Stable |
 | Open Banking — AISP | 1.0.0 | ✅ Stable |
 | Open Banking — PISP | 1.0.0 | ✅ Stable |
+| Credit & Finance | 1.0.0 | Draft |
 | Identity Registry | 1.0.0 | ✅ Stable |
 
 ## Next Steps
@@ -76,4 +80,5 @@ Merchant B ──→ [ Gateway 2 ] ──┘
 - [Core Concepts →](./concepts.md)
 - [NPT explained →](./npt.md)
 - [Presented payments →](./presented-payments.md)
+- [Credit & Finance →](./credit-finance.md)
 - [Merchant integration guide →](./merchants.md)

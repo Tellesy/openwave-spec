@@ -1,0 +1,1286 @@
+openapi: 3.0.3
+info:
+  title: OpenWave Credit & Finance API
+  version: 1.0.0-draft
+  description: |
+    # OpenWave Credit & Finance API v1
+
+    OpenWave Credit & Finance connects consented Open Banking data with financed
+    payment products such as BNPL installments, revolving-credit drawdowns, and
+    Murabaha installment finance.
+
+    This module does not define a universal credit score and does not make
+    OpenWave a lender, finance company, or credit bureau. It standardizes:
+
+    - customer-permissioned assessment inputs
+    - purpose-bound affordability summaries
+    - provider-owned risk score metadata
+    - finance offer creation and acceptance
+    - contract and repayment schedule lifecycle
+    - financed-payment settlement events
+
+    ## Module Boundaries
+
+    - Open Banking consent remains the source of account, balance, transaction,
+      income, liability, and affordability data access.
+    - Credit & Finance standardizes assessment and financed-payment lifecycle.
+    - Payments remains the settlement rail. After a finance offer is accepted,
+      the lender or financier pays the merchant using the normal OpenWave payment
+      lifecycle, and the customer repays under a mandate or scheduled payment order.
+
+    ## Security Model
+
+    Customers must explicitly approve the use of their data for credit or finance
+    eligibility. Consent screens must show the purpose, requested amount, tenor,
+    data window, selected accounts, and requested scopes in plain language.
+
+    Merchants must not receive raw transaction data unless the customer explicitly
+    grants that merchant or TPP access to raw data. Declines should return safe
+    reason categories and a correlation ID, not sensitive raw bank facts.
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: https://{gateway_host}/api/v1
+    description: OpenWave-compliant gateway or finance operator
+    variables:
+      gateway_host:
+        default: gateway.example.com
+
+tags:
+  - name: Capabilities
+    description: Discover finance products, scopes, and lifecycle support.
+  - name: Credit Assessments
+    description: Create and refresh purpose-bound affordability and risk assessments.
+  - name: Finance Offers
+    description: Create, read, and accept financed checkout offers.
+  - name: Finance Contracts
+    description: Read active finance contracts, repayment schedules, and cancellation state.
+
+paths:
+  /finance/capabilities:
+    get:
+      tags: [Capabilities]
+      summary: Read Credit & Finance capabilities
+      operationId: getFinanceCapabilities
+      security:
+        - ParticipantApiKey: []
+      responses:
+        '200':
+          description: Finance capabilities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceCapabilities'
+              examples:
+                default:
+                  value:
+                    operator_id: "gateway.example"
+                    products_supported:
+                      - BNPL_INSTALLMENT
+                      - REVOLVING_CREDIT_DRAW
+                      - MURABAHA_INSTALLMENT
+                    assessment_purposes_supported:
+                      - BNPL
+                      - REVOLVING_CREDIT
+                      - MURABAHA_INSTALLMENT
+                    required_ob_scopes:
+                      - accounts:read
+                      - balances:read
+                      - transactions:read
+                      - credit_assessment:read
+                      - income:read
+                      - liabilities:read
+                      - affordability:read
+                    max_data_window_days: 365
+                    supports_customer_disclosures: true
+                    supports_repayment_mandates: true
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /credit/assessments:
+    post:
+      tags: [Credit Assessments]
+      summary: Create a credit and affordability assessment
+      operationId: createCreditAssessment
+      description: |
+        Creates a purpose-bound assessment from customer-consented Open Banking data.
+        The provider may return affordability indicators and an optional risk score,
+        but the final credit decision remains with the lender or finance provider.
+      security:
+        - ParticipantApiKey: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditAssessmentCreateRequest'
+            examples:
+              bnpl:
+                summary: BNPL assessment
+                value:
+                  consent_id: "con_01JCR5YA4H3KTZAW4V9AJN4R7Q"
+                  purpose: BNPL
+                  requested_amount: 860000
+                  currency: LYD
+                  tenor:
+                    unit: MONTH
+                    value: 6
+                  data_window:
+                    from: "2025-11-01"
+                    to: "2026-05-01"
+                  selected_account_ids:
+                    - "acc_01JCR5YSS1QYZYKJ6W9AC4S5C8"
+                  applicant_reference: "customer-4582"
+      responses:
+        '202':
+          description: Assessment accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditAssessmentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /credit/assessments/{assessment_id}:
+    get:
+      tags: [Credit Assessments]
+      summary: Read a credit assessment
+      operationId: getCreditAssessment
+      security:
+        - ParticipantApiKey: []
+      parameters:
+        - $ref: '#/components/parameters/AssessmentId'
+      responses:
+        '200':
+          description: Assessment result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditAssessmentResponse'
+              examples:
+                completed:
+                  value:
+                    assessment_id: "cas_01JCR68Q7J8NTXKTJBK3EWY44P"
+                    status: COMPLETED
+                    purpose: BNPL
+                    requested_amount: 860000
+                    currency: LYD
+                    consent_id: "con_01JCR5YA4H3KTZAW4V9AJN4R7Q"
+                    selected_account_ids:
+                      - "acc_01JCR5YSS1QYZYKJ6W9AC4S5C8"
+                    data_window:
+                      from: "2025-11-01"
+                      to: "2026-05-01"
+                    income_summary:
+                      monthly_average_income: 2600000
+                      income_confidence: HIGH
+                      detected_salary_frequency: MONTHLY
+                      currency: LYD
+                    recurring_obligations:
+                      monthly_total: 610000
+                      categories:
+                        - category: RENT
+                          monthly_amount: 450000
+                        - category: TELECOM
+                          monthly_amount: 60000
+                    debt_service_indicators:
+                      existing_debt_service_ratio_bps: 1800
+                      proposed_debt_service_ratio_bps: 2350
+                      disposable_income_after_obligations: 1230000
+                      currency: LYD
+                    affordability:
+                      result: AFFORDABLE
+                      maximum_affordable_installment: 420000
+                      currency: LYD
+                    risk_score:
+                      score: 692
+                      scale_min: 300
+                      scale_max: 900
+                      band: MEDIUM_LOW_RISK
+                      model_id: "provider-model-v1"
+                      model_version: "2026-05"
+                    reason_codes:
+                      - code: STABLE_INCOME
+                        category: POSITIVE
+                        message: "Recurring income pattern detected."
+                      - code: LOW_RECENT_OVERDRAFT_USE
+                        category: POSITIVE
+                        message: "No repeated overdraft pattern in the selected window."
+                    expires_at: "2026-05-15T12:00:00Z"
+                    correlation_id: "corr_01JCR6A2CC4VB7CWD0TR7B7Z3A"
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Credit Assessments]
+      summary: Delete or revoke a retained assessment
+      operationId: deleteCreditAssessment
+      description: |
+        Deletes retained assessment output where allowed by policy. Implementers may
+        retain audit metadata required by law or operator policy, but must stop using
+        the assessment for new offers after deletion or revocation.
+      security:
+        - ParticipantApiKey: []
+      parameters:
+        - $ref: '#/components/parameters/AssessmentId'
+      responses:
+        '204':
+          description: Assessment deleted or revoked
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /credit/assessments/{assessment_id}/refresh:
+    post:
+      tags: [Credit Assessments]
+      summary: Refresh a credit assessment
+      operationId: refreshCreditAssessment
+      description: |
+        Refreshes an assessment using the same purpose and consent. The consent must
+        still be active, unexpired, and include all scopes required by the original
+        assessment.
+      security:
+        - ParticipantApiKey: []
+      parameters:
+        - $ref: '#/components/parameters/AssessmentId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditAssessmentRefreshRequest'
+      responses:
+        '202':
+          description: Refresh accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditAssessmentResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /finance/offers:
+    post:
+      tags: [Finance Offers]
+      summary: Create a finance offer
+      operationId: createFinanceOffer
+      description: |
+        Creates a finance offer for checkout or drawdown. Offer creation may reference
+        a completed assessment, a pre-approved facility, or a manual underwriting
+        decision, depending on the finance provider.
+      security:
+        - ParticipantApiKey: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceOfferCreateRequest'
+            examples:
+              murabaha:
+                summary: Murabaha installment offer
+                value:
+                  product_type: MURABAHA_INSTALLMENT
+                  assessment_id: "cas_01JCR68Q7J8NTXKTJBK3EWY44P"
+                  merchant:
+                    merchant_id: "mrc_01JCR6DP3A3J3YCJAWM5KWBYG2"
+                    display_name: "Neptune Store"
+                    reference: "NS-1042"
+                  amount: 860000
+                  currency: LYD
+                  tenor:
+                    unit: MONTH
+                    value: 6
+                  payment_session_id: "pay_01JCR6EQT99MGKGDK2WD21CJZ9"
+                  murabaha_terms:
+                    asset_description: "Smart Watch Pro and USB-C Hub 12-in-1"
+                    cash_price: 860000
+                    profit_amount: 43000
+                    total_sale_price: 903000
+                    down_payment: 0
+                    sharia_profile_reference: "sharia-profile-standard-asset-sale"
+      responses:
+        '201':
+          description: Finance offer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceOfferResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /finance/offers/{offer_id}:
+    get:
+      tags: [Finance Offers]
+      summary: Read a finance offer
+      operationId: getFinanceOffer
+      security:
+        - ParticipantApiKey: []
+        - CustomerSessionToken: []
+      parameters:
+        - $ref: '#/components/parameters/OfferId'
+      responses:
+        '200':
+          description: Finance offer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceOfferResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /finance/offers/{offer_id}/accept:
+    post:
+      tags: [Finance Offers]
+      summary: Accept a finance offer
+      operationId: acceptFinanceOffer
+      description: |
+        Accepts a finance offer from a hosted or official SDK customer surface.
+        Acceptance must happen after the customer sees the offer terms, repayment
+        schedule, disclosure documents, and any product-specific fields such as
+        Murabaha cash price, profit amount, and total sale price.
+      security:
+        - CustomerSessionToken: []
+      parameters:
+        - $ref: '#/components/parameters/OfferId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceOfferAcceptRequest'
+      responses:
+        '200':
+          description: Finance offer accepted and contract created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceOfferAcceptResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /finance/contracts/{contract_id}:
+    get:
+      tags: [Finance Contracts]
+      summary: Read a finance contract
+      operationId: getFinanceContract
+      security:
+        - ParticipantApiKey: []
+        - CustomerSessionToken: []
+      parameters:
+        - $ref: '#/components/parameters/ContractId'
+      responses:
+        '200':
+          description: Finance contract
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceContractResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /finance/contracts/{contract_id}/repayment-schedule:
+    get:
+      tags: [Finance Contracts]
+      summary: Read a repayment schedule
+      operationId: getRepaymentSchedule
+      security:
+        - ParticipantApiKey: []
+        - CustomerSessionToken: []
+      parameters:
+        - $ref: '#/components/parameters/ContractId'
+      responses:
+        '200':
+          description: Repayment schedule
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepaymentScheduleResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /finance/contracts/{contract_id}/cancel:
+    post:
+      tags: [Finance Contracts]
+      summary: Cancel a finance contract
+      operationId: cancelFinanceContract
+      description: |
+        Cancels a finance contract when it is still cancellable under product,
+        merchant, lender, and regulatory rules. Cancellation does not erase audit
+        history and may trigger payment reversal or merchant fulfilment cancellation.
+      security:
+        - ParticipantApiKey: []
+      parameters:
+        - $ref: '#/components/parameters/ContractId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceContractCancelRequest'
+      responses:
+        '200':
+          description: Finance contract cancelled or cancellation pending
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceContractResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+components:
+  securitySchemes:
+    ParticipantApiKey:
+      type: http
+      scheme: bearer
+      bearerFormat: participant_or_lender_key
+      description: Server-side key or token issued to a regulated TPP, lender, merchant, gateway, or finance provider.
+    CustomerSessionToken:
+      type: apiKey
+      in: header
+      name: X-OpenWave-Session-Token
+      description: Short-lived token for hosted or official SDK customer acceptance surfaces.
+
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
+      description: Retry-safe idempotency key for writes. Same key and same caller returns the original result.
+    AssessmentId:
+      name: assessment_id
+      in: path
+      required: true
+      schema:
+        type: string
+        example: "cas_01JCR68Q7J8NTXKTJBK3EWY44P"
+    OfferId:
+      name: offer_id
+      in: path
+      required: true
+      schema:
+        type: string
+        example: "fin_off_01JCR6PMVZSS8VHGSG4SZJBK2X"
+    ContractId:
+      name: contract_id
+      in: path
+      required: true
+      schema:
+        type: string
+        example: "fin_ctr_01JCR6V651PCZV0TQZWJ9Y5DRP"
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    Unauthorized:
+      description: Missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    Forbidden:
+      description: Operation is not allowed for the caller, consent, scope, or current state
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    Conflict:
+      description: State conflict, duplicate request, expired offer, or replay attempt
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+
+  schemas:
+    FinanceCapabilities:
+      type: object
+      required:
+        - operator_id
+        - products_supported
+        - assessment_purposes_supported
+        - required_ob_scopes
+        - max_data_window_days
+      properties:
+        operator_id:
+          type: string
+        products_supported:
+          type: array
+          items:
+            $ref: '#/components/schemas/FinanceProductType'
+        assessment_purposes_supported:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreditAssessmentPurpose'
+        required_ob_scopes:
+          type: array
+          items:
+            type: string
+            enum:
+              - accounts:read
+              - balances:read
+              - transactions:read
+              - credit_assessment:read
+              - income:read
+              - liabilities:read
+              - affordability:read
+        max_data_window_days:
+          type: integer
+          minimum: 30
+        supports_customer_disclosures:
+          type: boolean
+        supports_repayment_mandates:
+          type: boolean
+
+    CreditAssessmentCreateRequest:
+      type: object
+      required:
+        - consent_id
+        - purpose
+        - requested_amount
+        - currency
+        - tenor
+        - data_window
+        - selected_account_ids
+      properties:
+        consent_id:
+          type: string
+          description: Open Banking consent ID with all required credit and finance scopes.
+        purpose:
+          $ref: '#/components/schemas/CreditAssessmentPurpose'
+        requested_amount:
+          type: integer
+          minimum: 1
+          description: Requested financing amount in minor units.
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          example: LYD
+        tenor:
+          $ref: '#/components/schemas/Tenor'
+        data_window:
+          $ref: '#/components/schemas/DateWindow'
+        selected_account_ids:
+          type: array
+          minItems: 1
+          items:
+            type: string
+        applicant_reference:
+          type: string
+          description: Provider-side customer reference. Must not expose sensitive national identifiers in merchant-facing responses.
+        merchant_reference:
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+
+    CreditAssessmentRefreshRequest:
+      type: object
+      properties:
+        data_window:
+          $ref: '#/components/schemas/DateWindow'
+        selected_account_ids:
+          type: array
+          items:
+            type: string
+
+    CreditAssessmentResponse:
+      type: object
+      required:
+        - assessment_id
+        - status
+        - purpose
+        - requested_amount
+        - currency
+        - consent_id
+        - data_window
+        - correlation_id
+      properties:
+        assessment_id:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, PROCESSING, COMPLETED, DECLINED, EXPIRED, REVOKED, FAILED]
+        purpose:
+          $ref: '#/components/schemas/CreditAssessmentPurpose'
+        requested_amount:
+          type: integer
+        currency:
+          type: string
+        consent_id:
+          type: string
+        selected_account_ids:
+          type: array
+          items:
+            type: string
+        data_window:
+          $ref: '#/components/schemas/DateWindow'
+        income_summary:
+          $ref: '#/components/schemas/IncomeSummary'
+        recurring_obligations:
+          $ref: '#/components/schemas/RecurringObligations'
+        spending_categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpendingCategory'
+        debt_service_indicators:
+          $ref: '#/components/schemas/DebtServiceIndicators'
+        affordability:
+          $ref: '#/components/schemas/AffordabilityResult'
+        risk_score:
+          $ref: '#/components/schemas/RiskScore'
+        reason_codes:
+          type: array
+          items:
+            $ref: '#/components/schemas/DecisionReasonCode'
+        expires_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+        correlation_id:
+          type: string
+
+    FinanceOfferCreateRequest:
+      type: object
+      required:
+        - product_type
+        - merchant
+        - amount
+        - currency
+        - tenor
+      properties:
+        product_type:
+          $ref: '#/components/schemas/FinanceProductType'
+        assessment_id:
+          type: string
+          description: Completed assessment ID when the offer is based on Open Banking data.
+        facility_id:
+          type: string
+          description: Existing revolving facility ID for drawdown offers.
+        payment_session_id:
+          type: string
+          description: Optional OpenWave payment session to complete after finance approval.
+        merchant:
+          $ref: '#/components/schemas/FinanceMerchant'
+        amount:
+          type: integer
+          minimum: 1
+          description: Financed purchase or draw amount in minor units.
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        tenor:
+          $ref: '#/components/schemas/Tenor'
+        down_payment:
+          type: integer
+          minimum: 0
+          default: 0
+        customer_reference:
+          type: string
+        murabaha_terms:
+          $ref: '#/components/schemas/MurabahaTerms'
+        disclosure_language:
+          type: string
+          example: ar-LY
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+
+    FinanceOfferResponse:
+      type: object
+      required:
+        - offer_id
+        - status
+        - product_type
+        - amount
+        - currency
+        - merchant
+        - repayment_schedule_preview
+        - expires_at
+      properties:
+        offer_id:
+          type: string
+        status:
+          type: string
+          enum: [CREATED, AWAITING_CUSTOMER_ACCEPTANCE, ACCEPTED, REJECTED, EXPIRED, WITHDRAWN]
+        product_type:
+          $ref: '#/components/schemas/FinanceProductType'
+        assessment_id:
+          type: string
+        facility_id:
+          type: string
+        payment_session_id:
+          type: string
+        merchant:
+          $ref: '#/components/schemas/FinanceMerchant'
+        amount:
+          type: integer
+        currency:
+          type: string
+        tenor:
+          $ref: '#/components/schemas/Tenor'
+        finance_cost:
+          $ref: '#/components/schemas/FinanceCost'
+        murabaha_terms:
+          $ref: '#/components/schemas/MurabahaTerms'
+        repayment_schedule_preview:
+          $ref: '#/components/schemas/RepaymentSchedule'
+        disclosure_url:
+          type: string
+          format: uri
+        accept_url:
+          type: string
+          format: uri
+          description: Hosted or official SDK URL where the customer reviews and accepts the offer.
+        expires_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        correlation_id:
+          type: string
+
+    FinanceOfferAcceptRequest:
+      type: object
+      required:
+        - customer_acceptance
+      properties:
+        customer_acceptance:
+          $ref: '#/components/schemas/CustomerAcceptance'
+        repayment_mandate_id:
+          type: string
+          description: Mandate approved for repayments when the product requires recurring collection.
+        selected_repayment_account_id:
+          type: string
+        selected_auth_method:
+          type: string
+          enum: [OTP, PUSH, BIOMETRIC, BANK_APP]
+
+    FinanceOfferAcceptResponse:
+      type: object
+      required:
+        - offer_id
+        - contract_id
+        - status
+        - payment_status
+      properties:
+        offer_id:
+          type: string
+        contract_id:
+          type: string
+        status:
+          type: string
+          enum: [ACCEPTED, ACTIVE, PENDING_PAYMENT_SETTLEMENT, FAILED]
+        payment_session_id:
+          type: string
+        payment_status:
+          type: string
+          enum: [NOT_REQUIRED, PENDING, PROCESSING, COMPLETED, FAILED]
+        repayment_schedule:
+          $ref: '#/components/schemas/RepaymentSchedule'
+        contract_url:
+          type: string
+          format: uri
+        correlation_id:
+          type: string
+
+    FinanceContractResponse:
+      type: object
+      required:
+        - contract_id
+        - status
+        - product_type
+        - customer_reference
+        - merchant
+        - principal_amount
+        - currency
+        - repayment_schedule
+      properties:
+        contract_id:
+          type: string
+        status:
+          type: string
+          enum: [PENDING_ACTIVATION, ACTIVE, CANCELLED, CLOSED, DEFAULTED, WRITTEN_OFF]
+        product_type:
+          $ref: '#/components/schemas/FinanceProductType'
+        customer_reference:
+          type: string
+        merchant:
+          $ref: '#/components/schemas/FinanceMerchant'
+        principal_amount:
+          type: integer
+        currency:
+          type: string
+        finance_cost:
+          $ref: '#/components/schemas/FinanceCost'
+        murabaha_terms:
+          $ref: '#/components/schemas/MurabahaTerms'
+        payment_session_id:
+          type: string
+        repayment_mandate_id:
+          type: string
+        repayment_schedule:
+          $ref: '#/components/schemas/RepaymentSchedule'
+        disclosure_url:
+          type: string
+          format: uri
+        contract_url:
+          type: string
+          format: uri
+        accepted_at:
+          type: string
+          format: date-time
+        activated_at:
+          type: string
+          format: date-time
+        cancelled_at:
+          type: string
+          format: date-time
+        correlation_id:
+          type: string
+
+    RepaymentScheduleResponse:
+      type: object
+      required: [contract_id, repayment_schedule]
+      properties:
+        contract_id:
+          type: string
+        repayment_schedule:
+          $ref: '#/components/schemas/RepaymentSchedule'
+        next_due_repayment:
+          $ref: '#/components/schemas/RepaymentItem'
+
+    FinanceContractCancelRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          enum: [CUSTOMER_WITHDRAWAL, MERCHANT_CANCELLATION, LENDER_CANCELLATION, PAYMENT_FAILED, COOLING_OFF, OTHER]
+        notes:
+          type: string
+          maxLength: 500
+
+    CreditAssessmentPurpose:
+      type: string
+      enum: [BNPL, REVOLVING_CREDIT, MURABAHA_INSTALLMENT]
+
+    FinanceProductType:
+      type: string
+      enum: [BNPL_INSTALLMENT, REVOLVING_CREDIT_DRAW, MURABAHA_INSTALLMENT]
+
+    Tenor:
+      type: object
+      required: [unit, value]
+      properties:
+        unit:
+          type: string
+          enum: [DAY, WEEK, MONTH, YEAR]
+        value:
+          type: integer
+          minimum: 1
+
+    DateWindow:
+      type: object
+      required: [from, to]
+      properties:
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+
+    IncomeSummary:
+      type: object
+      properties:
+        monthly_average_income:
+          type: integer
+        income_confidence:
+          type: string
+          enum: [LOW, MEDIUM, HIGH]
+        detected_salary_frequency:
+          type: string
+          enum: [WEEKLY, BIWEEKLY, MONTHLY, IRREGULAR, UNKNOWN]
+        currency:
+          type: string
+
+    RecurringObligations:
+      type: object
+      properties:
+        monthly_total:
+          type: integer
+        currency:
+          type: string
+        categories:
+          type: array
+          items:
+            type: object
+            required: [category, monthly_amount]
+            properties:
+              category:
+                type: string
+                enum: [RENT, UTILITIES, TELECOM, INSURANCE, EXISTING_LOAN, SCHOOL_FEES, SUBSCRIPTION, OTHER]
+              monthly_amount:
+                type: integer
+
+    SpendingCategory:
+      type: object
+      required: [category, monthly_average_amount, currency]
+      properties:
+        category:
+          type: string
+          enum: [GROCERIES, TRANSPORT, HEALTHCARE, EDUCATION, CASH_WITHDRAWAL, ENTERTAINMENT, TRANSFERS, OTHER]
+        monthly_average_amount:
+          type: integer
+        currency:
+          type: string
+
+    DebtServiceIndicators:
+      type: object
+      properties:
+        existing_debt_service_ratio_bps:
+          type: integer
+          minimum: 0
+          description: Existing debt service ratio in basis points.
+        proposed_debt_service_ratio_bps:
+          type: integer
+          minimum: 0
+          description: Debt service ratio after proposed finance in basis points.
+        disposable_income_after_obligations:
+          type: integer
+        currency:
+          type: string
+
+    AffordabilityResult:
+      type: object
+      properties:
+        result:
+          type: string
+          enum: [AFFORDABLE, CONDITIONALLY_AFFORDABLE, NOT_AFFORDABLE, INSUFFICIENT_DATA]
+        maximum_affordable_installment:
+          type: integer
+        currency:
+          type: string
+
+    RiskScore:
+      type: object
+      required: [score, scale_min, scale_max, model_id, model_version]
+      properties:
+        score:
+          type: integer
+        scale_min:
+          type: integer
+        scale_max:
+          type: integer
+        band:
+          type: string
+        model_id:
+          type: string
+        model_version:
+          type: string
+        generated_at:
+          type: string
+          format: date-time
+
+    DecisionReasonCode:
+      type: object
+      required: [code, category, message]
+      properties:
+        code:
+          type: string
+          enum:
+            - STABLE_INCOME
+            - INSUFFICIENT_INCOME_HISTORY
+            - HIGH_OBLIGATION_RATIO
+            - RECENT_RETURNED_PAYMENTS
+            - HIGH_VOLATILITY
+            - LOW_RECENT_OVERDRAFT_USE
+            - CONSENT_DATA_INCOMPLETE
+            - REQUESTED_AMOUNT_TOO_HIGH
+            - TENOR_OUTSIDE_POLICY
+            - MANUAL_REVIEW_REQUIRED
+        category:
+          type: string
+          enum: [POSITIVE, NEGATIVE, NEUTRAL, REVIEW]
+        message:
+          type: string
+
+    FinanceMerchant:
+      type: object
+      required: [merchant_id, display_name, reference]
+      properties:
+        merchant_id:
+          type: string
+        display_name:
+          type: string
+        reference:
+          type: string
+        category_code:
+          type: string
+
+    FinanceCost:
+      type: object
+      properties:
+        interest_amount:
+          type: integer
+          description: Conventional finance interest amount, where applicable.
+        profit_amount:
+          type: integer
+          description: Islamic finance profit amount, where applicable.
+        fees_total:
+          type: integer
+        annual_percentage_rate_bps:
+          type: integer
+          description: APR in basis points, where applicable by product and regulation.
+        total_payable:
+          type: integer
+        currency:
+          type: string
+
+    MurabahaTerms:
+      type: object
+      required:
+        - asset_description
+        - cash_price
+        - profit_amount
+        - total_sale_price
+      properties:
+        asset_description:
+          type: string
+        cash_price:
+          type: integer
+        profit_amount:
+          type: integer
+        total_sale_price:
+          type: integer
+        down_payment:
+          type: integer
+          minimum: 0
+        installment_schedule:
+          $ref: '#/components/schemas/RepaymentSchedule'
+        customer_acceptance_timestamp:
+          type: string
+          format: date-time
+        contract_disclosure_url:
+          type: string
+          format: uri
+        sharia_profile_reference:
+          type: string
+
+    CustomerAcceptance:
+      type: object
+      required:
+        - accepted_terms
+        - accepted_repayment_schedule
+        - accepted_disclosure_url
+        - accepted_at
+      properties:
+        accepted_terms:
+          type: boolean
+        accepted_repayment_schedule:
+          type: boolean
+        accepted_disclosure_url:
+          type: string
+          format: uri
+        accepted_at:
+          type: string
+          format: date-time
+        customer_ip:
+          type: string
+        user_agent:
+          type: string
+
+    RepaymentSchedule:
+      type: object
+      required: [schedule_id, frequency, installments, total_repayment_amount, currency]
+      properties:
+        schedule_id:
+          type: string
+        frequency:
+          type: string
+          enum: [WEEKLY, BIWEEKLY, MONTHLY, QUARTERLY, CUSTOM]
+        installments:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/RepaymentItem'
+        total_repayment_amount:
+          type: integer
+        currency:
+          type: string
+
+    RepaymentItem:
+      type: object
+      required: [installment_number, due_date, amount, currency, status]
+      properties:
+        installment_number:
+          type: integer
+          minimum: 1
+        due_date:
+          type: string
+          format: date
+        amount:
+          type: integer
+        principal_amount:
+          type: integer
+        finance_cost_amount:
+          type: integer
+        currency:
+          type: string
+        status:
+          type: string
+          enum: [SCHEDULED, DUE, PAID, FAILED, CANCELLED, WAIVED]
+        mandate_payment_order_id:
+          type: string
+
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, correlation_id, retryable]
+          properties:
+            code:
+              type: string
+              enum:
+                - INVALID_REQUEST
+                - UNAUTHORIZED
+                - CONSENT_NOT_FOUND
+                - CONSENT_EXPIRED
+                - CONSENT_REVOKED
+                - SCOPE_INSUFFICIENT
+                - ACCOUNT_NOT_COVERED
+                - ASSESSMENT_NOT_FOUND
+                - ASSESSMENT_NOT_READY
+                - ASSESSMENT_EXPIRED
+                - OFFER_NOT_FOUND
+                - OFFER_EXPIRED
+                - OFFER_ALREADY_ACCEPTED
+                - OFFER_WITHDRAWN
+                - CONTRACT_NOT_FOUND
+                - CONTRACT_NOT_CANCELLABLE
+                - PRODUCT_NOT_SUPPORTED
+                - INSUFFICIENT_DATA
+                - PROVIDER_DECISION_DECLINED
+                - PAYMENT_SETTLEMENT_FAILED
+            message:
+              type: string
+            correlation_id:
+              type: string
+            retryable:
+              type: boolean
+            details:
+              type: object
+              additionalProperties: true
+
+x-webhook-events:
+  credit_assessment.completed:
+    post:
+      summary: Credit assessment completed
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditAssessmentResponse'
+  finance_offer.created:
+    post:
+      summary: Finance offer created
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceOfferResponse'
+  finance_offer.accepted:
+    post:
+      summary: Finance offer accepted
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceOfferAcceptResponse'
+  finance_contract.active:
+    post:
+      summary: Finance contract active
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceContractResponse'
+  finance_contract.cancelled:
+    post:
+      summary: Finance contract cancelled
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceContractResponse'
+  repayment.completed:
+    post:
+      summary: Repayment completed
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RepaymentItem'
+  repayment.failed:
+    post:
+      summary: Repayment failed
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RepaymentItem'
