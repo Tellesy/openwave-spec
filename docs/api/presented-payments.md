@@ -20,6 +20,17 @@ Presented payments are a **channel capability**, not a gateway-only product feat
 
 Operators decide which channels and modes are enabled in each deployment.
 
+## Endpoints at a glance
+
+| Endpoint | Why it exists |
+|---|---|
+| `GET /capabilities` | So merchants, banks, and wallets know which presented flows are actually enabled |
+| `POST /presentments` | To create the QR/NFC start point |
+| `GET /presentments/{id}` | To inspect full metadata |
+| `POST /presentments/{id}/claim` | To turn the QR/NFC interaction into a real payment or mandate flow |
+| `POST /presentments/{id}/cancel` | To terminate a pending presentment safely |
+| `GET /presentments/{id}/status` | To poll lifecycle state when needed |
+
 ## Main flow
 
 | Step | Endpoint | Caller | Purpose |
@@ -117,6 +128,19 @@ Operators decide which channels and modes are enabled in each deployment.
 - Merchants must not collect OTP, PIN, passcode, or push-approval results.
 - Wallet and bank apps may initiate the scan or tap flow, but final authorization must remain in a bank-controlled or OpenWave-controlled secure surface.
 - Each presentment must be time-bound, replay-protected, and idempotent.
+
+## Events
+
+Operators may emit presented-payment-specific events before the normal payment or mandate events:
+
+| Event | Meaning |
+|---|---|
+| `presentment.created` | QR or NFC presentment exists and is waiting to be claimed |
+| `presentment.claimed` | A customer device or merchant system claimed the presentment |
+| `presentment.expired` | Presentment timed out before claim or completion |
+| `presentment.cancelled` | Presentment was explicitly cancelled |
+
+After claim, normal payment or mandate events remain authoritative.
 
 ## Related guides
 

@@ -69,6 +69,7 @@ export default defineConfig({
             { text: 'NPT — National Payment Tag', link: '/guide/npt' },
             { text: 'Architecture & Infrastructure', link: '/guide/architecture' },
             { text: 'Presented Payments', link: '/guide/presented-payments' },
+            { text: 'Public Docs Policy', link: '/guide/maintainers' },
           ]
         },
         {

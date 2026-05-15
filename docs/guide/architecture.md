@@ -4,6 +4,25 @@ This page covers the full OpenWave system topology — the participants, how the
 
 Presented payments fit into the same topology as a **channel layer**. QR and NFC never bypass hosted or bank-controlled authorization. They only change how the payment or mandate session is initiated.
 
+## Where presented payments fit
+
+```mermaid
+flowchart LR
+  Merchant[Merchant or POS] --> Presentment[QR / NFC Presentment]
+  Presentment --> Operator[OpenWave Gateway / Bank / Wallet]
+  Operator --> Identity[OW Identity resolve when needed]
+  Operator --> Bank[Bank SCA + CBS]
+  Bank --> Settlement[Same-bank books / LyPay / interconnect]
+  Operator --> Webhook[Merchant webhook or final status]
+```
+
+The key architectural rule is that the **presentment layer stays thin**:
+
+- it starts the flow
+- it does not replace authorization
+- it does not replace settlement
+- it does not replace identity resolution
+
 ---
 
 ## System Overview

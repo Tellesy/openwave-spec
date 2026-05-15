@@ -2,6 +2,10 @@
 
 Presented payments are not restricted to commercial gateway products.
 
+## Why the standard allows this
+
+If OpenWave locked QR and NFC to one gateway product, it would break the core goal of interoperability. The standard therefore defines a common channel contract that any compliant operator can implement.
+
 ## Who can implement the channel
 
 - a gateway operator
@@ -36,3 +40,17 @@ A wallet or payment app may implement presented payments when:
 ## Interoperability outcome
 
 This model allows channel innovation without fragmenting the network contract. A merchant or wallet reads capabilities, creates or claims a presentment, and then hands into the same trusted payment system regardless of whether the operator behind it is a gateway, bank, or wallet.
+
+## Minimum compliance checklist
+
+| Requirement | Gateway | Bank | Wallet |
+|---|---:|---:|---:|
+| `GET /capabilities` or equivalent metadata | Yes | Yes | Yes |
+| Presentment create/claim/cancel/status lifecycle | Yes | Yes | Yes |
+| Replay protection and expiry | Yes | Yes | Yes |
+| Secure SCA or consent surface | Yes | Yes | Yes |
+| Reuse standard payment or mandate lifecycle after claim | Yes | Yes | Yes |
+
+## What Astro represents in this model
+
+Neptune. Astro is one **gateway implementation** of this standard. It can support merchant-presented and customer-presented flows, but the standard is still valid even when a bank or wallet implements the same APIs directly.
